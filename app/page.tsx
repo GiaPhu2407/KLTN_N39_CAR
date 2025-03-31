@@ -1,5 +1,3 @@
-
-
 import CarViewerPage from "./components/Car360";
 import BackgroundSlider from "./components/Carousel";
 import Footer from "./components/Footer";
@@ -9,9 +7,6 @@ import Navbar from "./components/Navbar";
 import Product from "./components/Product";
 import TechnicalSpecs from "./components/Technical";
 import Videobg from "./components/Video";
-
-
-
 export default function Home() {
   return (
     <div data-theme="light">
@@ -26,10 +21,6 @@ export default function Home() {
     </div>
   );
 }
-
-
-// import Navbar from "./components/Navbar";
- // import CozeChat from "./components/CozeAi";
   
   
 
