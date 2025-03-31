@@ -1,4 +1,5 @@
 
+
 import CarViewerPage from "./components/Car360";
 import BackgroundSlider from "./components/Carousel";
 import Footer from "./components/Footer";
@@ -25,3 +26,10 @@ export default function Home() {
     </div>
   );
 }
+
+
+// import Navbar from "./components/Navbar";
+ // import CozeChat from "./components/CozeAi";
+  
+  
+
