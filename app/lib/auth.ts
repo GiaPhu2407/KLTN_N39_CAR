@@ -111,7 +111,6 @@ export async function signUp(
 
 export async function login(usernameOrEmail: string, password: string) {
   try {
-    // Find user by username or email
     const user = await prisma.users.findFirst({
       where: {
         OR: [{ Email: usernameOrEmail }, { Tentaikhoan: usernameOrEmail }],
@@ -126,16 +125,14 @@ export async function login(usernameOrEmail: string, password: string) {
     });
 
     if (!user || !user.Matkhau) {
-      throw new Error("User not found");
+      throw new Error("Tài khoản không tồn tại");
     }
 
-    // Verify password
     const isValid = await compare(password, user.Matkhau);
     if (!isValid) {
       throw new Error("Sai mật khẩu");
     }
 
-    // Create session token
     const token = await new SignJWT({
       idUsers: user.idUsers,
       email: user.Email,
@@ -146,15 +143,12 @@ export async function login(usernameOrEmail: string, password: string) {
       .setExpirationTime("24h")
       .sign(key);
 
-    // Set cookie
-    (
-      await // Set cookie
-      cookies()
-    ).set("session-token", token, {
+    const cookieStore = await cookies();
+    cookieStore.set("session-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 86400, // 24 hours
+      maxAge: 86400,
     });
 
     return {
@@ -166,7 +160,7 @@ export async function login(usernameOrEmail: string, password: string) {
     };
   } catch (error) {
     console.error("Login error:", error);
-    throw new Error("Authentication failed");
+    throw error;
   }
 }
 export async function logout() {
