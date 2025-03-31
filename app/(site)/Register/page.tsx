@@ -41,10 +41,7 @@ export default function RegisterPage() {
                             <input type="text" name="username" placeholder="Tên đăng nhập" className="border p-3 rounded w-full h-12" />
                             <input type="text" name="fullname" placeholder="Họ và tên" className="border p-3 rounded w-full h-12" />
                             <input type="tel" name="phone" placeholder="Số điện thoại" className="border p-3 rounded w-full h-12" />
-                            <textarea name="address" placeholder="Địa chỉ" className="border p-3 rounded w-full h-24 resize-none" />
-                            <div className="flex flex-col">
-                                <input type="file" name="avatar" placeholder="Avatar" className="border p-3 rounded w-full h-24" />
-                            </div>
+                            <textarea name="address" placeholder="Địa chỉ" className="border p-3 rounded w-full h-14 resize-none md:col-span-2" />
                             <div className="relative md:col-span-2">
                                 <input
                                     type={showPassword ? "text" : "password"}
