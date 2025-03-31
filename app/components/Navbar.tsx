@@ -1,159 +1,245 @@
-"use client"
-import React, { useState } from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { UserAuth } from "../types/auth";
+
+interface LoaiXe {
+  idLoaiXe: number;
+  TenLoai: string;
+  NhanHieu: string;
+  HinhAnh: string;
+}
+
+interface CartItem {
+  idGioHang: number;
+  idXe: number;
+  SoLuong: number;
+  xe: {
+    TenXe: string;
+    GiaXe: number;
+    MauSac: string;
+    HinhAnh: string;
+    TrangThai: string;
+  };
+}
+
+interface Car {
+  idXe: number;
+  TenXe: string;
+  GiaXe: number;
+  MauSac: string;
+  DongCo: string;
+  TrangThai: string;
+  HinhAnh: string;
+  NamSanXuat: string;
+  idLoaiXe: number;
+}
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState(null); // Set to null by default, change to mock user data if needed
+  const [loaiXe, setLoaiXe] = useState<LoaiXe[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<UserAuth | null>(null);
+  const router = useRouter();
+
   
-  // Mock data for car categories
-  const loaiXe = [
-    { id: 1, name: "SUV", brand: "VinFast", image: "/api/placeholder/50/50" },
-    { id: 2, name: "Sedan", brand: "VinFast", image: "/api/placeholder/50/50" },
-    { id: 3, name: "Hatchback", brand: "VinFast", image: "/api/placeholder/50/50" }
-  ];
 
-  // Mock user data - uncomment if you want to simulate a logged-in user
-  // const mockUser = {
-  //   id: 1,
-  //   Hoten: "Nguyễn Văn A",
-  //   Email: "nguyenvana@example.com",
-  //   Tentaikhoan: "nguyenvana",
-  //   Avatar: "/api/placeholder/100/100",
-  //   role: { TenNguoiDung: "User" }
-  // };
-  // setUser(mockUser);
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const response = await fetch("/api/auth/session");
+        if (!response.ok) throw new Error("Failed to fetch session");
+        const data = await response.json();
+        setUser(data);
+      } catch (error) {
+        console.error("Failed to fetch session", error);
+        setUser(null);
+      }
+    };
+    fetchSession();
+  }, []);
 
-  const handleLogout = () => {
-    setUser(null);
-    // No need for router.push
+ 
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+      setCartItems([]);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
+
+  const cartItemCount = cartItems?.length || 0;
 
   return (
     <div data-theme="light">
       <div className="navbar opacity-90 bg-base-100 shadow-sm fixed z-50">
-        <div className="flex px-4 py-2 w-full">
+        {/* Logo Section */}
+        <div className="flex-none px-4">
           <Link href="/">
             <Image
-              className="ml-2 h-8 w-full hover:scale-105 md:ml-6 md:text-2xl sm:text-2xl"
+              className="h-8 w-auto hover:scale-105"
               alt="VinFast - Thương hiệu xe điện đầu tiên Việt Nam"
               width={200}
               height={200}
               src="https://vinfastauto.com/themes/porto/img/new-home-page/VinFast-logo.svg"
             />
           </Link>
+        </div>
 
-          <div className="justify-start ml-36 xl:flex hidden items-start w-full gap-7">
+        {/* Centered Menu Section */}
+        <div className="flex-1 justify-center hidden xl:flex">
+          <div className="flex items-center gap-10">
             <Link href="/">
               <button className="font-semibold font-serif py-2 transition-all duration-500 text-blue-500 hover:text-red-500">
                 Trang Chủ
               </button>
             </Link>
-            <ul
-              onMouseEnter={() => setIsMenuOpen(true)}
-              className="bg-white py-2 font-semibold font-serif transition-all duration-500 text-blue-500 hover:text-red-500 cursor-pointer"
-            >
-              <li>
-                <span>Sản Phẩm</span>
-              </li>
-            </ul>
 
-            <div
-              onMouseLeave={() => setIsMenuOpen(false)}
-              className={`absolute z-99 top-16 border-t-2 border-blue-200 left-0 w-full bg-white flex flex-col justify-center items-center gap-10 text-lg border-b-4 shadow-2xl transform transition-all duration-75 ease-in-out ${
-                isMenuOpen
-                  ? "opacity-100 transform translate-y-0 transition-all duration-1000"
-                  : "opacity-0 transform -translate-y-10 pointer-events-none transition-all duration-1000"
-              }`}
-            >
-              <div className="flex flex-col h-5">
-                <span className="text-xl font-serif font-bold mt-5 text-blue-600">
-                  Danh Sách Loại Xe
-                </span>
+            <div className="relative">
+              <button
+                className="font-semibold font-serif py-2 transition-all duration-500 text-blue-500 hover:text-red-500"
+                onMouseEnter={() => setIsMenuOpen(true)}
+              >
+                Sản Phẩm
+              </button>
+
+              <div
+                onMouseLeave={() => setIsMenuOpen(false)}
+                className={`absolute z-50 top-12 border-t-2 border-blue-200 left-1/2 transform -translate-x-1/2 w-screen bg-white flex flex-col justify-center items-center gap-10 text-lg border-b-4 shadow-2xl transition-all duration-75 ease-in-out ${
+                  isMenuOpen
+                    ? "opacity-100 translate-y-0 transition-all duration-1000"
+                    : "opacity-0 -translate-y-10 pointer-events-none transition-all duration-1000"
+                }`}
+              >
+                <div className="flex flex-col h-5">
+                  <span className="text-xl font-serif font-bold mt-5 text-blue-600">
+                    Danh Sách Loại Xe
+                  </span>
+                </div>
+                <div className="flex flex-grow">
+                  <ul className="flex gap-20 justify-center z-[1] w-full p-2 h-40">
+                    {loaiXe.map((loai) => (
+                      <li key={loai.idLoaiXe} className="mt-10">
+                        <Link href={`LoaiXe?id=${loai.idLoaiXe}`}>
+                          <Image
+                            src={loai.HinhAnh}
+                            width={100}
+                            height={50}
+                            className="hover:animate-fadeleft transition-all duration-75 hover:scale-150"
+                            alt={loai.TenLoai}
+                          />
+                          <div className="text-center mt-3 font-medium">
+                            {loai.TenLoai}
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className="flex flex-grow">
-                <ul className="flex gap-20 justify-center z-[1] w-full p-2 h-40">
-                  {loaiXe.map((loai) => (
-                    <li key={loai.id} className="mt-10">
-                      <Link href={`LoaiXe?id=${loai.id}`}>
-                        <Image
-                          src={loai.image}
-                          width={100}
-                          height={50}
-                          className="hover:animate-fadeleft transition-all duration-75 hover:scale-150"
-                          alt={loai.name}
+            </div>
+
+            <Link href="/about">
+              <button className="font-semibold font-serif py-2 transition-all duration-500 text-blue-500 hover:text-red-500">
+                Giới Thiệu
+              </button>
+            </Link>
+
+            <Link href="/contact">
+              <button className="font-semibold font-serif py-2 transition-all duration-500 text-blue-500 hover:text-red-500">
+                Liên Hệ
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Section - Cart and User Profile */}
+        <div className="flex-none">
+          <div className="flex items-center gap-4">
+            {user && (
+              <div className="dropdown dropdown-end">
+                <div
+                  tabIndex={0}
+                  role="button"
+                  className="btn btn-ghost btn-circle"
+                >
+                  <Link href={"/Cart"}>
+                    <div className="indicator">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                         />
-                        <div className="text-center mt-3 font-medium">
-                          {loai.name}
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                      </svg>
+                      <span className="badge badge-sm indicator-item">
+                        {cartItemCount}
+                      </span>
+                    </div>
+                  </Link>
+                </div>
               </div>
-            </div>
+            )}
 
-            <button className="font-semibold font-serif py-2 transition-all duration-500 text-blue-500 hover:text-red-500 bg-white">
-              Giới Thiệu
-            </button>
-            <button className="font-semibold font-serif py-2 transition-all duration-500 text-blue-500 hover:text-red-500 bg-white">
-              Liên Hệ
-            </button>
-          </div>
-        </div>
-
-        <div className="justify-center w-10 md:w-60 items-center mr-4 relative">
-          <div className="mb-2">
-            {/* <SearchModal /> */}
-          </div>
-        </div>
-
-        <div className="flex w-full">
-          {!user ? (
-            <div className="flex w-full gap-2 pt-2 h-14 justify-end">
-              <Link
-                href="/Login"
-                className="btn transition-all border-2 text-center border-b-blue-950 duration-500 bg-white hover:text-red-500 px-1 w-14 h-6 sm:w-20 sm:hidden xl:block sm:h-10"
-              >
-                Login
-              </Link>
-              <Link
-                href="/Register"
-                className="btn transition-all border-2 border-b-blue-950 text-white duration-500 xl:rounded-md hover:text-red-500 bg-blue-600 px-2 w-15 h-6 sm:w-20 sm:hidden xl:block sm:h-10"
-              >
-                Register
-              </Link>
-            </div>
-          ) : (
-            <div className="flex relative">
-              <div className="dropdown dropdown-end hidden xl:block">
+            {!user ? (
+              <div className="hidden sm:flex gap-2">
+                <Link
+                  href="/Login"
+                  className="btn btn-sm transition-all border-2 text-center border-b-blue-950 duration-500 bg-white hover:text-red-500"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/Register"
+                  className="btn btn-sm transition-all border-2 border-b-blue-950 text-white duration-500 rounded-md hover:text-red-500 bg-blue-600"
+                >
+                  Register
+                </Link>
+              </div>
+            ) : (
+              <div className="dropdown dropdown-end hidden sm:block">
                 <div
                   tabIndex={0}
                   role="button"
                   className="btn btn-ghost btn-circle avatar flex items-center justify-center"
                 >
                   <div
-                    className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold leading-none"
+                    className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold"
                     style={{ lineHeight: "2.5rem" }}
                   >
-                   {user.Avatar ? (
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                      <Image 
-                        src={user.Avatar} 
-                        alt="Profile Avatar" 
-                        width={40}
-                        height={40}
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                      <span className="text-white text-sm">
-                        {user.Hoten ? user.Hoten.charAt(0).toUpperCase() : '?'}
-                      </span>
-                    </div>
-                  )}
+                    {user.Avatar ? (
+                      <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                        <Image
+                          src={user.Avatar}
+                          alt="Profile Avatar"
+                          width={40}
+                          height={40}
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span className="text-white text-sm">
+                          {user.Hoten
+                            ? user.Hoten.charAt(0).toUpperCase()
+                            : "?"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <ul
@@ -191,35 +277,37 @@ export default function Navbar() {
                   </li>
                 </ul>
               </div>
+            )}
+
+            {/* Mobile menu button */}
+            <div className="xl:hidden">
+              <button
+                className="btn btn-ghost rounded-lg p-2"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                <div className="w-6 h-6 relative">
+                  <span
+                    className={`block absolute h-0.5 w-6 bg-blue-600 transform transition-all duration-300 ease-in-out ${
+                      isMenuOpen ? "rotate-45 top-3" : "top-1"
+                    }`}
+                  ></span>
+                  <span
+                    className={`block absolute h-0.5 w-6 bg-blue-600 top-3 transition-all duration-300 ease-in-out ${
+                      isMenuOpen ? "opacity-0" : "opacity-100"
+                    }`}
+                  ></span>
+                  <span
+                    className={`block absolute h-0.5 w-6 bg-blue-600 transform transition-all duration-300 ease-in-out ${
+                      isMenuOpen ? "-rotate-45 top-3" : "top-5"
+                    }`}
+                  ></span>
+                </div>
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
-        <div className="xl:hidden">
-          <button
-            className="btn btn-ghost rounded-lg p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <div className="w-6 h-6 relative">
-              <span
-                className={`block absolute h-0.5 w-6 bg-blue-600 transform transition-all duration-300 ease-in-out ${
-                  isMenuOpen ? "rotate-45 top-3" : "top-1"
-                }`}
-              ></span>
-              <span
-                className={`block absolute h-0.5 w-6 bg-blue-600 top-3 transition-all duration-300 ease-in-out ${
-                  isMenuOpen ? "opacity-0" : "opacity-100"
-                }`}
-              ></span>
-              <span
-                className={`block absolute h-0.5 w-6 bg-blue-600 transform transition-all duration-300 ease-in-out ${
-                  isMenuOpen ? "-rotate-45 top-3" : "top-5"
-                }`}
-              ></span>
-            </div>
-          </button>
-        </div>
-
+        {/* Mobile Menu */}
         <div
           className={`fixed xl:hidden top-[4rem] left-0 w-full overflow-y-auto bg-white transform transition-all duration-300 ease-in-out ${
             isMenuOpen
@@ -311,20 +399,20 @@ export default function Navbar() {
                   <div className="mt-2 p-2 bg-gray-50 rounded-lg">
                     {loaiXe.map((loai) => (
                       <Link
-                        key={loai.id}
-                        href={`LoaiXe?id=${loai.id}`}
+                        key={loai.idLoaiXe}
+                        href={`LoaiXe?id=${loai.idLoaiXe}`}
                         className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-100 transition-colors duration-200"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <Image
-                          src={loai.image}
-                          alt={loai.name}
+                          src={loai.HinhAnh}
+                          alt={loai.TenLoai}
                           width={40}
                           height={40}
                           className="rounded-md"
                         />
                         <span className="font-medium text-gray-700">
-                          {loai.name}
+                          {loai.TenLoai}
                         </span>
                       </Link>
                     ))}
@@ -381,33 +469,52 @@ export default function Navbar() {
               <div className="">
                 <ul className="menu menu-lg gap-2 mt-4 h-96 pt-4 font-semibold text-gray-700 text-base border-t">
                   <li>
-                    <Link href="/Profiles" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                    <Link
+                      href="/Profiles"
+                      className="text-base"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
                       Profile
                       <span className="badge badge-primary badge-sm">New</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href="/Depositform" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                    <Link
+                      href="/Depositform"
+                      className="text-base"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
                       Depositform
                     </Link>
                   </li>
                   <li>
-                    <Link href="/Orders" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                    <Link
+                      href="/Orders"
+                      className="text-base"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
                       Orders
                     </Link>
                   </li>
                   {user.role?.TenNguoiDung === "Admin" && (
                     <li>
-                      <Link href="/dashboard" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                      <Link
+                        href="/dashboard"
+                        className="text-base"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         Dashboard
                       </Link>
                     </li>
                   )}
                   <li>
-                    <a className="text-base" onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}>
+                    <a
+                      className="text-base"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                    >
                       Logout
                     </a>
                   </li>
