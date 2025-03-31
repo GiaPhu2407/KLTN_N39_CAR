@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -24,3 +27,46 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+@keyframes loop-scroll {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+
+.animate-loop-scroll {
+  animation: loop-scroll 5s linear infinite;
+}
+
+.group:hover .animate-loop-scroll {
+  animation-play-state: paused;
+}
+
+@keyframes fadeleft {
+  0% {
+    transform: translateX(-40%);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-30%);
+    opacity: 0.5;
+  }
+  60% {
+    transform: translateX(-25%);
+    opacity: 0.6;
+  }
+  80% {
+    transform: translateX(-10%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+}
+
+
