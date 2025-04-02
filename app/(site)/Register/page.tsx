@@ -156,34 +156,34 @@ export default function RegisterPage() {
                 type="email"
                 name="email"
                 placeholder="Email"
-                className="border p-3 rounded w-full h-12"
+                className="input input-bordered rounded-sm p-3  w-full h-12"
                 required
               />
               <input
                 type="text"
                 name="username"
                 placeholder="Tên đăng nhập"
-                className="border p-3 rounded w-full h-12"
+                className="input input-bordered rounded-sm p-3 w-full h-12"
                 required
               />
               <input
                 type="text"
                 name="fullname"
                 placeholder="Họ và tên"
-                className="border p-3 rounded w-full h-12"
+                className=" p-3 input input-bordered rounded-sm w-full h-12"
                 required
               />
               <input
                 type="tel"
                 name="phone"
                 placeholder="Số điện thoại"
-                className="border p-3 rounded w-full h-12"
+                className=" p-3 input input-bordered rounded-sm w-full h-12"
                 required
               />
               <textarea
                 name="address"
                 placeholder="Địa chỉ"
-                className="border p-3 rounded w-full h-14 resize-none md:col-span-2"
+                className=" p-3 input input-bordered rounded-sm w-full h-14 resize-none md:col-span-2"
                 required
               />
               <div className="relative md:col-span-2">
@@ -191,7 +191,7 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Mật khẩu"
-                  className="border p-4 rounded h-12 w-full pr-12 focus:ring-2 focus:ring-blue-500"
+                  className=" p-4 input input-bordered rounded-sm h-12 w-full pr-12 focus:ring-2 focus:ring-blue-500"
                   required
                 />
                 <button
@@ -228,7 +228,7 @@ export default function RegisterPage() {
               </div>
               <button
                 type="submit"
-                className="w-full md:col-span-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                className="w-full md:col-span-2 bg-gradient-to-r from-violet-600 to-blue-500 border-0 hover:from-violet-700 hover:to-blue-600 text-white rounded-lg py-2 transition"
               >
                 Đăng ký
               </button>

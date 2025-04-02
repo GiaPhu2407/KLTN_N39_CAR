@@ -291,7 +291,7 @@ export default function LoginPage() {
                   </div>
                   <label className="label">
                     <Link
-                      href="/forgot-password"
+                      href="/ForgotPassword"
                       className="label-text-alt link link-hover text-violet-600"
                     >
                       Quên mật khẩu?
@@ -301,7 +301,7 @@ export default function LoginPage() {
                 <div className="form-control">
                   <button
                     className={`btn btn-primary ${
-                      loading ? "loading" : ""
+                      loading ? "" : ""
                     } bg-gradient-to-r from-violet-600 to-blue-500 border-0 hover:from-violet-700 hover:to-blue-600 text-white w-full`}
                     disabled={loading}
                   >
