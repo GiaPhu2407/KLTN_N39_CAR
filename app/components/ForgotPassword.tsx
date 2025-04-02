@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertCircle, Loader2 } from 'lucide-react';
-// import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast, Toaster } from 'react-hot-toast';
 
 const ForgotPasswordPage = () => {
@@ -13,51 +13,51 @@ const ForgotPasswordPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
-  //   setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-  //   try {
-  //     const response = await fetch('/api/auth/forgot-password', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ email })
-  //     });
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
 
-  //     const data = await response.json();
+      const data = await response.json();
 
 
       
 
-  //     if (!response.ok) {
-  //       throw new Error(data.error || 'Có lỗi xảy ra');
-  //     }
+      if (!response.ok) {
+        throw new Error(data.error || 'Có lỗi xảy ra');
+      }
 
-  //     const toastPromise = toast.promise(
-  //       new Promise(resolve => setTimeout(resolve, 3500)),
-  //       {
-  //         loading: 'Đang gửi...',
-  //         success: 'Email hướng dẫn đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.',
-  //         error: 'Có lỗi xảy ra',
-  //       },
-  //       {
-  //         duration: 4000,
-  //       }
-  //     )
+      const toastPromise = toast.promise(
+        new Promise(resolve => setTimeout(resolve, 3500)),
+        {
+          loading: 'Đang gửi...',
+          success: 'Email hướng dẫn đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.',
+          error: 'Có lỗi xảy ra',
+        },
+        {
+          duration: 4000,
+        }
+      )
 
-  //     await toastPromise;
+      await toastPromise;
 
-  //     setSuccess(true);
-  //   } catch (err: any) {
-  //     setError(err.message);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 p-8 bg-gray-50 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <Toaster
       position='top-right'
       toastOptions={{
@@ -82,14 +82,14 @@ const ForgotPasswordPage = () => {
         <CardHeader>
           <CardTitle>Quên mật khẩu</CardTitle>
           <CardDescription>
-            Nhập email của bạn để nhận link đặt lại mật khẩu
+            Nhập email dùng để đăng nhập của bạn để nhận link đặt lại mật khẩu
           </CardDescription>
         </CardHeader>
         <CardContent>
           
-        {/* onSubmit={handleSubmit} */}
+
          
-            <form  className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Input
                   type="email"
@@ -99,25 +99,20 @@ const ForgotPasswordPage = () => {
                   required
                   className="w-full"
                 />
-                {/* {error && (
+                {error && (
                   <Alert variant="destructive">
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
-                )} */}
+                )}
               </div>
               <Button 
                 type="submit" 
-                className="w-full"
+                className="w-full bg-gradient-to-r from-violet-600 to-blue-500 border-0 hover:from-violet-700 hover:to-blue-600 text-white rounded-lg py-2"
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Đang gửi...
-                  </>
-                ) : (
-                  'Gửi link đặt lại mật khẩu'
-                )}
+                
+                  Gửi link đặt lại mật khẩu
+                
               </Button>
               <div className="text-center">
                 <a href="/Login" className="text-sm text-blue-600 hover:text-blue-800">

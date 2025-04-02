@@ -3,15 +3,15 @@
 
 
 
-<<<<<<< Updated upstream
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
-=======
+
 @custom-variant dark (&:is(.dark *));
 @plugin "daisyui";
->>>>>>> Stashed changes
+
 
 @theme inline {
   --color-background: var(--background);
@@ -53,7 +53,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-<<<<<<< Updated upstream
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -66,12 +66,7 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-<<<<<<< HEAD
-=======
-=======
 
-
->>>>>>> e9691733eb6e416044288208164053dc3981f1cf
 @keyframes loop-scroll {
   from {
     transform: translateX(-100%);
@@ -112,7 +107,7 @@ body {
   }
 }
 
-<<<<<<< HEAD
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -190,8 +185,3 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> e9691733eb6e416044288208164053dc3981f1cf
