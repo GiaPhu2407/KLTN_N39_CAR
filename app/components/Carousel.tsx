@@ -47,56 +47,8 @@ const BackgroundSlider = () => {
     <div className="relative w-full h-full overflow-hidden">
       <div
         className="flex w-full h-full transition-transform duration-500 ease-in-out"
-        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-      >
-        {images.map((image, index) => (
-          <div key={index} className="flex-shrink-0 w-full h-full">
-            <img
-              src={image.desktop}
-              alt={`Background ${index + 1}`}
-              width={100}
-              height={100}
-              className="object-cover w-full h-full md:block hidden transition-opacity duration-500 ease-in-out"
-            />
-            <img
-              src={image.mobile}
-              width={100}
-              height={100}
-              alt={`Background ${index + 1} mobile`}
-              className="object-cover w-full h-full md:hidden transition-opacity duration-500 ease-in-out"
-            />
-          </div>
-        ))}
-      </div>
 
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft size={24} />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
-        aria-label="Next slide"
-      >
-        <ChevronRight size={24} />
-      </button>
 
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {[...Array(totalSlides)].map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full ${
-              currentSlide === index ? "bg-white" : "bg-gray-400"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-    </div>
     //   <div className="relative w-full h-full overflow-hidden" aria-hidden="true">
     //   <div className="flex w-full h-full animate-autoslide ">
     //   <img
@@ -141,6 +93,52 @@ const BackgroundSlider = () => {
     //   />
     // </div>
     /* <div className="absolute inset-0 flex flex-col justify-center z-10 mb-10 animate-fadeleft transition-all">
+=======
+  //   <div className="relative w-full h-full overflow-hidden" aria-hidden="true">
+  //   <div className="flex w-full h-full animate-autoslide ">
+  //   <img
+  //     src="https://static-cms-prod.vinfastauto.com/26Aug_Vinfast-Website_3060x1406px.png"
+  //     alt="Background 1"
+  //     className="object-cover w-full md:block hidden h-full  transition-opacity duration-500 ease-in-out"
+  //   />
+  //   <img
+  //     src="https://static-cms-prod.vinfastauto.com/26Aug_Vinfast-Mobile_540x960px.png"
+  //     alt="Background 1 mobile"
+  //     className="object-cover w-full md:hidden h-full  transition-opacity duration-500 ease-in-out"
+  //   />
+  //   <img
+  //     src="https://static-cms-prod.vinfastauto.com/Slider-VF8-25Aug-Desktop_3060x1406.jpg"
+  //     alt="Background 2"
+  //     className="object-cover w-full h-full md:block hidden transition-opacity duration-500 ease-in-out"
+  //   />
+  //   <img
+  //     src="https://static-cms-prod.vinfastauto.com/VinFast_VF%208_Mobile_Lux-540x960.jpg"
+  //     alt="Background 2 mobile"
+  //     className="object-cover w-full h-full md:hidden transition-opacity duration-500 ease-in-out"
+  //   />
+  //   <img
+  //     src="https://static-cms-prod.vinfastauto.com/xmd_20240715_1721017659.jpg"
+  //     alt="Background 3"
+  //     className="object-cover w-full h-full md:block hidden  transition-opacity duration-500 ease-in-out"
+  //   />
+  //   <img
+  //     src="https://static-cms-prod.vinfastauto.com/26Aug_Vinfast-Mobile_540x960px.png"
+  //     alt="Background 3 mobile"
+  //     className="object-cover w-full h-full md:hidden transition-opacity duration-500 ease-in-out"
+  //   />
+  //   <img
+  //     src="https://static-cms-prod.vinfastauto.com/Banner-Home.jpg"
+  //     alt="Background 4"
+  //     className="object-cover w-full h-full md:block hidden transition-opacity duration-500 ease-in-out"
+  //   />
+  //    <img
+  //     src="https://static-cms-prod.vinfastauto.com/VinFast_VF%208_Mobile_Lux-540x960.jpg"
+  //     alt="Background 4 moblie"
+  //     className="object-cover w-full h-full md:hidden transition-opacity duration-500 ease-in-out"
+  //   />
+  // </div>
+  /* <div className="absolute inset-0 flex flex-col justify-center z-10 mb-10 animate-fadeleft transition-all">
+>>>>>>> 83685c01c3ffb4b351c43c5b06bcd406491eaacf
     <h1 className="xl:text-8xl font-serif font-bold text-white ml-20 md:ml-10 md:text-4xl sm:text-sm sm:mx-5 ">
       VinFast
     </h1>
@@ -163,6 +161,3 @@ const BackgroundSlider = () => {
     alt="car"
   /> 
 </div>*/
-  );
-};
-export default BackgroundSlider;
