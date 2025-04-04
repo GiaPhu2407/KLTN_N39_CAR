@@ -116,7 +116,7 @@ export default function Page() {
             <div className="pt-6 w-[20000px]">
               <form className="space-y-4">
                 {/* Rest of the form content remains the same */}
-             
+
                 <div className="flex justify-center w-full flex-wrap gap-4">
                   <div className="flex w-full gap-4">
                     <div className="flex-1">
