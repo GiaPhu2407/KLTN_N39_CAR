@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
 
   // Admin-only routesi
   if (
-    request.nextUrl.pathname.startsWith("/dashboard") &&
+    request.nextUrl.pathname.startsWith("/Dashboard") &&
     session?.role !== "Admin"
   ) {
     return NextResponse.redirect(new URL("/Login", request.url));
