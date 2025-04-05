@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { Upload, FileType, FileText } from "lucide-react";
 // import ImportExportComponent from "./ImportExportLoaiXe";
 
 interface LoaiXe {
@@ -36,31 +37,118 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, pageSize, reloadKey, searchText]);
+  const [importing, setImporting] = useState(false);
+  const [exportFormat, setExportFormat] = useState("excel");
 
   const fetchData = () => {
     setLoading(true);
+    console.log("Fetching data with: ", { currentPage, pageSize, searchText });
     fetch(
-      `api/phantrang/phantrangloaixe?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
+      `api/pagination/typecar?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
     )
       .then((response) => {
         if (!response.ok) throw new Error("Failed to fetch data");
         return response.json();
       })
       .then((data) => {
+        console.log("Data received: ", data);
         setLoaiXeTable(data.data);
         setPaginationMeta(data.meta);
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        toast.error("Không thể tải dữ liệu loại xe");
-        setLoading(false);
       });
   };
+
+  const handleFileImport = async (event: any) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = [
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/csv",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please upload only Excel or CSV files");
+      return;
+    }
+
+    setImporting(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileType", file.name.endsWith(".csv") ? "csv" : "excel");
+
+    try {
+      const response = await fetch("api/typecar/import", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const result = await response.json();
+      toast.success(`Successfully imported ${result.count} records`);
+    } catch (error: any) {
+      toast.error(`Import failed: ${error.message}`);
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await fetch(`api/typecar/export?format=${exportFormat}`);
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const fileExtension = exportFormat === "excel" ? "xlsx" : exportFormat;
+      a.download = `cars.${fileExtension}`;
+
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+
+      toast.success("Export successful");
+    } catch (error: any) {
+      toast.error(`Export failed: ${error.message}`);
+    }
+  };
+
+  const handleReport = async () => {
+    try {
+      const response = await fetch("api/typecar/report");
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "LoaiXe-report.pdf";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+
+      toast.success("Report generated successfully");
+    } catch (error: any) {
+      toast.error(`Report generation failed: ${error.message}`);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, pageSize, reloadKey, searchText]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -113,19 +201,43 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
             />
 
             <div className="flex flex-wrap gap-2 w-full md:w-auto">
-              <button className="btn text-xs btn-accent">Import File</button>
+              <div>
+                <label className="btn text-xs btn-primary">
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleFileImport}
+                    disabled={importing}
+                  />
+                  <Upload className="h-5 w-5 mr-2 ml-2" />
+                  <span className="justify-center text-xs">
+                    {importing ? "Importing..." : "Import File"}
+                  </span>
+                </label>
+              </div>
 
               <div className="dropdown dropdown-end">
-                <button tabIndex={0} className="btn text-xs btn-primary">
+                <button
+                  className="btn text-xs btn-primary"
+                  onClick={handleExport}
+                >
                   Export
                 </button>
               </div>
-              <select id="pageSize" className="border rounded px-2 py-1">
-                <option value="Word">Word </option>
-                <option value="Excel">Excel</option>
-                <option value="PDF">PDF</option>
+              <select
+                className="border rounded px-2 py-1"
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value)}
+              >
+                <option value="excel">Excel</option>
+                <option value="pdf">PDF</option>
+                <option value="doc">Word</option>
               </select>
-              <button className="btn text-xs btn-success">
+              <button
+                className="btn text-xs btn-success"
+                onClick={handleReport}
+              >
                 Generate Report
               </button>
             </div>

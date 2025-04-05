@@ -44,11 +44,6 @@ const TableNhaCungCap: React.FC = ({}) => {
         setNhaCungCapTable(data.data);
         setPaginationMeta(data.meta);
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        toast.error("Không thể tải dữ liệu loại xe");
-        setLoading(false);
       });
   };
 

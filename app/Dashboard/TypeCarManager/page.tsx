@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
 import toast, { Toaster } from "react-hot-toast";
 import TableLoaiXe from "../component/Table/TableTypeCarManager";
 import { Fileupload } from "@/app/components/Fileupload";
@@ -35,7 +34,6 @@ export default function Page() {
   // Mock function to refresh data
   const refreshData = () => {
     setReloadKey((prevKey) => prevKey + 1);
-    console.log("Data refresh triggered");
   };
 
   // Mock function to handle deletion
@@ -46,12 +44,20 @@ export default function Page() {
           <span className="font-medium">Bạn có chắc muốn xóa loại xe này?</span>
           <div className="flex gap-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 toast.dismiss(t.id);
-                // Mock successful deletion
-                console.log(`Deleted loại xe with ID: ${id}`);
-                toast.success("Xóa loại xe thành công");
-                refreshData();
+                try {
+                  const response = await fetch(`api/typecar/${id}`, {
+                    method: "DELETE",
+                  });
+                  if (!response.ok) {
+                    throw new Error("Failed to delete category");
+                  }
+
+                  const data = await response.json();
+                  toast.success(data.message);
+                  refreshData();
+                } catch (err) {}
               }}
               className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
             >
@@ -89,7 +95,7 @@ export default function Page() {
     }));
   };
 
-  const handleEdit = (category: LoaiXe) => {
+  const handleEdit = (category: any) => {
     const images = category.HinhAnh
       ? typeof category.HinhAnh === "string"
         ? category.HinhAnh.split("|")

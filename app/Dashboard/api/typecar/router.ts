@@ -1,3 +1,4 @@
+// app/Dashboard/api/typecar/route.ts
 import prisma from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { boolean } from "zod";
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
+    console.error("Lỗi khi xử lý yêu cầu:", error);
     return NextResponse.json(
       { message: "Lỗi khi xử lý yêu cầu" },
       { status: 500 }
