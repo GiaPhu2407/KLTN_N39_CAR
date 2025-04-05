@@ -13,7 +13,7 @@
         "@radix-ui/react-slot": "^1.1.2",
         "@tailwindcss/cli": "^4.0.17",
         "@tailwindcss/vite": "^4.0.17",
-        "@uploadthing/react": "^7.1.0",
+        "@uploadthing/react": "^7.3.0",
         "aos": "^2.3.4",
         "bcryptjs": "^3.0.2",
         "class-variance-authority": "^0.7.1",
@@ -36,7 +36,7 @@
         "recharts": "^2.15.1",
         "tailwind-merge": "^3.1.0",
         "tailwindcss-animate": "^1.0.7",
-        "uploadthing": "^7.2.0",
+        "uploadthing": "^7.6.0",
         "xlsx": "^0.18.5"
     },
     "devDependencies": {

@@ -142,10 +142,14 @@ import { NextRequest, NextResponse } from "next/server";
           DongCo: body.DongCo,
           TrangThai: body.TrangThai,
           HinhAnh: imageUrls.join('|'),
-          NamSanXuat: body.NamSanXuat
+          NamSanXuat: body.NamSanXuat,
+          ThongSoKyThuat: body.ThongSoKyThuat,
+          MoTa: body.MoTa,
+          idNhaCungCap: parseInt(body.idNhaCungCap),
         },
         include: {
           loaiXe: true,
+          nhaCungCap: true,
         }
       });
       

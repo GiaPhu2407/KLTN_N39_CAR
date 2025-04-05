@@ -1,4 +1,3 @@
-//CarManager/page.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -6,10 +5,14 @@ import toast, { Toaster } from "react-hot-toast";
 import TableCarDashboard from "../component/Table/TableCarManager";
 import { Fileupload } from "@/app/components/Fileupload";
 
-
 interface LoaiXe {
   idLoaiXe: number;
   TenLoai: string;
+}
+
+interface NhaCungCap {
+  idNhaCungCap: number;
+  TenNhaCungCap: string;
 }
 
 interface FormData {
@@ -21,6 +24,9 @@ interface FormData {
   TrangThai: string;
   HinhAnh: string[];
   NamSanXuat: string;
+  ThongSoKyThuat: string;
+  MoTa: string;
+  idNhaCungCap: string;
 }
 
 export default function Page() {
@@ -33,10 +39,14 @@ export default function Page() {
     TrangThai: "",
     HinhAnh: [],
     NamSanXuat: "",
+    ThongSoKyThuat: "",
+    MoTa: "",
+    idNhaCungCap: "",
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loaiXeList, setLoaiXeList] = useState<LoaiXe[]>([]);
+  const [nhaCungCapList, setNhaCungCapList] = useState<NhaCungCap[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -50,6 +60,7 @@ export default function Page() {
   };
 
   useEffect(() => {
+    // Fetch car types
     fetch("api/typecar")
       .then((response) => {
         if (!response.ok) {
@@ -65,6 +76,22 @@ export default function Page() {
         toast.error("Failed to fetch loai xe data");
         console.error("Failed to fetch loai xe", err);
         setLoading(false);
+      });
+    
+    // Fetch suppliers
+    fetch("api/suppliers")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch suppliers data");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setNhaCungCapList(data);
+      })
+      .catch((err) => {
+        toast.error("Failed to fetch suppliers data");
+        console.error("Failed to fetch suppliers", err);
       });
   }, []);
 
@@ -128,6 +155,11 @@ export default function Page() {
       if (isNaN(year) || year < 1900 || year > currentYear + 1) {
         errors.NamSanXuat = "Năm sản xuất không hợp lệ";
       }
+    }
+    
+    // Validate idNhaCungCap (not required, but must be valid if provided)
+    if (data.idNhaCungCap && isNaN(parseInt(data.idNhaCungCap))) {
+      errors.idNhaCungCap = "Nhà cung cấp không hợp lệ";
     }
     
     return {
@@ -203,7 +235,7 @@ export default function Page() {
     return value.replace(/[^0-9]/g, '');
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
     // Special handling for price input
@@ -244,6 +276,7 @@ export default function Page() {
         ...formData,
         HinhAnh: Array.isArray(formData.HinhAnh) ? formData.HinhAnh : [formData.HinhAnh],
         GiaXe: unformatCurrency(formData.GiaXe), // Unformat the price for submission
+        idNhaCungCap: formData.idNhaCungCap ? parseInt(formData.idNhaCungCap) : null
       };
   
       const response = await fetch(url, {
@@ -283,6 +316,7 @@ export default function Page() {
       toast.error(err instanceof Error ? err.message : `Error ${isEditing ? 'updating' : 'creating'} product`);
     }
   };
+
   const handleEdit = (product: any) => {
     // Convert the stored image string back to an array
     const images = product.HinhAnh ? 
@@ -290,14 +324,17 @@ export default function Page() {
         [];
     
     setFormData({
-        TenXe: product.TenXe,
-        idLoaiXe: product.idLoaiXe.toString(),
-        GiaXe: formatCurrency(product.GiaXe.toString()), // Format price when editing
-        MauSac: product.MauSac,
-        DongCo: product.DongCo,
-        TrangThai: product.TrangThai,
+        TenXe: product.TenXe || "",
+        idLoaiXe: product.idLoaiXe ? product.idLoaiXe.toString() : "",
+        GiaXe: formatCurrency(product.GiaXe ? product.GiaXe.toString() : "0"),
+        MauSac: product.MauSac || "",
+        DongCo: product.DongCo || "",
+        TrangThai: product.TrangThai || "",
         HinhAnh: images,
-        NamSanXuat: product.NamSanXuat.toString(),
+        NamSanXuat: product.NamSanXuat ? product.NamSanXuat.toString() : "",
+        ThongSoKyThuat: product.ThongSoKyThuat || "",
+        MoTa: product.MoTa || "",
+        idNhaCungCap: product.idNhaCungCap ? product.idNhaCungCap.toString() : "",
     });
     setIsEditing(true);
     setEditingId(product.idXe);
@@ -327,7 +364,6 @@ export default function Page() {
       dialog.showModal();
     }
   };
-
 
   if (loading) return (
     <div className="flex justify-center items-center h-screen" data-theme="light">
@@ -483,7 +519,7 @@ export default function Page() {
                   </div>
 
                   <div className="flex w-full gap-4">
-                    <div className="flex-1 w-14">
+                    <div className="flex-1">
                       <label
                         htmlFor="TrangThai"
                         className="block font-medium text-gray-700 mb-1"
@@ -504,6 +540,71 @@ export default function Page() {
                       </select>
                     </div>
 
+                    <div className="flex-1">
+                      <label
+                        htmlFor="idNhaCungCap"
+                        className="block font-medium text-gray-700 mb-1"
+                      >
+                        Nhà Cung Cấp
+                      </label>
+                      <select
+                        id="idNhaCungCap"
+                        name="idNhaCungCap"
+                        value={formData.idNhaCungCap}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Chọn nhà cung cấp</option>
+                        {nhaCungCapList.map((ncc) => (
+                          <option
+                            key={ncc.idNhaCungCap}
+                            value={ncc.idNhaCungCap}
+                            className="text-black"
+                          >
+                            {ncc.TenNhaCungCap}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex w-full gap-4">
+                    <div className="flex-1">
+                      <label
+                        htmlFor="ThongSoKyThuat"
+                        className="block font-medium text-gray-700 mb-1"
+                      >
+                        Thông Số Kỹ Thuật
+                      </label>
+                      <textarea
+                        id="ThongSoKyThuat"
+                        name="ThongSoKyThuat"
+                        value={formData.ThongSoKyThuat}
+                        onChange={handleChange}
+                        rows={4}
+                        className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  
+                    <div className="flex-1">
+                      <label
+                        htmlFor="MoTa"
+                        className="block font-medium text-gray-700 mb-1"
+                      >
+                        Mô Tả
+                      </label>
+                      <textarea
+                        id="MoTa"
+                        name="MoTa"
+                        value={formData.MoTa}
+                        onChange={handleChange}
+                        rows={4}
+                        className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex w-full gap-4">
                     <div className="flex-1">
                       <label
                         htmlFor="HinhAnh"
@@ -533,13 +634,13 @@ export default function Page() {
           </div>
         </div>
       </dialog>
-      <div className="flex w-full justify-center h-full" data-theme="light">
+      
         <TableCarDashboard 
           onEdit={handleEdit}
           onDelete={handleDelete}
           reloadKey={reloadKey} 
         />
-      </div>
+      
     </div>
   );
 }

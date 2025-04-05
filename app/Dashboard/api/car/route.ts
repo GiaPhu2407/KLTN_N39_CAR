@@ -95,7 +95,10 @@ export async function GET () {
           DongCo: body.DongCo,
           TrangThai: body.TrangThai,
           HinhAnh: imageUrls.join('|'), // Use a separator that won't appear in URLs
-          NamSanXuat: body.NamSanXuat
+          NamSanXuat: body.NamSanXuat,
+          ThongSoKyThuat: body.ThongSoKyThuat,
+          MoTa: body.MoTa,
+          idNhaCungCap: parseInt(body.idNhaCungCap)
         },
       });
       
