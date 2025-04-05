@@ -5,6 +5,9 @@ import React, { useState } from "react";
 import { Toaster } from "react-hot-toast";
 import SidebarDashboard from "./component/SidebarDashboard";
 import Navbardashboard from "./component/NvarbarDashboard";
+import { extractRouterConfig } from "uploadthing/server";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { ourFileRouter } from "../api/uploadthing/core";
 export default function DashboardLayout({
   children,
 }: {
@@ -41,6 +44,9 @@ export default function DashboardLayout({
           `}
           data-theme="light"
         >
+          <NextSSRPlugin
+              routerConfig={extractRouterConfig(ourFileRouter)}
+            />
           {children}
         </main>
       </div>

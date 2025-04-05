@@ -229,7 +229,7 @@ export default function Navbar() {
                   </li>
                   {user.role?.TenNguoiDung === "Admin" && (
                     <li>
-                      <a href="/dashboard">Dashboard</a>
+                      <a href="/Dashboard">Dashboard</a>
                     </li>
                   )}
                   <li className="text-red-500">
@@ -444,7 +444,7 @@ export default function Navbar() {
                   </li>
                   {user.role?.TenNguoiDung === "Admin" && (
                     <li>
-                      <Link href="/dashboard" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                      <Link href="/Dashboard" className="text-base" onClick={() => setIsMenuOpen(false)}>
                         Dashboard
                       </Link>
                     </li>
