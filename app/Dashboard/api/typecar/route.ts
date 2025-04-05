@@ -3,6 +3,11 @@ import prisma from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { boolean } from "zod";
 
+export async function GET(request: NextRequest) {
+  const loaiXe = await prisma.loaiXe.findMany();
+  return NextResponse.json(loaiXe);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -26,6 +31,7 @@ export async function POST(request: NextRequest) {
         HinhAnh: imageUrls.join("|"),
       },
     });
+    console.log("Dữ liệu trước khi thêm", newLoaiXe);
     return NextResponse.json(
       { newLoaiXe, message: "Thêm loại xe thành công" },
       { status: 201 }

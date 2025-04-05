@@ -133,6 +133,8 @@ export default function Page() {
         body: JSON.stringify(submitData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
@@ -140,7 +142,7 @@ export default function Page() {
             `Failed to ${isEditing ? "update" : "create"} category`
         );
       }
-      const data = await response.json();
+
       toast.success(data.message);
       setFormData(initialFormData);
       setIsEditing(false);
@@ -269,6 +271,15 @@ export default function Page() {
                       >
                         Hình Ảnh
                       </label>
+                      {/* <Fileupload
+                        endpoint="imageUploader"
+                        onChange={(urls) =>
+                          setFormData(prev) =>
+                            setFormData({ ...prev, HinhAnh: urls })
+                          
+                        }
+                        value={formData.HinhAnh}
+                      /> */}
                       <Fileupload
                         endpoint="imageUploader"
                         onChange={(urls) =>

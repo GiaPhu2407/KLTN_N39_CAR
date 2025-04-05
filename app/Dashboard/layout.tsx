@@ -8,7 +8,6 @@ import Navbardashboard from "./component/NvarbarDashboard";
 import { extractRouterConfig } from "uploadthing/server";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { ourFileRouter } from "../api/uploadthing/core";
-
 export default function DashboardLayout({
   children,
 }: {
