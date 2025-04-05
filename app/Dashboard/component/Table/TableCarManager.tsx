@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import ImportExportXe from "../ImportExportXe";
+
 
 interface Xe {
   idXe: number;
@@ -23,6 +25,12 @@ interface LoaiXe {
   NhanHieu: string;
 }
 
+interface TableCarDashboardProps {
+  onEdit: (product: Xe) => void;
+  onDelete: (id: number) => void;
+  reloadKey: (id: number) => void;
+}
+
 interface PaginationMeta {
   totalRecords: number;
   totalPage: number;
@@ -31,7 +39,11 @@ interface PaginationMeta {
   skip: number;
 }
 
-const TableCarDashboard: React.FC = ({}) => {
+const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
+  onEdit,
+  onDelete,
+  reloadKey,
+}) => {
   const [isXeTable, setXeTable] = useState<Xe[]>([]);
   const [isLoaiXeTable, setLoaiXeTable] = useState<LoaiXe[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,14 +53,83 @@ const TableCarDashboard: React.FC = ({}) => {
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
+  
+  useEffect(() => {
+    setLoading(true);
+    fetch(
+      `api/pagination/vehiclemanagementpagination?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
+    )
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch data");
+        return response.json();
+      })
+      .then((data) => {
+        setXeTable(data.data || []);
+        setPaginationMeta(data.meta);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setXeTable([]);
+        setLoading(false);
+      });
+  }, [currentPage, pageSize, reloadKey, searchText]);
+
+  useEffect(() => {
+    fetch("api/typecar")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setLoaiXeTable(data || []);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setLoaiXeTable([]);
+      });
+  }, []);
+
+  const getLoaiXeName = (idLoaiXe: number) => {
+    const loaiXe = isLoaiXeTable.find((loai) => loai.idLoaiXe === idLoaiXe);
+    return loaiXe ? loaiXe.TenLoai : "N/A";
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newSize = parseInt(event.target.value);
+    setPageSize(newSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
 
   // Màu sắc cho trạng thái
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "Chờ xác nhận":
+        return "bg-amber-100 text-amber-800 border border-amber-300";
+      case "Đã xác nhận":
+        return "bg-blue-100 text-blue-800 border border-blue-300";
+      case "Đang giao":
+        return "bg-orange-100 text-orange-800 border border-orange-300";
+      case "Đã giao":
+        return "bg-emerald-100 text-emerald-800 border border-emerald-300";
       case "Còn Hàng":
         return "bg-emerald-100 text-emerald-800 border border-emerald-300";
       case "Hết Hàng":
         return "bg-red-100 text-red-800 border border-red-300";
+      case "Đã hủy":
+        return "bg-gray-100 text-gray-800 border border-gray-300";
+      case "Đã đặt hàng":
+        return "bg-indigo-100 text-indigo-800 border border-indigo-300";
+      case "Đã Đặt Cọc":
+        return "bg-amber-100 text-amber-800 border border-amber-300";
       default:
         return "bg-gray-100 text-gray-800 border border-gray-300";
     }
@@ -68,6 +149,7 @@ const TableCarDashboard: React.FC = ({}) => {
             <select
               id="pageSize"
               value={pageSize}
+              onChange={handlePageSizeChange}
               className="ml-2 border border-gray-300 rounded px-3 py-1 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="5">5</option>
@@ -84,6 +166,7 @@ const TableCarDashboard: React.FC = ({}) => {
               onChange={(e) => setSearchText(e.target.value)}
               className="input border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs ml-4 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
+            <ImportExportXe />
           </div>
         </div>
         <table className="table w-full border-collapse shadow-sm rounded-lg overflow-hidden">
@@ -128,7 +211,7 @@ const TableCarDashboard: React.FC = ({}) => {
                   <span className="text-gray-500">Đang tải...</span>
                 </td>
               </tr>
-            ) : isXeTable.length === 0 ? (
+            ) : !isXeTable || isXeTable.length === 0 ? (
               <tr>
                 <td colSpan={10} className="px-3 py-8 text-sm text-center">
                   <span className="text-gray-500">Không có dữ liệu xe</span>
@@ -144,7 +227,7 @@ const TableCarDashboard: React.FC = ({}) => {
                 >
                   <th className="px-4 py-3 font-medium">{xetable.idXe}</th>
                   <td className="px-4 py-3">{xetable.TenXe}</td>
-                  <td className="px-4 py-3">{xetable.idLoaiXe}</td>
+                  <td className="px-4 py-3">{getLoaiXeName(xetable.idLoaiXe)}</td>
                   <td className="px-4 py-3 font-medium">
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
@@ -179,12 +262,14 @@ const TableCarDashboard: React.FC = ({}) => {
                     <div className="flex gap-2 justify-center">
                       <button
                         type="button"
+                        onClick={() => onEdit(xetable)}
                         className="px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors shadow-sm font-medium text-xs"
                       >
                         Sửa
                       </button>
                       <button
                         type="button"
+                        onClick={() => onDelete(xetable.idXe)}
                         className="px-3 py-1 bg-rose-500 text-white rounded hover:bg-rose-600 transition-colors shadow-sm font-medium text-xs"
                       >
                         Xóa
@@ -202,6 +287,7 @@ const TableCarDashboard: React.FC = ({}) => {
         <div className="flex justify-end space-x-2 mt-4">
           <div className="flex space-x-2">
             <button
+              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
             >
@@ -211,6 +297,7 @@ const TableCarDashboard: React.FC = ({}) => {
             {[...Array(paginationMeta.totalPage)].map((_, index) => (
               <button
                 key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
                 className={`px-4 py-2 rounded shadow-sm text-sm font-medium ${
                   currentPage === index + 1
                     ? "bg-indigo-600 text-white"
@@ -222,6 +309,7 @@ const TableCarDashboard: React.FC = ({}) => {
             ))}
 
             <button
+              onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === paginationMeta.totalPage}
               className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
             >
