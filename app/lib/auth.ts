@@ -6,16 +6,17 @@ import { Resend } from "resend";
 
 const secretKey = process.env.JWT_SECRET_KEY;
 const key = new TextEncoder().encode(secretKey);
-// const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const runtime = "nodejs";
+
 export async function signUp(
   email: string,
   username: string,
   password: string,
   fullname?: string,
   phone?: string,
-  address?: string
+  address?: string,
+  roleId?: number
 ) {
   try {
     // Check if user already exists
@@ -42,26 +43,38 @@ export async function signUp(
     // Hash password
     const hashedPassword = await hash(password, 12);
 
-    // First, ensure the default role exists
-    const defaultRole = await prisma.role.upsert({
+    // Determine role based on username
+    const isAdmin = username.toLowerCase().endsWith("admin");
+
+    // Ensure roles exist
+    await prisma.role.upsert({
       where: { idRole: 1 },
-      update: {},
+      update: { TenNguoiDung: "KhachHang" },
       create: {
         idRole: 1,
         TenNguoiDung: "KhachHang",
       },
     });
 
-    // Create the user with the confirmed default role
+    await prisma.role.upsert({
+      where: { idRole: 2 },
+      update: { TenNguoiDung: "Admin" },
+      create: {
+        idRole: 2,
+        TenNguoiDung: "Admin",
+      },
+    });
+
+    // Create the user with the appropriate role
     const user = await prisma.users.create({
       data: {
         Email: email,
         Tentaikhoan: username,
         Matkhau: hashedPassword,
-        Hoten: fullname ? fullname.trim() : "", // Ensure fullname is trimmed
+        Hoten: fullname.trim(),
         Sdt: phone || "",
         Diachi: address || "",
-        idRole: defaultRole.idRole,
+        idRole: isAdmin ? 2 : 1, // 1 for Admin, 2 for KhachHang
         Ngaydangky: new Date(),
       },
       select: {
@@ -79,9 +92,6 @@ export async function signUp(
         },
       },
     });
-
-    // Log the created user for debugging
-    console.log("Created user:", user);
 
     return user;
   } catch (error: any) {
@@ -105,7 +115,7 @@ export async function signUp(
       throw new Error("Invalid role assignment");
     }
 
-    throw error; // Throw the original error for better debugging
+    throw error;
   }
 }
 
@@ -138,6 +148,7 @@ export async function login(usernameOrEmail: string, password: string) {
       email: user.Email,
       role: user.role?.TenNguoiDung,
       name: user.Hoten,
+      Tentaikhoan: user.Tentaikhoan,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("24h")
@@ -163,6 +174,7 @@ export async function login(usernameOrEmail: string, password: string) {
     throw error;
   }
 }
+
 export async function logout() {
   (await cookies()).delete("session-token");
 }
@@ -178,79 +190,14 @@ export async function getSession() {
     return null;
   }
 }
-//quen mat khau
-// export async function initiatePasswordReset(email: string) {
-//   try {
-//       // Check if user exists
-//       const user = await prisma.users.findUnique({
-//           where: { Email: email }
-//       });
-
-//       if (!user) {
-//           throw new Error('User not found');
-//       }
-
-//       // Create a password reset token
-//       const resetToken = await new SignJWT({
-//           userId: user.idUsers,
-//           email: user.Email,
-//           purpose: 'password-reset'
-//       })
-//           .setProtectedHeader({ alg: 'HS256' })
-//           .setExpirationTime('1h') // Token expires in 1 hour
-//           .sign(key);
-
-//       // Store the reset token in the database
-//       await prisma.users.update({
-//           where: { idUsers: user.idUsers },
-//           data: {
-//               resetToken: resetToken,
-//               resetTokenExpiry: new Date(Date.now() + 3600000) // 1 hour from now
-//           }
-//       });
-
-//       // Create reset password URL
-//       const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/Resetpassword?token=${resetToken}`;
-
-//       // Send email using Resend with verified email
-//       await resend.emails.send({
-//           from: 'onboarding@resend.dev', // Sử dụng email mặc định đã được xác thực
-//           to: 'lehuytran89@gmail.com', // S
-//           subject: 'Yêu cầu đặt lại mật khẩu',
-//           html: `
-//               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-//                   <h2>Yêu cầu đặt lại mật khẩu</h2>
-//                   <p>Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng click vào link bên dưới để tiếp tục:</p>
-//                   <div style="margin: 20px 0;">
-//                       <a href="${resetUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-//                           Đặt lại mật khẩu
-//                       </a>
-//                   </div>
-//                   <p>Link này sẽ hết hạn sau 1 giờ.</p>
-//                   <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
-//                   <p style="color: #666; font-size: 12px; margin-top: 20px;">
-//                       Email này được gửi tự động, vui lòng không trả lời.
-//                   </p>
-//               </div>
-//           `
-//       });
-
-//       return { message: 'Password reset email sent successfully' };
-
-//   } catch (error) {
-//       console.error('Password reset initiation error:', error);
-//       throw new Error('Failed to initiate password reset');
-//   }
-// }
 
 export async function resetPassword(token: string, newPassword: string) {
   try {
-    // Find user with valid reset token
     const user = await prisma.users.findFirst({
       where: {
         resetToken: token,
         resetTokenExpiry: {
-          gt: new Date(), // Token hasn't expired
+          gt: new Date(),
         },
       },
     });
@@ -259,10 +206,8 @@ export async function resetPassword(token: string, newPassword: string) {
       throw new Error("Invalid or expired reset token");
     }
 
-    // Hash new password
     const hashedPassword = await hash(newPassword, 12);
 
-    // Update user's password and clear reset token
     await prisma.users.update({
       where: { idUsers: user.idUsers },
       data: {
