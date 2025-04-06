@@ -44,9 +44,7 @@ export default function DashboardLayout({
           `}
           data-theme="light"
         >
-          <NextSSRPlugin
-              routerConfig={extractRouterConfig(ourFileRouter)}
-            />
+          <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
           {children}
         </main>
       </div>

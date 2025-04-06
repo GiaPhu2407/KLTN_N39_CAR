@@ -108,21 +108,23 @@ const StatsCard: React.FC<StatsCardProps> = ({
 );
 
 const SalesDashboard: React.FC = () => {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch('/api/thongke');
+        const response = await fetch("/api/thongke");
         if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
+          throw new Error("Failed to fetch dashboard data");
         }
         const data = await response.json();
         setDashboardData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setIsLoading(false);
       }
@@ -132,10 +134,12 @@ const SalesDashboard: React.FC = () => {
   }, []);
 
   const formatMonthlyData = (data: MonthlyData[]) => {
-    return data.map(item => ({
-      name: new Date(item.NgayDatHang).toLocaleDateString('en-US', { month: 'short' }),
+    return data.map((item) => ({
+      name: new Date(item.NgayDatHang).toLocaleDateString("en-US", {
+        month: "short",
+      }),
       revenue: item._sum.TongTien,
-      profit: item._sum.TongTien * 0.3 // Assuming 30% profit margin
+      profit: item._sum.TongTien * 0.3, // Assuming 30% profit margin
     }));
   };
 
@@ -179,27 +183,25 @@ const SalesDashboard: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-10">
-        <div className="w-72">
-          <StatsCard
-            title="Tổng Khách Hàng"
-            value={dashboardData?.totalCustomers || 0}
-            icon={<Users size={24} className="text-white" />}
-            isLoading={isLoading}
-          />
-        </div>
-        <div className="w-72">
-          <StatsCard
-            title="Tổng Lịch Hẹn"
-            value={dashboardData?.totalLichhen || 0}
-            icon={<Users size={24} className="text-white" />}
-            isLoading={isLoading}
-          />
-        </div>
+          <div className="w-72">
+            <StatsCard
+              title="Tổng Khách Hàng"
+              value={dashboardData?.totalCustomers || 0}
+              icon={<Users size={24} className="text-white" />}
+              isLoading={isLoading}
+            />
+          </div>
+          <div className="w-72">
+            <StatsCard
+              title="Tổng Lịch Hẹn"
+              value={dashboardData?.totalLichhen || 0}
+              icon={<Users size={24} className="text-white" />}
+              isLoading={isLoading}
+            />
+          </div>
         </div>
       </div>
-      <div className="flex-1">
-        {/* <Globe /> */}
-      </div>
+      <div className="flex-1">{/* <Globe /> */}</div>
     </div>
   );
 
@@ -212,14 +214,30 @@ const SalesDashboard: React.FC = () => {
         <CardContent>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dashboardData ? formatMonthlyData(dashboardData.monthlyData) : []}>
+              <LineChart
+                data={
+                  dashboardData
+                    ? formatMonthlyData(dashboardData.monthlyData)
+                    : []
+                }
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="revenue" name="Doanh Thu" stroke="#8884d8" />
-                <Line type="monotone" dataKey="profit" name="Lợi Nhuận" stroke="#82ca9d" />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  name="Doanh Thu"
+                  stroke="#8884d8"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="profit"
+                  name="Lợi Nhuận"
+                  stroke="#82ca9d"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -233,7 +251,13 @@ const SalesDashboard: React.FC = () => {
         <CardContent>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dashboardData ? formatMonthlyData(dashboardData.monthlyData) : []}>
+              <AreaChart
+                data={
+                  dashboardData
+                    ? formatMonthlyData(dashboardData.monthlyData)
+                    : []
+                }
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -285,21 +309,30 @@ const SalesDashboard: React.FC = () => {
                 <tr key={transaction.idDonHang} className="border-t">
                   <td className="p-4">#{transaction.idDonHang}</td>
                   <td className="p-4">{transaction.khachHang.Hoten}</td>
-                  <td className="p-4">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(transaction.TongTien)}</td>
+                  <td className="p-4">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(transaction.TongTien)}
+                  </td>
                   <td className="p-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
                         transaction.TrangThaiDonHang === "Đã giao"
                           ? "bg-green-100 text-green-800"
                           : transaction.TrangThaiDonHang === "Chờ xác nhận"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-blue-100 text-blue-800"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {transaction.TrangThaiDonHang}
                     </span>
                   </td>
-                  <td className="p-4">{new Date(transaction.NgayDatHang).toLocaleDateString('vi-VN')}</td>
+                  <td className="p-4">
+                    {new Date(transaction.NgayDatHang).toLocaleDateString(
+                      "vi-VN"
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -308,7 +341,7 @@ const SalesDashboard: React.FC = () => {
       </CardContent>
     </Card>
   );
-  
+
   const renderDatCoc = () => (
     <Card>
       <CardHeader>
@@ -332,22 +365,29 @@ const SalesDashboard: React.FC = () => {
                 <tr key={transaction.idDatCoc} className="border-t">
                   <td className="p-4">#{transaction.idDatCoc}</td>
                   <td className="p-4">{transaction.khachHang.Hoten}</td>
-                  <td className="p-4">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(transaction.SotienDat)}</td>
+                  <td className="p-4">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(transaction.SotienDat)}
+                  </td>
                   <td className="p-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
                         transaction.TrangThaiDat === "Đã giao"
                           ? "bg-green-100 text-green-800"
                           : transaction.TrangThaiDat === "Chờ xác nhận"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-blue-100 text-blue-800"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {transaction.TrangThaiDat}
                     </span>
                   </td>
                   {/* <td className="p-4">{transaction.LichHenLayXe?.[0]?.DiaDiem}</td> */}
-                  <td className="p-4">{new Date(transaction.NgayDat).toLocaleDateString('vi-VN')}</td>
+                  <td className="p-4">
+                    {new Date(transaction.NgayDat).toLocaleDateString("vi-VN")}
+                  </td>
                 </tr>
               ))}
             </tbody>
