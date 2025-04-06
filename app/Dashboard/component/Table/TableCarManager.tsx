@@ -175,7 +175,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   };
 
   return (
-    <div className="space-y-1 pl-14">
+    <div className="space-y-1 pl-12 pr-0 w-full max-w-full">
       <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
         <div className="flex items-center">
           <label
@@ -209,48 +209,48 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
       </div>
       
       {/* Table container with fixed layout and controlled width */}
-      <div className="relative shadow-md rounded-lg border w-[1170px] border-gray-200">
+      <div className="relative shadow-md rounded-lg w-[1170px] border  border-gray-200">
         <div className="overflow-x-auto w-full">
           <table className="w-full table-fixed border-collapse">
             <thead className="bg-gray-50">
               <tr className="text-white text-center">
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                   IdXe
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Tên Xe
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Loại Xe
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Giá Xe
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Màu Sắc
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Động Cơ
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Trạng Thái
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Nhà Cung Cấp
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                   Thông Số KT
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                   Mô Tả
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Hình Ảnh
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Năm SX
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th scope="col" className="p-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Action
                 </th>
               </tr>
@@ -344,7 +344,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
 
       {/* Fixed width pagination with better overflow handling */}
       {paginationMeta && (
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 mr-4 overflow-x-auto">
           <div className="flex items-center justify-end min-w-max">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
