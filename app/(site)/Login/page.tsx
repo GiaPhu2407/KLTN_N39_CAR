@@ -42,28 +42,28 @@ export default function LoginPage() {
         throw new Error(data.error || "Đăng nhập thất bại");
       }
 
-      // Log the response to debug
-      console.log("Login response:", data);
+      // Extract user data correctly based on the API response structure
+      const userData = data.user || data;
 
       // Update the Auth context with the user information
-      setUser(data.user || data);
+      setUser(userData);
 
       const toastPromise = toast.promise(
-        new Promise((resolve) => setTimeout(resolve, 2000)),
+        new Promise((resolve) => setTimeout(resolve, 1000)),
         {
           loading: "Đang Đăng Nhập...",
           success: "Đã đăng nhập thành công!",
           error: "Có lỗi xảy ra",
         },
         {
-          duration: 3000,
+          duration: 2000,
         }
       );
 
       await toastPromise;
 
       // Check user role and redirect accordingly
-      if (data.user?.role === "Admin" || data.role?.TenNguoiDung === "Admin") {
+      if (userData.role?.TenNguoiDung === "Admin") {
         router.push("/Dashboard");
       } else {
         router.push("/");
