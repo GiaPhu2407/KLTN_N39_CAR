@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
 import toast, { Toaster } from "react-hot-toast";
 import TableLoaiXe from "../component/Table/TableTypeCarManager";
+import { Fileupload } from "@/app/components/Fileupload";
 
 interface FormData {
   TenLoai: string;
@@ -34,7 +34,6 @@ export default function Page() {
   // Mock function to refresh data
   const refreshData = () => {
     setReloadKey((prevKey) => prevKey + 1);
-    console.log("Data refresh triggered");
   };
 
   // Mock function to handle deletion
@@ -45,12 +44,20 @@ export default function Page() {
           <span className="font-medium">Bạn có chắc muốn xóa loại xe này?</span>
           <div className="flex gap-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 toast.dismiss(t.id);
-                // Mock successful deletion
-                console.log(`Deleted loại xe with ID: ${id}`);
-                toast.success("Xóa loại xe thành công");
-                refreshData();
+                try {
+                  const response = await fetch(`api/typecar/${id}`, {
+                    method: "DELETE",
+                  });
+                  if (!response.ok) {
+                    throw new Error("Failed to delete category");
+                  }
+
+                  const data = await response.json();
+                  toast.success(data.message);
+                  refreshData();
+                } catch (err) {}
               }}
               className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
             >
@@ -88,7 +95,7 @@ export default function Page() {
     }));
   };
 
-  const handleEdit = (category: LoaiXe) => {
+  const handleEdit = (category: any) => {
     const images = category.HinhAnh
       ? typeof category.HinhAnh === "string"
         ? category.HinhAnh.split("|")
@@ -111,26 +118,32 @@ export default function Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    const url = isEditing ? `api/typecar/${editingId}` : "api/typecar";
+    const method = isEditing ? "PUT" : "POST";
     try {
-      // Mock form submission
-      console.log("Form submitted:", {
-        action: isEditing ? "update" : "create",
-        id: editingId,
-        data: {
-          ...formData,
-          HinhAnh: Array.isArray(formData.HinhAnh)
-            ? formData.HinhAnh
-            : [formData.HinhAnh],
-        },
+      const submitData = {
+        ...formData,
+        HinhAnh: Array.isArray(formData.HinhAnh)
+          ? formData.HinhAnh
+          : [formData.HinhAnh],
+      };
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submitData),
       });
 
-      // Mock successful response
-      toast.success(
-        isEditing
-          ? "Cập nhật loại xe thành công"
-          : "Thêm mới loại xe thành công"
-      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message ||
+            `Failed to ${isEditing ? "update" : "create"} category`
+        );
+      }
+
+      toast.success(data.message);
       setFormData(initialFormData);
       setIsEditing(false);
       setEditingId(null);
@@ -258,6 +271,22 @@ export default function Page() {
                       >
                         Hình Ảnh
                       </label>
+                      {/* <Fileupload
+                        endpoint="imageUploader"
+                        onChange={(urls) =>
+                          setFormData(prev) =>
+                            setFormData({ ...prev, HinhAnh: urls })
+                          
+                        }
+                        value={formData.HinhAnh}
+                      /> */}
+                      <Fileupload
+                        endpoint="imageUploader"
+                        onChange={(urls) =>
+                          setFormData((prev) => ({ ...prev, HinhAnh: urls }))
+                        }
+                        value={formData.HinhAnh}
+                      />
                     </div>
                   </div>
                 </div>
