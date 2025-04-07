@@ -63,7 +63,7 @@ export default function LoginPage() {
       await toastPromise;
 
       // Check user role and redirect accordingly
-      if (userData.role?.TenNguoiDung === "Admin") {
+      if (data.user?.role === "Admin" || data.role?.TenNguoiDung === "Admin") {
         router.push("/Dashboard");
       } else {
         router.push("/");
