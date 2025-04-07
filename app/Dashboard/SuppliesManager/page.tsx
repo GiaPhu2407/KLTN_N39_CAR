@@ -1,45 +1,33 @@
 "use client";
 
 import React, { useState } from "react";
-import { IoAddCircleOutline } from "react-icons/io5";
 
 import toast, { Toaster } from "react-hot-toast";
 import TableNhaCungCap from "../component/Table/TableSuppliesManager";
 
-export default function Page() {
-  // Dữ liệu mẫu ban đầu
-  const [suppliers, setSuppliers] = useState([
-    {
-      idNhaCungCap: 1,
-      TenNhaCungCap: "Công ty TNHH ABC",
-      Sdt: "0123456789",
-      Email: "abc@example.com",
-    },
-    {
-      idNhaCungCap: 2,
-      TenNhaCungCap: "Công ty TNHH XYZ",
-      Sdt: "0987654321",
-      Email: "xyz@example.com",
-    },
-  ]);
+interface FormData {
+  TenNhaCungCap: string;
+  Sdt: string;
+  Email: string;
+}
 
-  const initialFormData = {
+export default function Page() {
+  const initialFormData: FormData = {
     TenNhaCungCap: "",
     Sdt: "",
     Email: "",
   };
 
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [nextId, setNextId] = useState(3); // ID kế tiếp cho nhà cung cấp mới
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   const refreshData = () => {
     setReloadKey((prevKey) => prevKey + 1);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     toast(
       (t) => (
         <div className="flex flex-col gap-2">
@@ -48,16 +36,26 @@ export default function Page() {
           </span>
           <div className="flex gap-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 toast.dismiss(t.id);
                 try {
-                  setSuppliers(
-                    suppliers.filter((item) => item.idNhaCungCap !== id)
-                  );
-                  toast.success("Xóa nhà cung cấp thành công");
+                  const response = await fetch(`api/suppliers/${id}`, {
+                    method: "DELETE",
+                  });
+
+                  if (!response.ok) {
+                    throw new Error("Failed to delete supplier");
+                  }
+
+                  const data = await response.json();
+                  toast.success(data.message);
                   refreshData();
                 } catch (err) {
-                  toast.error("Lỗi khi xóa nhà cung cấp");
+                  toast.error(
+                    err instanceof Error
+                      ? err.message
+                      : "Lỗi khi xóa nhà cung cấp"
+                  );
                 }
               }}
               className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
@@ -88,7 +86,7 @@ export default function Page() {
     );
   };
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -96,12 +94,7 @@ export default function Page() {
     }));
   };
 
-  const handleEdit = (supplier: {
-    TenNhaCungCap: any;
-    Sdt: any;
-    Email: any;
-    idNhaCungCap: React.SetStateAction<null>;
-  }) => {
+  const handleEdit = (supplier: any) => {
     setFormData({
       TenNhaCungCap: supplier.TenNhaCungCap,
       Sdt: supplier.Sdt,
@@ -137,7 +130,7 @@ export default function Page() {
     return errors;
   };
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const errors = validateForm();
@@ -146,22 +139,36 @@ export default function Page() {
       return;
     }
 
+    const url = isEditing ? `api/suppliers/${editingId}` : "api/suppliers";
+    const method = isEditing ? "PUT" : "POST";
+
     try {
-      if (isEditing) {
-        // Cập nhật nhà cung cấp hiện có
-        setSuppliers(
-          suppliers.map((item) =>
-            item.idNhaCungCap === editingId ? { ...item, ...formData } : item
-          )
-        );
-        toast.success("Cập nhật nhà cung cấp thành công");
-      } else {
-        // Thêm nhà cung cấp mới
-        setSuppliers([...suppliers, { idNhaCungCap: nextId, ...formData }]);
-        setNextId(nextId + 1);
-        toast.success("Thêm mới nhà cung cấp thành công");
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          const zodErrors = errorData.errors
+            .map((error: any) => `${error.field}: ${error.message}`)
+            .join(", ");
+          toast.error(`Dữ liệu không hợp lệ: ${zodErrors}`);
+        } else {
+          toast.error(
+            errorData.message ||
+              `Không thể ${isEditing ? "cập nhật" : "tạo"} nhà cung cấp`
+          );
+        }
+        return;
       }
 
+      const data = await response.json();
+      toast.success(data.message);
       setFormData(initialFormData);
       setIsEditing(false);
       setEditingId(null);
@@ -172,7 +179,11 @@ export default function Page() {
         dialog.close();
       }
     } catch (err) {
-      toast.error(`Lỗi ${isEditing ? "cập nhật" : "tạo"} nhà cung cấp`);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : `Lỗi ${isEditing ? "cập nhật" : "tạo"} nhà cung cấp`
+      );
     }
   };
 
@@ -196,22 +207,11 @@ export default function Page() {
     }
   };
 
-  // Adapter để TableNhaCungCap có thể hoạt động mà không cần sửa đổi component
-  const tableAdapter = {
-    onEdit: handleEdit,
-    onDelete: handleDelete,
-    reloadKey: reloadKey,
-    // Giả định component TableNhaCungCap sẽ lấy dữ liệu từ context hoặc nguồn khác
-    // Bạn có thể truyền suppliers như một prop nếu cần
-    getData: () => suppliers,
-  };
-
   return (
     <div
       className="p-2 flex-col justify-center text-center w-full h-[630px]"
       data-theme="light"
     >
-      <Toaster />
       <div className="flex justify-between pb-4 w-full">
         <h1 className="text-2xl font-bold mr-44 flex-grow text-black">
           Quản Lý Nhà Cung Cấp
@@ -314,7 +314,11 @@ export default function Page() {
       </dialog>
 
       <div className="flex w-full justify-center">
-        <TableNhaCungCap />
+        <TableNhaCungCap
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          reloadKey={reloadKey}
+        />
       </div>
     </div>
   );
