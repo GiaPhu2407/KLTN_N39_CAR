@@ -2,7 +2,26 @@ import prisma from "@/prisma/client";
 import { NextRequest, NextResponse } from 'next/server';
 import ExcelJS from 'exceljs';
 import puppeteer from 'puppeteer';
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun } from 'docx';
+import { 
+  Document, 
+  Packer, 
+  Paragraph, 
+  Table, 
+  TableRow, 
+  TableCell, 
+  TextRun,
+  HeadingLevel,
+  BorderStyle,
+  TableBorders,
+  WidthType,
+  AlignmentType,
+  Header,
+  Footer,
+  PageOrientation,
+  PageNumber,
+  ShadingType,
+  HeightRule
+} from 'docx';
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,8 +38,9 @@ export async function GET(req: NextRequest) {
         ]
       },
       include: {
-        loaiXe: true
-      }
+        loaiXe: true,
+        nhaCungCap:true
+      }  
     });
 
     const exportData = cars.map(car => ({
@@ -34,6 +54,9 @@ export async function GET(req: NextRequest) {
       'Màu Sắc': car.MauSac,
       'Động Cơ': car.DongCo,
       'Trạng Thái': car.TrangThai,
+      'Nhà Cung Cấp': car.nhaCungCap?.TenNhaCungCap || 'N/A',
+      'Thông Số Kỹ Thuật': car.ThongSoKyThuat,
+      'Mô Tả': car.MoTa,
       'Hình Ảnh': car.HinhAnh,
       'Năm Sản Xuất': car.NamSanXuat
     }));
@@ -80,6 +103,9 @@ export async function GET(req: NextRequest) {
                       <td>${car["Màu Sắc"]}</td>
                       <td>${car["Động Cơ"]}</td>
                       <td>${car["Trạng Thái"]}</td>
+                      <td>${car["Nhà Cung Cấp"]}</td>
+                      <td>${car["Thông Số Kỹ Thuật"]}</td>
+                      <td>${car["Mô Tả"]}</td>
                       <td>${car["Năm Sản Xuất"]}</td>
                     </tr>`
                   )
@@ -139,47 +165,192 @@ export async function GET(req: NextRequest) {
     }
 
     if (format === 'doc') {
-      const rows = [
-        new TableRow({
-          children: Object.keys(exportData[0]).map(header => 
-            new TableCell({
-              children: [new Paragraph({
-                children: [new TextRun({ text: header, bold: true })]
+      // Tạo border và style cho bảng
+      const tableBorders = {
+        top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+        bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+        left: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+        right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+        insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+        insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "000000" }
+      };
+
+      // Tạo header row với style - đã sửa lỗi height property
+      const headerRow = new TableRow({
+        tableHeader: true,
+        height: { value: 400, rule: HeightRule.EXACT },
+        children: Object.keys(exportData[0]).map(header => 
+          new TableCell({
+            shading: {
+              fill: "3366CC",
+              color: "3366CC",
+              type: ShadingType.CLEAR
+            },
+            children: [new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ 
+                text: header, 
+                bold: true,
+                color: "FFFFFF",
+                size: 24
               })]
-            })
-          )
-        }),
-        ...exportData.map(car => 
-          new TableRow({
-            children: Object.values(car).map(value => 
-              new TableCell({
-                children: [new Paragraph({
-                  children: [new TextRun({ text: String(value) })]
-                })]
-              })
-            )
+            })],
+            verticalAlign: AlignmentType.CENTER
           })
         )
-      ];
+      });
 
+      // Tạo data rows - đã sửa lỗi height property và shading
+      const dataRows = exportData.map((car, index) => 
+        new TableRow({
+          height: { value: 300, rule: HeightRule.ATLEAST },
+          children: Object.entries(car).map(([key, value]) => {
+            // Căn phải cho các ô có giá trị số
+            const isNumeric = key === 'Giá Xe' || key === 'ID';
+            
+            return new TableCell({
+              shading: index % 2 === 0 ? {
+                fill: "F2F2F2",
+                color: "F2F2F2",
+                type: ShadingType.CLEAR
+              } : undefined,
+              children: [new Paragraph({
+                alignment: isNumeric ? AlignmentType.RIGHT : AlignmentType.LEFT,
+                children: [new TextRun({ 
+                  text: String(value),
+                  size: 22
+                })]
+              })],
+              verticalAlign: AlignmentType.CENTER
+            });
+          })
+        })
+      );
+
+      // Tạo tài liệu với header, footer và các cài đặt trang
       const doc = new Document({
+        styles: {
+          paragraphStyles: [
+            {
+              id: "title",
+              name: "Title",
+              basedOn: "Normal",
+              next: "Normal",
+              run: {
+                size: 36,
+                bold: true,
+                color: "2E74B5"
+              },
+              paragraph: {
+                spacing: {
+                  after: 200
+                },
+                alignment: AlignmentType.CENTER
+              }
+            }
+          ]
+        },
         sections: [{
-          properties: {},
+          properties: {
+            page: {
+              size: {
+                orientation: PageOrientation.LANDSCAPE
+              },
+              margin: {
+                top: 1000,
+                right: 1000,
+                bottom: 1000,
+                left: 1000
+              }
+            }
+          },
+          headers: {
+            default: new Header({
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.RIGHT,
+                  children: [
+                    new TextRun({
+                      text: "Danh Sách Xe Ô Tô",
+                      bold: true,
+                      size: 20
+                    })
+                  ]
+                })
+              ]
+            })
+          },
+          footers: {
+            default: new Footer({
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new TextRun("Trang "),
+                    new TextRun({
+                      children: [PageNumber.CURRENT]
+                    }),
+                    new TextRun(" / "),
+                    new TextRun({
+                      children: [PageNumber.TOTAL_PAGES]
+                    })
+                  ]
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new TextRun({
+                      text: `Xuất ngày: ${new Date().toLocaleDateString('vi-VN')}`,
+                      size: 18
+                    })
+                  ]
+                })
+              ]
+            })
+          },
           children: [
             new Paragraph({
+              style: "title",
               children: [
                 new TextRun({
-                  text: "Danh sách xe",
+                  text: "DANH SÁCH XE Ô TÔ",
                   bold: true,
-                  size: 32
+                  size: 40
                 })
-              ],
+              ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
               spacing: {
-                after: 200
-              }
+                after: 400
+              },
+              children: [
+                new TextRun({
+                  text: `Tổng số: ${exportData.length} xe`,
+                  italics: true,
+                  size: 24
+                })
+              ]
             }),
             new Table({
-              rows: rows
+              width: {
+                size: 100,
+                type: WidthType.PERCENTAGE
+              },
+              borders: tableBorders,
+              rows: [headerRow, ...dataRows]
+            }),
+            new Paragraph({
+              spacing: {
+                before: 400
+              },
+              children: [
+                new TextRun({
+                  text: "* Lưu ý: Document này được tạo tự động bởi hệ thống.",
+                  italics: true,
+                  size: 20
+                })
+              ]
             })
           ]
         }]
@@ -190,11 +361,10 @@ export async function GET(req: NextRequest) {
       return new NextResponse(buffer, {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'Content-Disposition': 'attachment; filename="cars.docx"'
+          'Content-Disposition': 'attachment; filename="danh-sach-xe.docx"'
         }
       });
     }
-
     return NextResponse.json(
       { error: 'Unsupported format' },
       { status: 400 }
