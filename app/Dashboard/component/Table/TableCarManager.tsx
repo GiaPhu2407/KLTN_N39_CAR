@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import ImportExportXe from "../ImportExportXe";
+import ImportExportCar from "../ImportExportCar";
 
 interface Xe {
   idXe: number;
@@ -64,7 +64,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  
+
   useEffect(() => {
     setLoading(true);
     fetch(
@@ -126,7 +126,9 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   }, []);
 
   const getNhaCungCapName = (idNhaCungCap: number) => {
-    const nhaCungCap = isNhaCungCap.find((nhaCungCap) => nhaCungCap.idNhaCungCap === idNhaCungCap);
+    const nhaCungCap = isNhaCungCap.find(
+      (nhaCungCap) => nhaCungCap.idNhaCungCap === idNhaCungCap
+    );
     return nhaCungCap ? nhaCungCap.TenNhaCungCap : "N/A";
   };
 
@@ -171,7 +173,9 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   // Truncate long text for better table display
   const truncateText = (text: string, maxLength: number = 50) => {
     if (!text) return "";
-    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+    return text.length > maxLength
+      ? `${text.substring(0, maxLength)}...`
+      : text;
   };
 
   return (
@@ -204,53 +208,92 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
             onChange={(e) => setSearchText(e.target.value)}
             className="input border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <ImportExportXe />
+          <ImportExportCar />
         </div>
       </div>
-      
+
       {/* Table container with fixed layout and controlled width */}
       <div className="relative shadow-md rounded-lg border w-[1170px] border-gray-200">
         <div className="overflow-x-auto w-full">
           <table className="w-full table-fixed border-collapse">
             <thead className="bg-gray-50">
               <tr className="text-white text-center">
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+                >
                   IdXe
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32"
+                >
                   Tên Xe
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
+                >
                   Loại Xe
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
+                >
                   Giá Xe
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
+                >
                   Màu Sắc
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
+                >
                   Động Cơ
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
+                >
                   Trạng Thái
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32"
+                >
                   Nhà Cung Cấp
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36"
+                >
                   Thông Số KT
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36"
+                >
                   Mô Tả
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
+                >
                   Hình Ảnh
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20"
+                >
                   Năm SX
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
+                >
                   Action
                 </th>
               </tr>
@@ -276,9 +319,13 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
-                    <td className="p-3 text-sm font-medium truncate">{xetable.idXe}</td>
+                    <td className="p-3 text-sm font-medium truncate">
+                      {xetable.idXe}
+                    </td>
                     <td className="p-3 text-sm truncate">{xetable.TenXe}</td>
-                    <td className="p-3 text-sm truncate">{getLoaiXeName(xetable.idLoaiXe)}</td>
+                    <td className="p-3 text-sm truncate">
+                      {getLoaiXeName(xetable.idLoaiXe)}
+                    </td>
                     <td className="p-3 text-sm font-medium truncate">
                       {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
@@ -294,8 +341,13 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                         {xetable.TrangThai}
                       </span>
                     </td>
-                    <td className="p-3 text-sm truncate">{getNhaCungCapName(xetable.idNhaCungCap)}</td>
-                    <td className="p-3 text-sm truncate" title={xetable.ThongSoKyThuat}>
+                    <td className="p-3 text-sm truncate">
+                      {getNhaCungCapName(xetable.idNhaCungCap)}
+                    </td>
+                    <td
+                      className="p-3 text-sm truncate"
+                      title={xetable.ThongSoKyThuat}
+                    >
                       {truncateText(xetable.ThongSoKyThuat, 30)}
                     </td>
                     <td className="p-3 text-sm truncate" title={xetable.MoTa}>
@@ -315,23 +367,23 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                         />
                       )}
                     </td>
-                    <td className="p-3 text-sm truncate">{xetable.NamSanXuat}</td>
+                    <td className="p-3 text-sm truncate">
+                      {xetable.NamSanXuat}
+                    </td>
                     <td className="p-3 text-sm">
                       <div className="flex gap-2">
-                        <button
-                          type="button"
+                        <div
                           onClick={() => onEdit(xetable)}
-                          className="px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors shadow-sm font-medium text-xs"
+                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
-                          Sửa
-                        </button>
-                        <button
-                          type="button"
+                          🖊️
+                        </div>
+                        <div
                           onClick={() => onDelete(xetable.idXe)}
-                          className="px-3 py-1 bg-rose-500 text-white rounded hover:bg-rose-600 transition-colors shadow-sm font-medium text-xs"
+                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
-                          Xóa
-                        </button>
+                          ❌
+                        </div>
                       </div>
                     </td>
                   </tr>

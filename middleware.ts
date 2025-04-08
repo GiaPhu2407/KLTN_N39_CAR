@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protected routesm
+  // Protected routes
   if (
     !session &&
     !request.nextUrl.pathname.startsWith("/Login") &&
@@ -24,12 +24,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/Login", request.url));
   }
 
-  // Admin-only routesi
-  if (
-    request.nextUrl.pathname.startsWith("/Dashboard") &&
-    session?.role !== "Admin"
-  ) {
-    return NextResponse.redirect(new URL("/Login", request.url));
+  // Check for Dashboard access
+  if (request.nextUrl.pathname.startsWith("/Dashboard")) {
+    if (!session) {
+      return NextResponse.redirect(new URL("/Login", request.url));
+    }
+
+    // Check if user has Admin role
+    if (session.role !== "Admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
   return NextResponse.next();

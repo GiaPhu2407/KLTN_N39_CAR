@@ -6,13 +6,13 @@ const ImportExportComponent = () => {
   const [importing, setImporting] = useState(false);
   const [exportFormat, setExportFormat] = useState('excel');
 
-  const handleFileImport = async (event:any) => {
+  const handleFileImport = async (event: any) => {
     const file = event.target.files[0];
     if (!file) return;
 
     const allowedTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Please upload only Excel or CSV files');
+      toast.error('Vui lòng chỉ tải lên file Excel hoặc CSV');
       return;
     }
 
@@ -28,13 +28,37 @@ const ImportExportComponent = () => {
       });
 
       if (!response.ok) {
-        throw new Error(response.statusText);
+        const errorData = await response.json();
+        throw new Error(errorData.error || response.statusText);
       }
 
       const result = await response.json();
-      toast.success(`Successfully imported ${result.count} records`);
-    } catch (error:any) {
-      toast.error(`Import failed: ${error.message}`);
+      
+      // Xử lý định dạng phản hồi mới
+      if (result.success) {
+        const createdCount = result.created || 0;
+        const updatedCount = result.updated || 0;
+        const skippedCount = result.skipped || 0;
+        
+        // Hiển thị thông báo thành công chi tiết
+        toast.success(
+          `Nhập dữ liệu hoàn tất: ${createdCount} bản ghi đã tạo, ${updatedCount} bản ghi đã cập nhật${skippedCount > 0 ? `, ${skippedCount} bản ghi bị bỏ qua` : ''}`
+        );
+        
+        // Đưa ra cảnh báo nếu một số bản ghi bị bỏ qua
+        if (skippedCount > 0) {
+          toast.error('Một số bản ghi đã bị bỏ qua do lỗi. Kiểm tra console để biết chi tiết.');
+        }
+      } else {
+        throw new Error('Nhập dữ liệu thất bại không có lỗi cụ thể');
+      }
+      
+      // Đặt lại trường nhập file
+      event.target.value = '';
+      
+    } catch (error: any) {
+      console.error('Lỗi nhập dữ liệu:', error);
+      toast.error(`Nhập dữ liệu thất bại: ${error.message}`);
     } finally {
       setImporting(false);
     }
@@ -60,9 +84,9 @@ const ImportExportComponent = () => {
         window.URL.revokeObjectURL(url);
         a.remove();
         
-        toast.success('Export successful');
+        toast.success('Xuất dữ liệu thành công');
       } catch (error:any) {
-        toast.error(`Export failed: ${error.message}`);
+        toast.error(`Xuất dữ liệu thất bại: ${error.message}`);
       }
     };
 
@@ -78,24 +102,24 @@ const ImportExportComponent = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'car-report.pdf';
+      a.download = 'bao-cao-xe.pdf';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
       
-      toast.success('Report generated successfully');
+      toast.success('Báo cáo đã được tạo thành công');
     } catch (error:any) {
-      toast.error(`Report generation failed: ${error.message}`);
+      toast.error(`Tạo báo cáo thất bại: ${error.message}`);
     }
   };
 
   return (
     <div className="p-4">
       <div className="flex gap-6">
-        {/* Import Section */}
+        {/* Phần Nhập */}
         <div>
-          <label className="inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-accent  cursor-pointer transition-colors">
+          <label className="inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-accent cursor-pointer transition-colors">
             <input
               type="file"
               className="hidden"
@@ -104,11 +128,11 @@ const ImportExportComponent = () => {
               disabled={importing}
             />
             <Upload className="h-5 w-5 mr-2 ml-2" />
-            <span className='justify-center text-xs'>{importing ? 'Importing...' : 'Import File'}</span>
+            <span className='justify-center text-xs'>{importing ? 'Đang nhập...' : 'Nhập File'}</span>
           </label>
         </div>
 
-        {/* Export Section */}
+        {/* Phần Xuất */}
         <div>
           <div className="flex items-center gap-3">
             
@@ -117,7 +141,7 @@ const ImportExportComponent = () => {
               className="inline-flex items-center px-4 py-2 btn text-xs btn-primary transition-colors"
             >
               <FileType className="h-6 w-5 mr-2" />
-              <span className=''>Export</span>
+              <span className=''>Xuất</span>
             </button>
             <select
               value={exportFormat}
@@ -134,8 +158,8 @@ const ImportExportComponent = () => {
               className="inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-success transition-colors"
             >
               <FileText className="h-6 w-5 mr-2 ml-2" />
-              <span className='text-xs'>Generate</span>
-              <span className='text-xs'>Report</span>
+              <span className='text-xs'>Tạo</span>
+              <span className='text-xs'>Báo Cáo</span>
             </button>
           </div>
         </div>

@@ -29,36 +29,29 @@ export async function GET(req: NextRequest) {
     const format = searchParams.get('format') || 'excel';
     const search = searchParams.get('search') || '';
 
-    const cars = await prisma.xe.findMany({
+    const suppliers = await prisma.nhaCungCap.findMany({
       where: {
         OR: [
-          { TenXe: { contains: search } },
-          { MauSac: { contains: search } },
-          { DongCo: { contains: search } }
+          { TenNhaCungCap: { contains: search } },
+          { Email: { contains: search } },
+          { Sdt: { contains: search } }
         ]
       },
       include: {
-        loaiXe: true,
-        nhaCungCap:true
+        xe: {
+          select: {
+            idXe: true,
+            TenXe: true
+          }
+        }
       }  
     });
 
-    const exportData = cars.map(car => ({
-      'ID': car.idXe,
-      'Tên Xe': car.TenXe,
-      'Loại Xe': car.loaiXe?.TenLoai || 'N/A',
-      'Giá Xe': new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(Number(car.GiaXe)),
-      'Màu Sắc': car.MauSac,
-      'Động Cơ': car.DongCo,
-      'Trạng Thái': car.TrangThai,
-      'Nhà Cung Cấp': car.nhaCungCap?.TenNhaCungCap || 'N/A',
-      'Thông Số Kỹ Thuật': car.ThongSoKyThuat,
-      'Mô Tả': car.MoTa,
-      'Hình Ảnh': car.HinhAnh,
-      'Năm Sản Xuất': car.NamSanXuat
+    const exportData = suppliers.map(supplier => ({
+      'ID': supplier.idNhaCungCap,
+      'Tên Nhà Cung Cấp': supplier.TenNhaCungCap || 'N/A',
+      'Số Điện Thoại': supplier.Sdt || 'N/A',
+      'Email': supplier.Email || 'N/A',
     }));
 
     if (format === 'pdf') {
@@ -77,36 +70,25 @@ export async function GET(req: NextRequest) {
             </style>
           </head>
           <body>
-            <h1>Danh sách xe ô tô</h1>
+            <h1>Danh sách nhà cung cấp</h1>
             <table>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Tên Xe</th>
-                  <th>Loại Xe</th>
-                  <th>Giá Xe</th>
-                  <th>Màu Sắc</th>
-                  <th>Động Cơ</th>
-                  <th>Trạng Thái</th>
-                  <th>Năm SX</th>
+                  <th>Tên Nhà Cung Cấp</th>
+                  <th>Số Điện Thoại</th>
+                  <th>Email</th>
                 </tr>
               </thead>
               <tbody>
                 ${exportData
                   .map(
-                    (car, index) => `
+                    (supplier, index) => `
                     <tr>
                       <td>${index + 1}</td>
-                      <td>${car["Tên Xe"]}</td>
-                      <td>${car["Loại Xe"]}</td>
-                      <td>${car["Giá Xe"]}</td>
-                      <td>${car["Màu Sắc"]}</td>
-                      <td>${car["Động Cơ"]}</td>
-                      <td>${car["Trạng Thái"]}</td>
-                      <td>${car["Nhà Cung Cấp"]}</td>
-                      <td>${car["Thông Số Kỹ Thuật"]}</td>
-                      <td>${car["Mô Tả"]}</td>
-                      <td>${car["Năm Sản Xuất"]}</td>
+                      <td>${supplier["Tên Nhà Cung Cấp"]}</td>
+                      <td>${supplier["Số Điện Thoại"]}</td>
+                      <td>${supplier["Email"]}</td>
                     </tr>`
                   )
                   .join('')}
@@ -125,14 +107,14 @@ export async function GET(req: NextRequest) {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': 'attachment; filename="cars.pdf"'
+          'Content-Disposition': 'attachment; filename="nha-cung-cap.pdf"'
         }
       });
     }
 
     if (format === 'excel') {
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Cars');
+      const worksheet = workbook.addWorksheet('Suppliers');
 
       const headers = Object.keys(exportData[0]);
       worksheet.addRow(headers);
@@ -145,8 +127,8 @@ export async function GET(req: NextRequest) {
         fgColor: { argb: 'FFE0E0E0' }
       };
 
-      exportData.forEach(car => {
-        worksheet.addRow(Object.values(car));
+      exportData.forEach(supplier => {
+        worksheet.addRow(Object.values(supplier));
       });
 
       worksheet.columns.forEach(column => {
@@ -159,7 +141,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse(buffer, {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'Content-Disposition': 'attachment; filename="cars.xlsx"'
+          'Content-Disposition': 'attachment; filename="nha-cung-cap.xlsx"'
         }
       });
     }
@@ -175,7 +157,7 @@ export async function GET(req: NextRequest) {
         insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "000000" }
       };
 
-      // Tạo header row với style - đã sửa lỗi height property
+      // Tạo header row với style
       const headerRow = new TableRow({
         tableHeader: true,
         height: { value: 400, rule: HeightRule.EXACT },
@@ -200,13 +182,13 @@ export async function GET(req: NextRequest) {
         )
       });
 
-      // Tạo data rows - đã sửa lỗi height property và shading
-      const dataRows = exportData.map((car, index) => 
+      // Tạo data rows
+      const dataRows = exportData.map((supplier, index) => 
         new TableRow({
           height: { value: 300, rule: HeightRule.ATLEAST },
-          children: Object.entries(car).map(([key, value]) => {
+          children: Object.entries(supplier).map(([key, value]) => {
             // Căn phải cho các ô có giá trị số
-            const isNumeric = key === 'Giá Xe' || key === 'ID';
+            const isNumeric = key === 'ID' || key === 'Số Lượng Xe';
             
             return new TableCell({
               shading: index % 2 === 0 ? {
@@ -271,7 +253,7 @@ export async function GET(req: NextRequest) {
                   alignment: AlignmentType.RIGHT,
                   children: [
                     new TextRun({
-                      text: "Danh Sách Xe Ô Tô",
+                      text: "Danh Sách Nhà Cung Cấp",
                       bold: true,
                       size: 20
                     })
@@ -313,7 +295,7 @@ export async function GET(req: NextRequest) {
               style: "title",
               children: [
                 new TextRun({
-                  text: "DANH SÁCH XE Ô TÔ",
+                  text: "DANH SÁCH NHÀ CUNG CẤP",
                   bold: true,
                   size: 40
                 })
@@ -326,7 +308,7 @@ export async function GET(req: NextRequest) {
               },
               children: [
                 new TextRun({
-                  text: `Tổng số: ${exportData.length} xe`,
+                  text: `Tổng số: ${exportData.length} nhà cung cấp`,
                   italics: true,
                   size: 24
                 })
@@ -361,10 +343,11 @@ export async function GET(req: NextRequest) {
       return new NextResponse(buffer, {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'Content-Disposition': 'attachment; filename="danh-sach-xe.docx"'
+          'Content-Disposition': 'attachment; filename="danh-sach-nha-cung-cap.docx"'
         }
       });
     }
+
     return NextResponse.json(
       { error: 'Unsupported format' },
       { status: 400 }

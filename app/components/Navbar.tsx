@@ -3,52 +3,47 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { UserAuth } from "../types/auth";
-
-interface LoaiXe {
-  idLoaiXe: number;
-  TenLoai: string;
-  NhanHieu: string;
-  HinhAnh: string;
-}
-
-interface CartItem {
-  idGioHang: number;
-  idXe: number;
-  SoLuong: number;
-  xe: {
-    TenXe: string;
-    GiaXe: number;
-    MauSac: string;
-    HinhAnh: string;
-    TrangThai: string;
-  };
-}
-
-interface Car {
-  idXe: number;
-  TenXe: string;
-  GiaXe: number;
-  MauSac: string;
-  DongCo: string;
-  TrangThai: string;
-  HinhAnh: string;
-  NamSanXuat: string;
-  idLoaiXe: number;
-}
+import { useAuth } from "../components/AuthContext";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loaiXe, setLoaiXe] = useState<LoaiXe[]>([]);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<UserAuth | null>(null);
+  const [loaiXe, setLoaiXe] = useState([
+    {
+      idLoaiXe: 1,
+      TenLoai: "VF 5",
+      NhanHieu: "VinFast",
+      HinhAnh:
+        "https://vinfastauto.com/sites/default/files/styles/our_journey_car_image/public/2023-07/VF%205%20PLUS.png",
+    },
+    {
+      idLoaiXe: 2,
+      TenLoai: "VF 6",
+      NhanHieu: "VinFast",
+      HinhAnh:
+        "https://vinfastauto.com/sites/default/files/styles/our_journey_car_image/public/2023-07/VF%206.png",
+    },
+    {
+      idLoaiXe: 3,
+      TenLoai: "VF 8",
+      NhanHieu: "VinFast",
+      HinhAnh:
+        "https://vinfastauto.com/sites/default/files/styles/our_journey_car_image/public/2023-07/VF%208.png",
+    },
+    {
+      idLoaiXe: 4,
+      TenLoai: "VF 9",
+      NhanHieu: "VinFast",
+      HinhAnh:
+        "https://vinfastauto.com/sites/default/files/styles/our_journey_car_image/public/2023-07/VF%209.png",
+    },
+  ]);
+
+  const { user, setUser } = useAuth();
   const router = useRouter();
 
-  
-
   useEffect(() => {
-    const fetchSession = async () => {
+    // Create an interval to check session status
+    const checkSession = async () => {
       try {
         const response = await fetch("/api/auth/session");
         if (!response.ok) throw new Error("Failed to fetch session");
@@ -59,23 +54,27 @@ export default function Navbar() {
         setUser(null);
       }
     };
-    fetchSession();
-  }, []);
 
- 
+    // Check immediately on mount
+    checkSession();
 
+    // Set up an interval to check periodically
+    const interval = setInterval(checkSession, 5000); // Check every 5 seconds
+
+    // Clean up interval on unmount
+    return () => clearInterval(interval);
+  }, [setUser]);
+
+  // Handle logout
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      setUser(null);
-      setCartItems([]);
+      setUser(null); // Clear user from context
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
-
-
 
   return (
     <div data-theme="light">
@@ -83,7 +82,7 @@ export default function Navbar() {
         <div className="flex px-4 w-full py-2">
           <Link href="/">
             <Image
-              className="ml-2 h-8  hover:scale-105 md:ml-6 md:text-2xl sm:text-2xl"
+              className="ml-2 h-8 hover:scale-105 md:ml-6 md:text-2xl sm:text-2xl"
               alt="VinFast - Thương hiệu xe điện đầu tiên Việt Nam"
               width={100}
               height={100}
@@ -148,10 +147,8 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="justify-center  w-10 md:w-60 items-center mr-4 relative">
-          <div className="mb-2">
-            {/* <SearchModal /> */}
-          </div>
+        <div className="justify-center w-10 md:w-60 items-center mr-4 relative">
+          <div className="mb-2">{/* <SearchModal /> */}</div>
         </div>
 
         <div className="flex w-full justify-end">
@@ -159,13 +156,13 @@ export default function Navbar() {
             <div className="flex gap-2 pt-2 h-14">
               <Link
                 href="/Login"
-                className="btn transition-all border-2  border-b-blue-950 duration-500 bg-white hover:text-red-500 px-1 w-14 h-6 sm:w-20 sm:h-10"
+                className="btn transition-all border-2 border-b-blue-950 duration-500 bg-white hover:text-red-500 px-1 w-14 h-6 sm:w-20 sm:h-10"
               >
                 Login
               </Link>
               <Link
                 href="/Register"
-                className="btn transition-all border-2  border-b-blue-950 text-white duration-500 hover:text-red-500 bg-blue-600 px-2 w-15 h-6 sm:w-20 sm:h-10"
+                className="btn transition-all border-2 border-b-blue-950 text-white duration-500 hover:text-red-500 bg-blue-600 px-2 w-15 h-6 sm:w-20 sm:h-10"
               >
                 Register
               </Link>
@@ -173,7 +170,6 @@ export default function Navbar() {
           ) : (
             <div className="flex relative">
               {/* <NotificationComponent /> */}
-              
 
               <div className="dropdown dropdown-end hidden xl:block">
                 <div
@@ -185,21 +181,23 @@ export default function Navbar() {
                     className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold leading-none"
                     style={{ lineHeight: "2.5rem" }}
                   >
-                   {user.Avatar && user.Avatar.length > 0 ? (
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                    <img 
-                      src={user.Avatar} 
-                      alt="Profile Avatar" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-white text-sm">
-                      {user.Hoten ? user.Hoten.charAt(0).toUpperCase() : '?'}
-                    </span>
-                  </div>
-                )}
+                    {user.Avatar && user.Avatar.length > 0 ? (
+                      <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                        <img
+                          src={user.Avatar}
+                          alt="Profile Avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span className="text-white text-sm">
+                          {user.Hoten
+                            ? user.Hoten.charAt(0).toUpperCase()
+                            : "?"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <ul
@@ -427,33 +425,52 @@ export default function Navbar() {
               <div className="">
                 <ul className="menu menu-lg gap-2 mt-4 h-96 pt-4 font-semibold text-gray-700 text-base border-t">
                   <li>
-                    <Link href="/Profiles" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                    <Link
+                      href="/Profiles"
+                      className="text-base"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
                       Profile
                       <span className="badge badge-primary badge-sm">New</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href="/Depositform" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                    <Link
+                      href="/Depositform"
+                      className="text-base"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
                       Depositform
                     </Link>
                   </li>
                   <li>
-                    <Link href="/Orders" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                    <Link
+                      href="/Orders"
+                      className="text-base"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
                       Orders
                     </Link>
                   </li>
                   {user.role?.TenNguoiDung === "Admin" && (
                     <li>
-                      <Link href="/Dashboard" className="text-base" onClick={() => setIsMenuOpen(false)}>
+                      <Link
+                        href="/Dashboard"
+                        className="text-base"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
                         Dashboard
                       </Link>
                     </li>
                   )}
                   <li>
-                    <a className="text-base" onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}>
+                    <a
+                      className="text-base"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                    >
                       Logout
                     </a>
                   </li>
