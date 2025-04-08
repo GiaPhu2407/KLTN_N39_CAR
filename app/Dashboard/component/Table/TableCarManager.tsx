@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import toast from "react-hot-toast";
-import ImportExportCar from "../ImportExportCar";
+
+import { CarDataContext } from "../CarDataContext";
+import ImportExportComponent from "../ImportExportCar";
 
 interface Xe {
   idXe: number;
@@ -38,7 +40,6 @@ interface NhaCungCap {
 interface TableCarDashboardProps {
   onEdit: (product: Xe) => void;
   onDelete: (id: number) => void;
-  reloadKey: number;
 }
 
 interface PaginationMeta {
@@ -52,8 +53,8 @@ interface PaginationMeta {
 const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   onEdit,
   onDelete,
-  reloadKey,
 }) => {
+  const { refreshKey, sortOrder } = useContext(CarDataContext);
   const [isXeTable, setXeTable] = useState<Xe[]>([]);
   const [isLoaiXeTable, setLoaiXeTable] = useState<LoaiXe[]>([]);
   const [isNhaCungCap, setNhaCungCap] = useState<NhaCungCap[]>([]);
@@ -65,69 +66,73 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    fetch(
-      `api/pagination/vehiclemanagementpagination?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
-    )
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to fetch data");
-        return response.json();
-      })
-      .then((data) => {
-        setXeTable(data.data || []);
-        setPaginationMeta(data.meta);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setXeTable([]);
-        setLoading(false);
+    try {
+      const response = await fetch(
+        `api/pagination/vehiclemanagementpagination?page=${currentPage}&limit_size=${pageSize}&search=${searchText}&sortOrder=${sortOrder}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch data");
+      const data = await response.json();
+
+      const sortedData = [...(data.data || [])].sort((a, b) => {
+        if (sortOrder === "asc") {
+          return a.idXe - b.idXe;
+        } else {
+          return b.idXe - a.idXe;
+        }
       });
-  }, [currentPage, pageSize, reloadKey, searchText]);
+
+      setXeTable(sortedData);
+      setPaginationMeta(data.meta);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Lỗi khi tải dữ liệu");
+      setXeTable([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, pageSize, searchText, sortOrder]);
+
+  const fetchTypes = useCallback(async () => {
+    try {
+      const response = await fetch("api/typecar");
+      if (!response.ok) throw new Error("Failed to fetch types");
+      const data = await response.json();
+      setLoaiXeTable(data || []);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Lỗi khi tải loại xe");
+    }
+  }, []);
+
+  const fetchSuppliers = useCallback(async () => {
+    try {
+      const response = await fetch("api/suppliers");
+      if (!response.ok) throw new Error("Failed to fetch suppliers");
+      const data = await response.json();
+      setNhaCungCap(data || []);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Lỗi khi tải nhà cung cấp");
+    }
+  }, []);
 
   useEffect(() => {
-    fetch("api/typecar")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setLoaiXeTable(data || []);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setLoaiXeTable([]);
-      });
-  }, []);
+    const loadAllData = async () => {
+      await Promise.all([fetchData(), fetchTypes(), fetchSuppliers()]);
+    };
+    loadAllData();
+  }, [fetchData, fetchTypes, fetchSuppliers, refreshKey]);
 
   const getLoaiXeName = (idLoaiXe: number) => {
     const loaiXe = isLoaiXeTable.find((loai) => loai.idLoaiXe === idLoaiXe);
     return loaiXe ? loaiXe.TenLoai : "N/A";
   };
 
-  useEffect(() => {
-    fetch("api/suppliers")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setNhaCungCap(data || []);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setNhaCungCap([]);
-      });
-  }, []);
-
   const getNhaCungCapName = (idNhaCungCap: number) => {
     const nhaCungCap = isNhaCungCap.find(
-      (nhaCungCap) => nhaCungCap.idNhaCungCap === idNhaCungCap
+      (ncc) => ncc.idNhaCungCap === idNhaCungCap
     );
     return nhaCungCap ? nhaCungCap.TenNhaCungCap : "N/A";
   };
@@ -141,10 +146,9 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   ) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
-    setCurrentPage(1); // Reset to first page when changing page size
+    setCurrentPage(1);
   };
 
-  // Màu sắc cho trạng thái
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Chờ xác nhận":
@@ -170,7 +174,6 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
     }
   };
 
-  // Truncate long text for better table display
   const truncateText = (text: string, maxLength: number = 50) => {
     if (!text) return "";
     return text.length > maxLength
@@ -179,7 +182,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   };
 
   return (
-    <div className="space-y-1 pl-14">
+    <div className="w-full overflow-x-auto pt-2 p-10">
       <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
         <div className="flex items-center">
           <label
@@ -208,92 +211,52 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
             onChange={(e) => setSearchText(e.target.value)}
             className="input border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <ImportExportCar />
+          <ImportExportComponent />
         </div>
       </div>
 
-      {/* Table container with fixed layout and controlled width */}
-      <div className="relative shadow-md rounded-lg border w-[1170px] border-gray-200">
+      <div className="relative shadow-md rounded-lg border w-full border-gray-200">
         <div className="overflow-x-auto w-full">
-          <table className="w-full table-fixed border-collapse">
+          <table className="table text-center table-auto w-full min-w-[400px]">
             <thead className="bg-gray-50">
               <tr className="text-white text-center">
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                   IdXe
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Tên Xe
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Loại Xe
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Giá Xe
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
-                >
+                <th className="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Màu Sắc
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Động Cơ
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Trạng Thái
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Nhà Cung Cấp
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36"
-                >
+                <th className="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                   Thông Số KT
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                   Mô Tả
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
-                >
+                <th className="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Hình Ảnh
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20"
-                >
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Năm SX
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
-                >
+                <th className="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Action
                 </th>
               </tr>
@@ -322,69 +285,105 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                     <td className="p-3 text-sm font-medium truncate">
                       {xetable.idXe}
                     </td>
-                    <td className="p-3 text-sm truncate">{xetable.TenXe}</td>
-                    <td className="p-3 text-sm truncate">
-                      {getLoaiXeName(xetable.idLoaiXe)}
+                    <td className="p-3 text-sm font-medium">
+                      {truncateText(xetable.TenXe, 30)}
                     </td>
-                    <td className="p-3 text-sm font-medium truncate">
+                    <td className="p-3 text-sm">
+                      {xetable.loaiXe
+                        ? xetable.loaiXe.TenLoai
+                        : getLoaiXeName(xetable.idLoaiXe)}
+                    </td>
+                    <td className="p-3 text-sm">
                       {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
                         currency: "VND",
                       }).format(xetable.GiaXe)}
                     </td>
-                    <td className="p-3 text-sm truncate">{xetable.MauSac}</td>
-                    <td className="p-3 text-sm truncate">{xetable.DongCo}</td>
+                    <td className="p-3 text-sm">{xetable.MauSac}</td>
+                    <td className="p-3 text-sm">{xetable.DongCo}</td>
                     <td className="p-3 text-sm">
                       <span
-                        className={`py-1 px-3 rounded-full text-xs inline-block ${getStatusColor(xetable.TrangThai)}`}
+                        className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                          xetable.TrangThai
+                        )}`}
                       >
                         {xetable.TrangThai}
                       </span>
                     </td>
-                    <td className="p-3 text-sm truncate">
-                      {getNhaCungCapName(xetable.idNhaCungCap)}
-                    </td>
-                    <td
-                      className="p-3 text-sm truncate"
-                      title={xetable.ThongSoKyThuat}
-                    >
-                      {truncateText(xetable.ThongSoKyThuat, 30)}
-                    </td>
-                    <td className="p-3 text-sm truncate" title={xetable.MoTa}>
-                      {truncateText(xetable.MoTa, 30)}
+                    <td className="p-3 text-sm">
+                      {xetable.nhaCungCap
+                        ? xetable.nhaCungCap.TenNhaCungCap
+                        : getNhaCungCapName(xetable.idNhaCungCap)}
                     </td>
                     <td className="p-3 text-sm">
-                      {xetable.HinhAnh && (
-                        <img
-                          src={
-                            Array.isArray(xetable.HinhAnh)
-                              ? xetable.HinhAnh[0]
-                              : xetable.HinhAnh.split("|")[0]
-                          }
-                          alt={xetable.TenXe}
-                          width="50"
-                          className="rounded-md object-cover border border-gray-200"
-                        />
+                      {truncateText(xetable.ThongSoKyThuat, 40)}
+                    </td>
+                    <td className="p-3 text-sm">
+                      {truncateText(xetable.MoTa, 40)}
+                    </td>
+                    <td className="p-3 text-sm">
+                      {xetable.HinhAnh ? (
+                        <div className="w-12 h-12 relative">
+                          <img
+                            src={xetable.HinhAnh}
+                            alt={xetable.TenXe}
+                            className="w-full h-full object-cover rounded"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = "/placeholder-car.png";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">No image</span>
                       )}
                     </td>
-                    <td className="p-3 text-sm truncate">
-                      {xetable.NamSanXuat}
-                    </td>
-                    <td className="p-3 text-sm">
-                      <div className="flex gap-2">
-                        <div
-                          onClick={() => onEdit(xetable)}
-                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                    <td className="p-3 text-sm">{xetable.NamSanXuat}</td>
+                    <td className="p-3 text-right flex gap-2">
+                      <button
+                        onClick={() => onEdit(xetable)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
-                          🖊️
-                        </div>
-                        <div
-                          onClick={() => onDelete(xetable.idXe)}
-                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (
+                            window.confirm("Bạn có chắc muốn xóa xe này không?")
+                          ) {
+                            onDelete(xetable.idXe);
+                          }
+                        }}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
-                          ❌
-                        </div>
-                      </div>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -394,40 +393,162 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
         </div>
       </div>
 
-      {/* Fixed width pagination with better overflow handling */}
-      {paginationMeta && (
-        <div className="mt-4 overflow-x-auto">
-          <div className="flex items-center justify-end min-w-max">
+      {paginationMeta && paginationMeta.totalPage > 0 && (
+        <div className="flex justify-between items-center mt-4 flex-wrap gap-4">
+          <div className="text-sm text-gray-700">
+            Hiển thị {(paginationMeta.page - 1) * paginationMeta.limit_size + 1}{" "}
+            đến{" "}
+            {Math.min(
+              paginationMeta.page * paginationMeta.limit_size,
+              paginationMeta.totalRecords
+            )}{" "}
+            trong tổng số {paginationMeta.totalRecords} mục
+          </div>
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 rounded ${
+                currentPage === 1
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <span className="sr-only">First</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+                <path
+                  fillRule="evenodd"
+                  d="M10.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L6.414 10l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
+              className={`px-3 py-1 rounded ${
+                currentPage === 1
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
             >
-              Trước
+              <span className="sr-only">Previous</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </button>
 
-            <div className="flex overflow-x-auto px-1 mx-1 gap-1">
-              {[...Array(paginationMeta.totalPage)].map((_, index) => (
-                <button
-                  key={index + 1}
-                  onClick={() => handlePageChange(index + 1)}
-                  className={`px-4 py-2 rounded shadow-sm text-sm font-medium min-w-8 ${
-                    currentPage === index + 1
-                      ? "bg-indigo-600 text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            </div>
+            {paginationMeta &&
+              Array.from({ length: paginationMeta.totalPage }, (_, i) => i + 1)
+                .filter(
+                  (page) =>
+                    page === 1 ||
+                    page === paginationMeta.totalPage ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                )
+                .map((page, index, array) => {
+                  if (index > 0 && page - array[index - 1] > 1) {
+                    return (
+                      <React.Fragment key={`ellipsis-${page}`}>
+                        <span className="px-3 py-1">...</span>
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-3 py-1 rounded ${
+                            currentPage === page
+                              ? "bg-blue-600 text-white"
+                              : "text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    );
+                  }
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-1 rounded ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white"
+                          : "text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
 
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === paginationMeta.totalPage}
-              className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
+              className={`px-3 py-1 rounded ${
+                currentPage === paginationMeta.totalPage
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
             >
-              Sau
+              <span className="sr-only">Next</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => handlePageChange(paginationMeta.totalPage)}
+              disabled={currentPage === paginationMeta.totalPage}
+              className={`px-3 py-1 rounded ${
+                currentPage === paginationMeta.totalPage
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <span className="sr-only">Last</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 6.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
+                />
+                <path
+                  fillRule="evenodd"
+                  d="M9.293 15.707a1 1 0 010-1.414L13.586 10 9.293 6.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </button>
           </div>
         </div>
