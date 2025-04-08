@@ -1,4 +1,3 @@
-import CarViewerPage from "./components/Car360";
 import BackgroundSlider from "./components/Carousel";
 import Footer from "./components/Footer";
 import Information from "./components/Information";
@@ -12,7 +11,6 @@ export default function Home() {
     <div data-theme="light">
       <BackgroundSlider></BackgroundSlider>
       <Product></Product>
-      <CarViewerPage/>
       <TechnicalSpecs/>
       <Videobg></Videobg>
       <Information></Information>
