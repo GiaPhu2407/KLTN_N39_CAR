@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+// 1. Thêm useCallback và state mới cho việc reload dữ liệu
+import React, { useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import ImportExportSuppliers from "../ImportExportSuppliers";
 
@@ -12,7 +13,7 @@ interface Nhacungcap {
 interface TableSuppliesManagerProps {
   onEdit: (supplier: Nhacungcap) => void;
   onDelete: (id: number) => void;
-  reloadKey: (id: number) => void;
+  reloadKey: number;
 }
 
 interface PaginationMeta {
@@ -36,27 +37,34 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [localReloadKey, setLocalReloadKey] = useState(0); // Thêm state này để reload theo yêu cầu
 
-  useEffect(() => {
-      setLoading(true);
-      fetch(
+  // 2. Chuyển hàm fetchData sang dùng useCallback để tối ưu
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
         `api/pagination/suppliesmanagement?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
-      )
-        .then((response) => {
-          if (!response.ok) throw new Error("Failed to fetch data");
-          return response.json();
-        })
-        .then((data) => {
-          setNhaCungCapTable(data.data || []);
-          setPaginationMeta(data.meta);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          setNhaCungCapTable([]);
-          setLoading(false);
-        });
-    }, [currentPage, pageSize, reloadKey, searchText]);
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch data");
+
+      const data = await response.json();
+      setNhaCungCapTable(data.data || []);
+      setPaginationMeta(data.meta);
+    } catch (error) {
+      console.error("Error:", error);
+      setNhaCungCapTable([]);
+      toast.error("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, pageSize, searchText]);
+
+  // 3. Cập nhật useEffect để thêm localReloadKey vào dependencies
+  useEffect(() => {
+    fetchData();
+  }, [fetchData, reloadKey, localReloadKey]); // Thêm localReloadKey vào đây
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -68,6 +76,11 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
     setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  // 4. Thêm hàm xử lý khi import thành công
+  const handleImportSuccess = () => {
+    setLocalReloadKey((prev) => prev + 1); // Tăng giá trị để kích hoạt useEffect
   };
 
   return (
@@ -97,33 +110,48 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
             type="text"
             placeholder="Tìm kiếm..."
             value={searchText}
-            onChange={(e:any) => setSearchText(e.target.value)}
+            onChange={(e) => setSearchText(e.target.value)}
             className="input border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          {/* You can add an ImportExport component here similar to ImportExportXe */}
-          <ImportExportSuppliers/>
+          {/* 5. Truyền callback vào component ImportExportSuppliers */}
+          <ImportExportSuppliers onImportSuccess={handleImportSuccess} />
         </div>
       </div>
-      
+
       {/* Table container with fixed layout and controlled width */}
       <div className="relative shadow-md rounded-lg border w-[1000px] border-gray-200">
         <div className="overflow-x-auto w-full">
           <table className="w-full table-fixed border-collapse">
             <thead className="bg-gray-50">
               <tr className="text-white text-center">
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
+                >
                   Id Nhà Cung Cấp
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-52">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-52"
+                >
                   Tên Nhà Cung Cấp
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40"
+                >
                   Số Điện Thoại
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48"
+                >
                   Email
                 </th>
-                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
+                >
                   Action
                 </th>
               </tr>
@@ -138,7 +166,9 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
               ) : !isNhaCungCapTable || isNhaCungCapTable.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-4 text-sm text-center">
-                    <span className="text-gray-500">Không có dữ liệu nhà cung cấp</span>
+                    <span className="text-gray-500">
+                      Không có dữ liệu nhà cung cấp
+                    </span>
                   </td>
                 </tr>
               ) : (
@@ -149,13 +179,17 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
-                    <td className="p-3 text-sm font-medium truncate">{nhacungcap.idNhaCungCap}</td>
-                    <td className="p-3 text-sm truncate">{nhacungcap.TenNhaCungCap}</td>
+                    <td className="p-3 text-sm font-medium truncate">
+                      {nhacungcap.idNhaCungCap}
+                    </td>
+                    <td className="p-3 text-sm truncate">
+                      {nhacungcap.TenNhaCungCap}
+                    </td>
                     <td className="p-3 text-sm truncate">{nhacungcap.Sdt}</td>
                     <td className="p-3 text-sm truncate">{nhacungcap.Email}</td>
                     <td className="p-3 text-sm">
                       <div className="flex gap-2">
-                      <div
+                        <div
                           onClick={() => onEdit(nhacungcap)}
                           className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
