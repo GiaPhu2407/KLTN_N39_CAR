@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-// import ImportExportComponent from "./ImportExportLoaiXe";
+import ImportExportSuppliers from "../ImportExportSuppliers";
 
 interface Nhacungcap {
   idNhaCungCap: number;
   TenNhaCungCap: string;
   Sdt: number;
   Email: string;
+}
+
+interface TableSuppliesManagerProps {
+  onEdit: (supplier: Nhacungcap) => void;
+  onDelete: (id: number) => void;
+  reloadKey: (id: number) => void;
 }
 
 interface PaginationMeta {
@@ -17,7 +23,11 @@ interface PaginationMeta {
   skip: number;
 }
 
-const TableNhaCungCap: React.FC = ({}) => {
+const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
+  onEdit,
+  onDelete,
+  reloadKey,
+}) => {
   const [isNhaCungCapTable, setNhaCungCapTable] = useState<Nhacungcap[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -28,24 +38,25 @@ const TableNhaCungCap: React.FC = ({}) => {
   const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
-    fetchData();
-  }, [currentPage, pageSize, searchText]);
-
-  const fetchData = () => {
-    setLoading(true);
-    fetch(
-      `api/phantrang/phantrangloaixe?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
-    )
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to fetch data");
-        return response.json();
-      })
-      .then((data) => {
-        setNhaCungCapTable(data.data);
-        setPaginationMeta(data.meta);
-        setLoading(false);
-      });
-  };
+      setLoading(true);
+      fetch(
+        `api/pagination/suppliesmanagement?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
+      )
+        .then((response) => {
+          if (!response.ok) throw new Error("Failed to fetch data");
+          return response.json();
+        })
+        .then((data) => {
+          setNhaCungCapTable(data.data || []);
+          setPaginationMeta(data.meta);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setNhaCungCapTable([]);
+          setLoading(false);
+        });
+    }, [currentPage, pageSize, reloadKey, searchText]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -60,95 +71,103 @@ const TableNhaCungCap: React.FC = ({}) => {
   };
 
   return (
-    <div className="space-y-4 w-full">
-      <div className="w-full">
-        <div className="flex flex-col md:flex-row justify-between pb-5 gap-4">
-          <div className="mt-6 ml-20">
-            <label htmlFor="pageSize" className="text-sm">
-              Số mục mỗi trang:
-            </label>
-            <select
-              id="pageSize"
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              className="border rounded px-2 py-1"
-            >
-              <option value="5">5 </option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </select>
-          </div>
-
-          <div className=" flex flex-col md:flex-row items-center gap-4">
-            <input
-              type="text"
-              placeholder="Tìm kiếm..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="mr-48 input input-bordered h-10 text-sm w-72 max-w-xs"
-            />
-
-            <div className="flex flex-wrap gap-2 w-full md:w-auto">
-              <button className="btn text-xs btn-success">Excel</button>
-            </div>
-          </div>
+    <div className="space-y-1 pl-14">
+      <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
+        <div className="flex items-center">
+          <label
+            htmlFor="pageSize"
+            className="text-sm font-medium text-gray-700"
+          >
+            Số mục mỗi trang:
+          </label>
+          <select
+            id="pageSize"
+            value={pageSize}
+            onChange={handlePageSizeChange}
+            className="ml-2 border border-gray-300 rounded px-3 py-1 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
         </div>
-
-        <div className="overflow-x-auto ml-20">
-          <table className="table w-[1000px]">
-            <thead>
-              <tr className="bg-gray-50 text-white text-center">
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Id Nhà Cung Cấp{" "}
+        <div className="flex items-center gap-4">
+          <input
+            type="text"
+            placeholder="Tìm kiếm..."
+            value={searchText}
+            onChange={(e:any) => setSearchText(e.target.value)}
+            className="input border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          {/* You can add an ImportExport component here similar to ImportExportXe */}
+          <ImportExportSuppliers/>
+        </div>
+      </div>
+      
+      {/* Table container with fixed layout and controlled width */}
+      <div className="relative shadow-md rounded-lg border w-[1000px] border-gray-200">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full table-fixed border-collapse">
+            <thead className="bg-gray-50">
+              <tr className="text-white text-center">
+                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                  Id Nhà Cung Cấp
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-52">
                   Tên Nhà Cung Cấp
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                   Số Điện Thoại
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                   Email
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th scope="col" className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Action
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-4 text-sm text-center">
-                    <span>Đang tải...</span>
+                  <td colSpan={5} className="p-4 text-sm text-center">
+                    <span className="text-gray-500">Đang tải...</span>
                   </td>
                 </tr>
-              ) : isNhaCungCapTable.length === 0 ? (
+              ) : !isNhaCungCapTable || isNhaCungCapTable.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-4 text-sm text-center">
-                    Không có dữ liệu loại xe
+                  <td colSpan={5} className="p-4 text-sm text-center">
+                    <span className="text-gray-500">Không có dữ liệu nhà cung cấp</span>
                   </td>
                 </tr>
               ) : (
-                isNhaCungCapTable.map((nhacungcap) => (
+                isNhaCungCapTable.map((nhacungcap, index) => (
                   <tr
                     key={nhacungcap.idNhaCungCap}
-                    className="text-black text-center"
+                    className={`text-gray-800 hover:bg-gray-50 ${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    }`}
                   >
-                    <th>{nhacungcap.idNhaCungCap}</th>
-                    <td>{nhacungcap.TenNhaCungCap}</td>
-                    <td>{nhacungcap.Sdt}</td>
-                    <td>{nhacungcap.Email}</td>
-                    <td className="space-x-2">
-                      <button
-                        type="submit"
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                      >
-                        Sửa
-                      </button>
-                      <button className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
-                        Xóa
-                      </button>
+                    <td className="p-3 text-sm font-medium truncate">{nhacungcap.idNhaCungCap}</td>
+                    <td className="p-3 text-sm truncate">{nhacungcap.TenNhaCungCap}</td>
+                    <td className="p-3 text-sm truncate">{nhacungcap.Sdt}</td>
+                    <td className="p-3 text-sm truncate">{nhacungcap.Email}</td>
+                    <td className="p-3 text-sm">
+                      <div className="flex gap-2">
+                      <div
+                          onClick={() => onEdit(nhacungcap)}
+                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                        >
+                          🖊️
+                        </div>
+                        <div
+                          onClick={() => onDelete(nhacungcap.idNhaCungCap)}
+                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                        >
+                          ❌
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -158,35 +177,38 @@ const TableNhaCungCap: React.FC = ({}) => {
         </div>
       </div>
 
+      {/* Fixed width pagination with better overflow handling */}
       {paginationMeta && (
-        <div className="flex justify-end space-x-2 mt-4">
-          <div className="flex flex-wrap gap-2">
+        <div className="mt-4 overflow-x-auto">
+          <div className="flex items-center justify-end min-w-max">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-gray-300"
+              className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
             >
               Trước
             </button>
 
-            {[...Array(paginationMeta.totalPage)].map((_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => handlePageChange(index + 1)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === index + 1
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
+            <div className="flex overflow-x-auto px-1 mx-1 gap-1">
+              {[...Array(paginationMeta.totalPage)].map((_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => handlePageChange(index + 1)}
+                  className={`px-4 py-2 rounded shadow-sm text-sm font-medium min-w-8 ${
+                    currentPage === index + 1
+                      ? "bg-indigo-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
 
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === paginationMeta.totalPage}
-              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-gray-300"
+              className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
             >
               Sau
             </button>
@@ -197,4 +219,4 @@ const TableNhaCungCap: React.FC = ({}) => {
   );
 };
 
-export default TableNhaCungCap;
+export default TableSuppliesManager;
