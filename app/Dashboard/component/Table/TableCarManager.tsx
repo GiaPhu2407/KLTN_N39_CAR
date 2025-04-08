@@ -38,7 +38,7 @@ interface NhaCungCap {
 interface TableCarDashboardProps {
   onEdit: (product: Xe) => void;
   onDelete: (id: number) => void;
-  reloadKey: (id: number) => void;
+  reloadKey: number;
 }
 
 interface PaginationMeta {
