@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import toast from "react-hot-toast";
- 
+
 import { CarDataContext } from "../CarDataContext";
 import ImportExportComponent from "../ImportExportCar";
- 
 
 interface Xe {
   idXe: number;
@@ -183,7 +182,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   };
 
   return (
-    <div className="space-y-1 pl-14">
+    <div className="w-full overflow-x-auto pt-2 px-10">
       <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
         <div className="flex items-center">
           <label
@@ -216,48 +215,48 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
         </div>
       </div>
 
-      <div className="relative shadow-md rounded-lg border w-[1170px] border-gray-200">
+      <div className="relative shadow-md rounded-lg border w-full border-gray-200">
         <div className="overflow-x-auto w-full">
-          <table className="w-full table-fixed border-collapse">
+          <table className="table text-center table-auto w-full min-w-[400px]">
             <thead className="bg-gray-50">
               <tr className="text-white text-center">
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                   IdXe
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Tên Xe
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Loại Xe
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Giá Xe
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th className="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Màu Sắc
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Động Cơ
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   Trạng Thái
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Nhà Cung Cấp
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
+                <th className="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                   Thông Số KT
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                   Mô Tả
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th className="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Hình Ảnh
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                <th className="p-3  text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Năm SX
                 </th>
-                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th className="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Action
                 </th>
               </tr>
