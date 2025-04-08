@@ -182,7 +182,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   };
 
   return (
-    <div className="w-full overflow-x-auto pt-2 px-10">
+    <div className="w-full overflow-x-auto pt-2 p-10">
       <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
         <div className="flex items-center">
           <label
