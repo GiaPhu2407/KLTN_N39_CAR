@@ -183,7 +183,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   };
 
   return (
-    <div className="space-y-1 pl-14">
+    <div className="w-full overflow-x-auto pt-2 p-10">
       <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
         <div className="flex items-center">
           <label
@@ -217,9 +217,9 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
       </div>
 
       {/* Table container with fixed layout and controlled width */}
-      <div className="relative shadow-md rounded-lg border w-[1170px] border-gray-200">
+      <div className="relative shadow-md rounded-lg border w-full border-gray-200">
         <div className="overflow-x-auto w-full">
-          <table className="w-full table-fixed border-collapse">
+          <table className="table text-center table-auto w-full min-w-[400px]">
             <thead className="bg-gray-50">
               <tr className="text-white text-center">
                 <th
