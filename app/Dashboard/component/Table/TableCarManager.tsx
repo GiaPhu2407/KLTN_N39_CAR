@@ -75,7 +75,11 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
         return response.json();
       })
       .then((data) => {
-        setXeTable(data.data || []);
+        // Sort the data by idXe in ascending order
+        const sortedData = [...(data.data || [])].sort(
+          (a, b) => a.idXe - b.idXe
+        );
+        setXeTable(sortedData);
         setPaginationMeta(data.meta);
         setLoading(false);
       })
@@ -336,7 +340,9 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                     <td className="p-3 text-sm truncate">{xetable.DongCo}</td>
                     <td className="p-3 text-sm">
                       <span
-                        className={`py-1 px-3 rounded-full text-xs inline-block ${getStatusColor(xetable.TrangThai)}`}
+                        className={`py-1 px-3 rounded-full text-xs inline-block ${getStatusColor(
+                          xetable.TrangThai
+                        )}`}
                       >
                         {xetable.TrangThai}
                       </span>
@@ -394,7 +400,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
         </div>
       </div>
 
-      {/* Fixed width pagination with better overflow handling */}
+      {/* Pagination */}
       {paginationMeta && (
         <div className="mt-4 overflow-x-auto">
           <div className="flex items-center justify-end min-w-max">
