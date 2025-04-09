@@ -119,7 +119,7 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
       </div>
 
       {/* Table container with fixed layout and controlled width */}
-      <div className="relative shadow-md rounded-lg border w-[1000px] border-gray-200">
+      <div className="relative shadow-md rounded-lg border border-gray-200 w-full overflow-x-auto">
         <div className="overflow-x-auto w-full">
           <table className="w-full table-fixed border-collapse">
             <thead className="bg-gray-50">
