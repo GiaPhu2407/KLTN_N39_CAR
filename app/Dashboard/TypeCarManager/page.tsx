@@ -143,7 +143,6 @@ export default function Page() {
         );
       }
 
-      toast.success(data.message);
       setFormData(initialFormData);
       setIsEditing(false);
       setEditingId(null);
@@ -154,7 +153,6 @@ export default function Page() {
         dialog.close();
       }
     } catch (err) {
-      toast.error(`Lỗi khi ${isEditing ? "cập nhật" : "thêm mới"} loại xe`);
       console.error("Error:", err);
     }
   };
@@ -310,7 +308,6 @@ export default function Page() {
           reloadKey={reloadKey}
         />
       </div>
-      <Toaster />
     </div>
   );
 }
