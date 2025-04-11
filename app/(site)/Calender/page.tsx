@@ -1,6 +1,6 @@
 "use client";
 import Footer from "@/app/components/Footer";
-import PickupScheduleCalendar from "@/app/components/Lichhen";
+import PickupScheduleCalendar from "@/app/components/Calender";
 import React from "react";
 
 const page = () => {

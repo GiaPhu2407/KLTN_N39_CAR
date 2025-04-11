@@ -217,7 +217,7 @@ export default function Navbar() {
                     <a href="/Orders">Orders</a>
                   </li>
                   <li>
-                    <a href="/Lichhen">Lich Hen</a>
+                    <a href="/Calender">Calender</a>
                   </li>
                   <li>
                     <a href="/Danhgia">Revivew Car</a>
