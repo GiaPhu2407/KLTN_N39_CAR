@@ -77,7 +77,7 @@ export default function Page() {
         console.error("Failed to fetch loai xe", err);
         setLoading(false);
       });
-    
+
     // Fetch suppliers
     fetch("api/suppliers")
       .then((response) => {
@@ -95,57 +95,59 @@ export default function Page() {
       });
   }, []);
 
-  const validateForm = (data: FormData): { isValid: boolean; errors: Record<string, string> } => {
+  const validateForm = (
+    data: FormData
+  ): { isValid: boolean; errors: Record<string, string> } => {
     const errors: Record<string, string> = {};
-    
+
     // Validate TenXe
     if (!data.TenXe.trim()) {
       errors.TenXe = "Tên xe không được để trống";
     } else if (data.TenXe.length > 225) {
       errors.TenXe = "Tên xe không được vượt quá 225 ký tự";
     }
-    
+
     // Validate idLoaiXe
     if (!data.idLoaiXe) {
       errors.idLoaiXe = "Vui lòng chọn loại xe";
     }
-    
+
     // Validate GiaXe
     if (!data.GiaXe.trim()) {
       errors.GiaXe = "Giá xe không được để trống";
     } else {
-      const numericValue = data.GiaXe.replace(/[^\d]/g, '');
+      const numericValue = data.GiaXe.replace(/[^\d]/g, "");
       if (isNaN(parseFloat(numericValue)) || parseFloat(numericValue) <= 0) {
         errors.GiaXe = "Giá xe phải là số dương";
       }
     }
-    
+
     // Validate MauSac
     if (!data.MauSac.trim()) {
       errors.MauSac = "Màu sắc không được để trống";
     } else if (data.MauSac.length > 50) {
       errors.MauSac = "Màu sắc không được vượt quá 50 ký tự";
     }
-    
+
     // Validate DongCo
     if (!data.DongCo.trim()) {
       errors.DongCo = "Động cơ không được để trống";
     } else if (data.DongCo.length > 225) {
       errors.DongCo = "Động cơ không được vượt quá 225 ký tự";
     }
-    
+
     // Validate TrangThai
     if (!data.TrangThai) {
       errors.TrangThai = "Vui lòng chọn trạng thái";
     } else if (!["Còn Hàng", "Hết Hàng"].includes(data.TrangThai)) {
       errors.TrangThai = "Trạng thái không hợp lệ";
     }
-    
+
     // Validate HinhAnh
     if (!data.HinhAnh || data.HinhAnh.length === 0) {
       errors.HinhAnh = "Cần tối thiểu 1 hình ảnh";
     }
-    
+
     // Validate NamSanXuat
     if (!data.NamSanXuat) {
       errors.NamSanXuat = "Năm sản xuất không được để trống";
@@ -156,97 +158,109 @@ export default function Page() {
         errors.NamSanXuat = "Năm sản xuất không hợp lệ";
       }
     }
-    
+
     // Validate idNhaCungCap (not required, but must be valid if provided)
     if (data.idNhaCungCap && isNaN(parseInt(data.idNhaCungCap))) {
       errors.idNhaCungCap = "Nhà cung cấp không hợp lệ";
     }
-    
+
     return {
       isValid: Object.keys(errors).length === 0,
-      errors
+      errors,
     };
   };
 
   const handleDelete = async (id: number) => {
-    toast((t) => (
-      <div className="flex flex-col gap-2">
-        <span className="font-medium">Bạn có chắc muốn xóa sản phẩm này?</span>
-        <div className="flex gap-2">
-          <button
-            onClick={async () => {
-              toast.dismiss(t.id);
-              try {
-                const response = await fetch(`api/car/${id}`, {
-                  method: "DELETE",
-                });
-  
-                if (!response.ok) {
-                  throw new Error("Failed to delete product");
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc muốn xóa sản phẩm này?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  const response = await fetch(`api/car/${id}`, {
+                    method: "DELETE",
+                  });
+
+                  if (!response.ok) {
+                    throw new Error("Failed to delete product");
+                  }
+
+                  const data = await response.json();
+                  toast.success(data.message);
+                  refreshData();
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error ? err.message : "Lỗi khi xóa sản phẩm"
+                  );
                 }
-  
-                const data = await response.json();
-                toast.success(data.message);
-                refreshData();
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Lỗi khi xóa sản phẩm");
-              }
-            }}
-            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
-          >
-            Xóa
-          </button>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
-          >
-            Hủy
-          </button>
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
         </div>
-      </div>
-    ), {
-      duration: Infinity,
-      position: 'top-center',
-      style: {
-        background: '#fff',
-        color: '#000',
-        padding: '16px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      },
-    });
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
   };
 
   const formatCurrency = (value: string) => {
     // Remove non-numeric characters
-    const numericValue = value.replace(/[^\d]/g, '');
-    
+    const numericValue = value.replace(/[^\d]/g, "");
+
     // Convert to number and format with thousands separators
-    const formatted = new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(parseInt(numericValue || '0'));
-    
+    const formatted = new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(parseInt(numericValue || "0"));
+
     return formatted;
   };
 
   const unformatCurrency = (value: string) => {
     // Remove non-numeric characters except decimal point
-    return value.replace(/[^0-9]/g, '');
+    return value.replace(/[^0-9]/g, "");
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    
+
     // Special handling for price input
-    if (name === 'GiaXe') {
+    if (name === "GiaXe") {
       const formattedValue = formatCurrency(value);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         [name]: formattedValue,
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         [name]: value,
       }));
@@ -255,10 +269,10 @@ export default function Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     const { isValid, errors } = validateForm(formData);
-    
+
     if (!isValid) {
       // Display all validation errors
       Object.entries(errors).forEach(([field, message]) => {
@@ -266,82 +280,99 @@ export default function Page() {
       });
       return;
     }
-    
-    const url = isEditing ? `api/car/${editingId}` : 'api/car';
-    const method = isEditing ? 'PUT' : 'POST';
-  
+
+    const url = isEditing ? `api/car/${editingId}` : "api/car";
+    const method = isEditing ? "PUT" : "POST";
+
     try {
       // Ensure HinhAnh is an array and unformat the price
       const submitData = {
         ...formData,
-        HinhAnh: Array.isArray(formData.HinhAnh) ? formData.HinhAnh : [formData.HinhAnh],
+        HinhAnh: Array.isArray(formData.HinhAnh)
+          ? formData.HinhAnh
+          : [formData.HinhAnh],
         GiaXe: unformatCurrency(formData.GiaXe), // Unformat the price for submission
-        idNhaCungCap: formData.idNhaCungCap ? parseInt(formData.idNhaCungCap) : null
+        idNhaCungCap: formData.idNhaCungCap
+          ? parseInt(formData.idNhaCungCap)
+          : null,
       };
-  
+
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(submitData),
       });
-  
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         // Handle validation errors from the server
         if (data.errors) {
-          Object.entries(data.errors).forEach(([field, errorObj]: [string, any]) => {
-            if (errorObj._errors && errorObj._errors.length > 0) {
-              toast.error(`${field}: ${errorObj._errors[0]}`);
+          Object.entries(data.errors).forEach(
+            ([field, errorObj]: [string, any]) => {
+              if (errorObj._errors && errorObj._errors.length > 0) {
+                toast.error(`${field}: ${errorObj._errors[0]}`);
+              }
             }
-          });
-          throw new Error(data.message || `Failed to ${isEditing ? 'update' : 'create'} product`);
+          );
+          throw new Error(
+            data.message ||
+              `Failed to ${isEditing ? "update" : "create"} product`
+          );
         }
-        throw new Error(data.message || `Failed to ${isEditing ? 'update' : 'create'} product`);
+        throw new Error(
+          data.message || `Failed to ${isEditing ? "update" : "create"} product`
+        );
       }
-  
+
       toast.success(data.message);
       setFormData(initialFormData);
       setIsEditing(false);
       setEditingId(null);
       refreshData();
-  
+
       const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
       if (dialog) {
         dialog.close();
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : `Error ${isEditing ? 'updating' : 'creating'} product`);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : `Error ${isEditing ? "updating" : "creating"} product`
+      );
     }
   };
 
   const handleEdit = (product: any) => {
     // Convert the stored image string back to an array
-    const images = product.HinhAnh ? 
-        (typeof product.HinhAnh === 'string' ? product.HinhAnh.split('|') : product.HinhAnh) : 
-        [];
-    
+    const images = product.HinhAnh
+      ? typeof product.HinhAnh === "string"
+        ? product.HinhAnh.split("|")
+        : product.HinhAnh
+      : [];
+
     setFormData({
-        TenXe: product.TenXe || "",
-        idLoaiXe: product.idLoaiXe ? product.idLoaiXe.toString() : "",
-        GiaXe: formatCurrency(product.GiaXe ? product.GiaXe.toString() : "0"),
-        MauSac: product.MauSac || "",
-        DongCo: product.DongCo || "",
-        TrangThai: product.TrangThai || "",
-        HinhAnh: images,
-        NamSanXuat: product.NamSanXuat ? product.NamSanXuat.toString() : "",
-        ThongSoKyThuat: product.ThongSoKyThuat || "",
-        MoTa: product.MoTa || "",
-        idNhaCungCap: product.idNhaCungCap ? product.idNhaCungCap.toString() : "",
+      TenXe: product.TenXe || "",
+      idLoaiXe: product.idLoaiXe ? product.idLoaiXe.toString() : "",
+      GiaXe: formatCurrency(product.GiaXe ? product.GiaXe.toString() : "0"),
+      MauSac: product.MauSac || "",
+      DongCo: product.DongCo || "",
+      TrangThai: product.TrangThai || "",
+      HinhAnh: images,
+      NamSanXuat: product.NamSanXuat ? product.NamSanXuat.toString() : "",
+      ThongSoKyThuat: product.ThongSoKyThuat || "",
+      MoTa: product.MoTa || "",
+      idNhaCungCap: product.idNhaCungCap ? product.idNhaCungCap.toString() : "",
     });
     setIsEditing(true);
     setEditingId(product.idXe);
-    
+
     const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
     if (dialog) {
-        dialog.showModal();
+      dialog.showModal();
     }
   };
 
@@ -365,25 +396,37 @@ export default function Page() {
     }
   };
 
-  if (loading) return (
-    <div className="flex justify-center items-center h-screen" data-theme="light">
-      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
-    </div>
-  );
+  if (loading)
+    return (
+      <div
+        className="flex justify-center items-center h-screen"
+        data-theme="light"
+      >
+        <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+      </div>
+    );
 
   return (
-    <div className="p-2 flex-col justify-center text-center w-full h-[630px]" data-theme="light">
-      <div className="flex pb-4 w-full justify-start" data-theme="light">
-        <h1 className="text-2xl mr-[700px] font-bold flex-grow text-black">
+    <div
+      className="p-2 flex-col justify-center text-center w-full h-[630px]"
+      data-theme="light"
+    >
+      <div className="flex pb-4 w-full justify-between" data-theme="light">
+        <h1 className="text-2xl font-bold text-black ml-10">
           Quản Lý Sản Phẩm
         </h1>
-        <button className="btn text-xs btn-accent" onClick={handleAddNewClick}>Thêm mới</button>
+        <button className="btn text-xs btn-accent" onClick={handleAddNewClick}>
+          Thêm mới
+        </button>
       </div>
 
       <dialog id="my_modal_3" className="modal opacity-100" data-theme="light">
         <div className="modal-box w-11/12 max-w-5xl" data-theme="light">
           <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={handleModalClose}>
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={handleModalClose}
+            >
               ✕
             </button>
           </form>
@@ -585,7 +628,7 @@ export default function Page() {
                         className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
-                  
+
                     <div className="flex-1">
                       <label
                         htmlFor="MoTa"
@@ -612,9 +655,11 @@ export default function Page() {
                       >
                         Hình Ảnh
                       </label>
-                      <Fileupload 
-                        endpoint='imageUploader'
-                        onChange={(urls) => setFormData(prev => ({ ...prev, HinhAnh: urls }))}
+                      <Fileupload
+                        endpoint="imageUploader"
+                        onChange={(urls) =>
+                          setFormData((prev) => ({ ...prev, HinhAnh: urls }))
+                        }
                         value={formData.HinhAnh}
                       />
                     </div>
@@ -634,13 +679,12 @@ export default function Page() {
           </div>
         </div>
       </dialog>
-      
-        <TableCarDashboard 
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          reloadKey={reloadKey} 
-        />
-      
+
+      <TableCarDashboard
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        reloadKey={reloadKey}
+      />
     </div>
   );
 }

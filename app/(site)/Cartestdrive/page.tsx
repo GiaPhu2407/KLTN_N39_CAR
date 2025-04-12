@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import Image from "next/image";
 import Footer from "@/app/components/Footer";
 
+
 interface Car {
   idXe: number;
   TenXe: string;

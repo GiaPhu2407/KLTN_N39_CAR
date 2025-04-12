@@ -6,6 +6,7 @@ import { Providers } from "./components/Provider";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
+import { Toaster } from "react-hot-toast";
   
 
 const geistSans = Geist({
@@ -35,6 +36,25 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+        <Toaster position="top-right" 
+         toastOptions={{
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          duration: 3000,
+          success: {
+            style: {
+              background: 'green',
+            },
+          },
+          error: {
+            style: {
+              background: 'red',
+            },
+          },
+        }}
+        />
           <Navbar />
           <NextSSRPlugin
             routerConfig={extractRouterConfig(ourFileRouter)}

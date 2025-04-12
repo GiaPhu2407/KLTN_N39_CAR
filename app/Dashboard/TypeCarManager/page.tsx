@@ -143,7 +143,6 @@ export default function Page() {
         );
       }
 
-      toast.success(data.message);
       setFormData(initialFormData);
       setIsEditing(false);
       setEditingId(null);
@@ -154,7 +153,6 @@ export default function Page() {
         dialog.close();
       }
     } catch (err) {
-      toast.error(`Lỗi khi ${isEditing ? "cập nhật" : "thêm mới"} loại xe`);
       console.error("Error:", err);
     }
   };
@@ -194,11 +192,9 @@ export default function Page() {
       className="p-2 flex-col justify-center text-center w-full h-[600px] "
       data-theme="light"
     >
-      <div className="flex justify-between pb-4  w-full">
-        <h1 className="text-2xl font-bold mr-44 flex-grow text-black">
-          Quản Lý Loại Xe
-        </h1>
-        <div className="flex-grow">
+      <div className="flex justify-between pb-4 w-full">
+        <h1 className="text-2xl font-bold ml-10 text-black">Quản Lý Loại Xe</h1>
+        <div>
           <button
             className="btn text-xs btn-accent"
             onClick={handleAddNewClick}
@@ -312,7 +308,6 @@ export default function Page() {
           reloadKey={reloadKey}
         />
       </div>
-      <Toaster />
     </div>
   );
 }

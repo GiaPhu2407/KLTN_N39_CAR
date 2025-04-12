@@ -171,7 +171,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
   };
 
   return (
-    <div className="space-y-4 w-full">
+    <div className=" w-full">
       <div className="w-full">
         <div className="flex flex-col md:flex-row justify-between pb-5 gap-4">
           <div className="mt-6 ml-20">
@@ -244,23 +244,23 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto ml-20">
-          <table className="table w-[1000px]">
-            <thead>
-              <tr className="bg-gray-50 text-white text-center">
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Id Loại Xe
+        <div className="w-full overflow-x-auto pt-2 px-10">
+          <table className="table text-center table-auto w-full min-w-[400px] ">
+            <thead className="text-center">
+              <tr className="bg-gray-50 text-white">
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  ID
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Tên Loại Xe
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Nhãn Hiệu
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Hình Ảnh
                 </th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Action
                 </th>
               </tr>
@@ -294,6 +294,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                           }
                           alt={loaixe.TenLoai}
                           width="50"
+                          className="text-center"
                         />
                       )}
                     </td>
