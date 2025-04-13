@@ -53,6 +53,7 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loaiXeList, setLoaiXeList] = useState<LoaiXe[]>([]);
   const [xeList, setXeList] = useState<Xe[]>([]);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   
   // Check if form should be disabled (when status is APPROVED)
   const isFormDisabled = initialData?.trangThai === 'APPROVED';
@@ -75,6 +76,31 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
     if (isFormDisabled) return; // Don't allow changes if form is disabled
     
     const { name, value } = e.target;
+    
+    // Handle phone number validation
+    if (name === 'Sdt') {
+      // Only allow digits
+      const digitsOnly = value.replace(/\D/g, '');
+      
+      // Check if the number has between 10-11 digits
+      if (digitsOnly.length > 11) {
+        setPhoneError('Số điện thoại chỉ được nhập 10-11 số');
+        // Still update the form but truncate to 11 digits
+        setFormData(prev => ({
+          ...prev,
+          [name]: digitsOnly.slice(0, 11)
+        }));
+        return;
+      } else {
+        setPhoneError(null);
+        setFormData(prev => ({
+          ...prev,
+          [name]: digitsOnly
+        }));
+        return;
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: name === 'NgayHen' ? new Date(value) : value
@@ -101,6 +127,12 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
     // Don't allow submission if form is disabled
     if (isFormDisabled) {
       toast.error('Không thể cập nhật lịch hẹn đã được duyệt');
+      return;
+    }
+    
+    // Validate phone number length (10-11 digits)
+    if (formData.Sdt.length < 10 || formData.Sdt.length > 11) {
+      toast.error('Số điện thoại phải có từ 10 đến 11 số');
       return;
     }
     
@@ -220,7 +252,7 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
         </div>
         <div>
           <label htmlFor="Sdt" className="block mb-2">
-            Số Điện Thoại
+            Số Điện Thoại (10-11 số)
           </label>
           <input
             type="tel"
@@ -228,10 +260,16 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
             name="Sdt"
             value={formData.Sdt}
             onChange={handleChange}
-            className="input input-bordered w-full"
+            className={`input input-bordered w-full ${phoneError ? 'input-error' : ''}`}
             required
             disabled={isFormDisabled}
+            maxLength={11}
+            pattern="[0-9]{10,11}"
+            placeholder="Nhập 10-11 số"
           />
+          {phoneError && (
+            <div className="text-error text-sm mt-1">{phoneError}</div>
+          )}
         </div>
       </div>
 
