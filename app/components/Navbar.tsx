@@ -76,7 +76,7 @@ export default function Navbar() {
               alt="VinFast - Thương hiệu xe điện đầu tiên Việt Nam"
               width={100}
               height={100}
-              src="/images/vinfast-logo.svg"
+              src="https://vinfastauto.com/themes/porto/img/new-home-page/VinFast-logo.svg"
             />
           </Link>
 
@@ -113,17 +113,13 @@ export default function Navbar() {
                   {loaiXe.map((loai) => (
                     <li key={loai.idLoaiXe} className="mt-10">
                       <Link href={`LoaiXe?id=${loai.idLoaiXe}`}>
-                        <div className="flex flex-col items-center">
-                          <Image
-                            src={loai.HinhAnh}
-                            width={100}
-                            height={80}
-                            className="hover:animate-fadeleft transition-all duration-75 hover:scale-150"
-                            alt={loai.TenLoai}
-                          />
-                          <div className="text-center mt-3 font-medium">
-                            {loai.TenLoai}
-                          </div>
+                        <img
+                          src={loai.HinhAnh}
+                          className="hover:animate-fadeleft transition-all duration-75 hover:scale-150"
+                          alt={loai.TenLoai}
+                        />
+                        <div className="text-center mt-3 font-medium">
+                          {loai.TenLoai}
                         </div>
                       </Link>
                     </li>
@@ -177,11 +173,9 @@ export default function Navbar() {
                   >
                     {user.Avatar && user.Avatar.length > 0 ? (
                       <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                        <Image
+                        <img
                           src={user.Avatar}
                           alt="Profile Avatar"
-                          width={40}
-                          height={40}
                           className="w-full h-full object-cover"
                         />
                       </div>
