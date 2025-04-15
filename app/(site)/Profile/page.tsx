@@ -7,61 +7,7 @@ import Footer from '@/app/components/Footer';
 import { Fileupload } from "@/app/components/Fileupload";
 
 const ProfilePage = () => {
-  const [user, setUser] = useState<UserAuth | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-
-  const [formData, setFormData] = useState({
-    Tentaikhoan: '',
-    Email: '',
-    Hoten: '',
-    Sdt: '',
-    Diachi: '',
-    Avatar: [] as string[],
-  });
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (!response.ok) throw new Error('Failed to fetch user data');
-        const userData = await response.json();
-        setUser(userData);
-        
-        // Convert Avatar string to array if it exists
-        const avatarArray = userData.Avatar ? 
-          (typeof userData.Avatar === 'string' ? userData.Avatar.split('|') : userData.Avatar) : 
-          [];
-        
-        setFormData({
-          Tentaikhoan: userData.Tentaikhoan || '',
-          Email: userData.Email || '',
-          Hoten: userData.Hoten || '',
-          Sdt: userData.Sdt || '',
-          Diachi: userData.Diachi || '',
-          Avatar: avatarArray,
-        });
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        router.push('/login');
-      }
-    };
-
-    fetchUserData();
-  }, []);
-
-  
-
-  if (isLoading) return (
-    <div className="flex justify-center items-center h-screen" data-theme = "light">
-      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
-    </div>
-  );
-  
+ 
   return (
     <div className="min-h-screen bg-gray-100 pt-20 ">
       <div className="container mx-auto px-4 pt-20 pb-44">

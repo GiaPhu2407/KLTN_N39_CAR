@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Footer from '@/app/components/Footer'
 import toast, { Toaster } from 'react-hot-toast'
 import Link from 'next/link'
-import CarReviews from '@/app/components/Carreview'
 
 interface Car {
   idXe: number;
@@ -25,73 +24,7 @@ interface Car {
 }
 
 const Category = () => {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const id = searchParams.get('id')
-  const [car, setCar] = useState<Car | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [images, setImages] = useState<string[]>([])
-  
-  const handleImageClick = (index: number) => {
-    setCurrentImageIndex(index)
-  }
-
-  useEffect(() => {
-    if (id) {
-      fetch(`/api/car/${id}`)
-        .then(res => {
-          if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`)
-          }
-          return res.json()
-        })
-        .then(data => {
-          if (data.error) {
-            throw new Error(data.error)
-          }
-          setCar(data)
-          
-          // Parse the images
-          let imageArray: string[] = []
-          if (typeof data.HinhAnh === 'string') {
-            // Split by either comma or pipe
-            imageArray = data.HinhAnh.split(/[,|]/).map((url: string) => url.trim()).filter(Boolean)
-          } else if (Array.isArray(data.HinhAnh)) {
-            imageArray = data.HinhAnh
-          }
-          setImages(imageArray)
-          setLoading(false)
-        })
-        .catch(err => {
-          console.error('Lỗi khi lấy thông tin xe:', err)
-          setError(err.message)
-          setLoading(false)
-        })
-    }
-  }, [id])
-
-  if (loading) return (
-    <div className="flex justify-center items-center h-screen" data-theme="light">
-      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
-    </div>
-  )
-  
-  if (error) return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="text-2xl font-bold text-red-600">{error}</div>
-    </div>
-  )
-
-  if (!car) return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="text-2xl font-bold text-gray-800">Không tìm thấy thông tin xe</div>
-    </div>
-  )
-  const isCarAvailable = car.TrangThai === 'Còn Hàng';
-  const isCarReserved = car.TrangThai === 'Đã Đặt Cọc';
-
+ 
   return (
     <div className="w-full h-full pt-24" data-theme="light">
       <div className="px-24 pb-24 w-full h-full flex flex-col">
@@ -202,7 +135,6 @@ const Category = () => {
             </div>     
         </div>
       </div>
-      <CarReviews/>
       <Footer />
     </div>
   )
