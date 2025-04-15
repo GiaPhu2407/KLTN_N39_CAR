@@ -1,9 +1,38 @@
-"use client";
-import React, { useState } from "react";
+"use client"
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-const CarItem = ({ car, category }) => {
+interface Car {
+  idXe: number;
+  TenXe: string;
+  GiaXe: number;
+  MauSac: string;
+  DongCo: string;
+  TrangThai: string;
+  HinhAnh: string;
+  NamSanXuat: string;
+  idLoaiXe: number;
+  loaiXe?: {
+    idLoaiXe: number;
+    TenLoai: string;
+    NhanHieu: string;
+  };
+}
+
+interface LoaiXe {
+  idLoaiXe: number;
+  TenLoai: string;
+  NhanHieu: string;
+  HinhAnh: string;
+}
+
+interface CarItemProps {
+  car: Car;
+  category?: LoaiXe;
+}
+
+const CarItem = ({ car, category }: CarItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -36,16 +65,12 @@ const CarItem = ({ car, category }) => {
           </figure>
           <div className="card-body items-center text-center p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row justify-between w-full gap-2">
-              <h2 className="card-title text-lg sm:text-xl w-full">
-                {car.TenXe}
-              </h2>
+              <h2 className="card-title text-lg sm:text-xl w-full">{car.TenXe}</h2>
               {category && (
-                <p className="text-gray-600 text-sm sm:text-base">
-                  {category.TenLoai}
-                </p>
+                <p className="text-gray-600 text-sm sm:text-base">{category.TenLoai}</p>
               )}
             </div>
-
+            
             <p className="flex justify-start w-full mt-2">
               <span className="text-purple-600 text-xl sm:text-2xl font-semibold">
                 {new Intl.NumberFormat("vi-VN", {
@@ -73,79 +98,75 @@ const CarItem = ({ car, category }) => {
 };
 
 const Product = () => {
-  // Mock data for demo purposes
-  const mockCars = [
-    {
-      idXe: 1,
-      TenXe: "VF 8",
-      GiaXe: 1200000000,
-      MauSac: "Đen",
-      DongCo: "Điện",
-      TrangThai: "Còn hàng",
-      HinhAnh: "",
-      NamSanXuat: "2023",
-      idLoaiXe: 1,
-    },
-    {
-      idXe: 2,
-      TenXe: "VF 9",
-      GiaXe: 1500000000,
-      MauSac: "Trắng",
-      DongCo: "Điện",
-      TrangThai: "Còn hàng",
-      HinhAnh: "",
-      NamSanXuat: "2023",
-      idLoaiXe: 2,
-    },
-  ];
-
-  const mockCategories = [
-    {
-      idLoaiXe: 1,
-      TenLoai: "SUV",
-      NhanHieu: "VinFast",
-      HinhAnh: "",
-    },
-    {
-      idLoaiXe: 2,
-      TenLoai: "Sedan",
-      NhanHieu: "VinFast",
-      HinhAnh: "",
-    },
-  ];
-
-  const [cars] = useState(mockCars);
-  const [categories] = useState(mockCategories);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [displayedCars, setDisplayedCars] = useState(mockCars.slice(0, 4));
+  const [cars, setCars] = useState<Car[]>([]);
+  const [categories, setCategories] = useState<LoaiXe[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [displayedCars, setDisplayedCars] = useState<Car[]>([]);
   const carsPerPage = 4;
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/car'),
+      fetch('/api/typecar')
+    ])
+      .then(([carsRes, categoriesRes]) => Promise.all([carsRes.json(), categoriesRes.json()]))
+      .then(([carsData, categoriesData]) => {
+        setCars(carsData);
+        setCategories(categoriesData);
+        setDisplayedCars(carsData.slice(0, carsPerPage));
+        setLoading(false);
+      })
+      .catch(e => {
+        console.error("Error loading data:", e);
+        setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    const filteredCars = selectedCategory
+      ? cars.filter(car => car.idLoaiXe === selectedCategory)
+      : cars;
+    setDisplayedCars(filteredCars.slice(0, carsPerPage));
+  }, [selectedCategory, cars]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen" data-theme="light">
+        <div className="loading loading-spinner text-blue-600 loading-lg"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen" data-theme="light">
+        <div className="text-2xl font-bold text-red-600">{error}</div>
+      </div>
+    );
+  }
 
   const loadMore = () => {
     const currentLength = displayedCars.length;
     const filteredCars = selectedCategory
-      ? cars.filter((car) => car.idLoaiXe === selectedCategory)
+      ? cars.filter(car => car.idLoaiXe === selectedCategory)
       : cars;
-    const newCars = filteredCars.slice(
-      currentLength,
-      currentLength + carsPerPage
-    );
-    setDisplayedCars([...displayedCars, ...newCars]);
+    const newCars = filteredCars.slice(currentLength, currentLength + carsPerPage);
+    setDisplayedCars(prevCars => [...prevCars, ...newCars]);
   };
 
   const showLess = () => {
     setDisplayedCars(displayedCars.slice(0, carsPerPage));
   };
 
-  const handleCategorySelect = (categoryId) => {
+  const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
-    const filteredCars = categoryId
-      ? cars.filter((car) => car.idLoaiXe === categoryId)
-      : cars;
-    setDisplayedCars(filteredCars.slice(0, carsPerPage));
   };
 
-  const getCategoryById = (categoryId) => {
-    return categories.find((category) => category.idLoaiXe === categoryId);
+  const getCategoryById = (categoryId: number) => {
+    return categories.find(category => category.idLoaiXe === categoryId);
   };
 
   return (
@@ -158,7 +179,7 @@ const Product = () => {
           <div className="flex flex-nowrap sm:flex-wrap gap-4 text-2xl sm:text-3xl h-9 min-w-max sm:min-w-0 sm:justify-between pb-2">
             <button
               onClick={() => handleCategorySelect(null)}
-              className={`${!selectedCategory ? "text-blue-500 border-b-2 border-blue-500" : "text-slate-600"} 
+              className={`${!selectedCategory ? 'text-blue-500 border-b-2 border-blue-500' : 'text-slate-600'} 
                 whitespace-nowrap hover:border-b-2 border-blue-500 hover:text-blue-500 italic font-bold px-2`}
             >
               Tất cả
@@ -167,7 +188,7 @@ const Product = () => {
               <button
                 key={category.idLoaiXe}
                 onClick={() => handleCategorySelect(category.idLoaiXe)}
-                className={`${selectedCategory === category.idLoaiXe ? "text-blue-500 border-b-2 border-blue-500" : "text-slate-600"} 
+                className={`${selectedCategory === category.idLoaiXe ? 'text-blue-500 border-b-2 border-blue-500' : 'text-slate-600'} 
                   whitespace-nowrap hover:border-b-2 border-blue-500 hover:text-blue-500 italic font-bold px-2`}
               >
                 {category.TenLoai}
@@ -176,10 +197,10 @@ const Product = () => {
           </div>
         </div>
 
-        <ul className="grid grid-cols-1 sm:flex sm:flex-wrap w-full mt-8 sm:mt-12 gap-4 sm:gap-4 xl:gap-1 min-[1920px]:gap-32 xl:animate-appear px-5  sm:px-2">
+        <ul className="grid grid-cols-1 sm:flex sm:flex-wrap w-full mt-8 sm:mt-12 gap-4 sm:gap-4 xl:gap-1 min-[1920px]:gap-32 xl:animate-appear px-5 sm:px-2">
           {displayedCars.map((car) => (
-            <CarItem
-              key={car.idXe}
+            <CarItem 
+              key={car.idXe} 
               car={car}
               category={getCategoryById(car.idLoaiXe)}
             />
@@ -187,7 +208,7 @@ const Product = () => {
         </ul>
 
         <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-5 px-4 sm:px-0">
-          {displayedCars.length < cars.length && (
+          {displayedCars.length < (selectedCategory ? cars.filter(car => car.idLoaiXe === selectedCategory).length : cars.length) && (
             <button
               onClick={loadMore}
               className="btn bg-blue-500 text-white hover:bg-blue-600 w-full sm:w-auto"
