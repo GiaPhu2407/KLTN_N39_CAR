@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Footer from '@/app/components/Footer'
 import toast, { Toaster } from 'react-hot-toast'
 import Link from 'next/link'
+import CarReviews from '@/app/components/CarReviews'
 
 interface Car {
   idXe: number;
@@ -13,10 +14,8 @@ interface Car {
   MauSac: string;
   DongCo: string;
   TrangThai: string;
-  HinhAnh: string | string[];
+  HinhAnh: string | string[];  // Updated to handle both string and array
   NamSanXuat: string;
-  ThongSoKyThuat: string;
-  MoTa: string;
   loaiXe: {
     TenLoai: string;
     NhanHieu: string;
@@ -24,7 +23,77 @@ interface Car {
 }
 
 const Category = () => {
- 
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id')
+  const [car, setCar] = useState<Car | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [addingToCart, setAddingToCart] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  const [images, setImages] = useState<string[]>([])
+  
+
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index)
+  }
+
+  
+
+  useEffect(() => {
+    if (id) {
+      fetch(`/api/car/${id}`)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`)
+          }
+          return res.json()
+        })
+        .then(data => {
+          if (data.error) {
+            throw new Error(data.error)
+          }
+          setCar(data)
+          // Parse the images
+          let imageArray: string[] = []
+          if (typeof data.HinhAnh === 'string') {
+            // Split by either comma or pipe
+            imageArray = data.HinhAnh.split(/[,|]/).map((url: string) => url.trim()).filter(Boolean)
+          } else if (Array.isArray(data.HinhAnh)) {
+            imageArray = data.HinhAnh
+          }
+          setImages(imageArray)
+          setLoading(false)
+        })
+        .catch(err => {
+          console.error('Lỗi khi lấy thông tin xe:', err)
+          setError(err.message)
+          setLoading(false)
+        })
+    }
+  }, [id])
+
+  if (loading) return (
+    <div className="flex justify-center items-center h-screen" data-theme="light">
+      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+    </div>
+  )
+  
+  if (error) return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-2xl font-bold text-red-600">{error}</div>
+    </div>
+  )
+
+  if (!car) return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-2xl font-bold text-gray-800">Không tìm thấy thông tin xe</div>
+    </div>
+  )
+  const isCarAvailable = car.TrangThai === 'Còn Hàng';
+  const isCarReserved = car.TrangThai === 'Đã Đặt Cọc';
+
   return (
     <div className="w-full h-full pt-24" data-theme="light">
       <div className="px-24 pb-24 w-full h-full flex flex-col">
@@ -63,11 +132,11 @@ const Category = () => {
                 <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{car.loaiXe.NhanHieu}</div>
                 <h2 className="block mt-1 text-3xl leading-tight font-bold text-black">{car.TenXe}</h2>
                 <p className="mt-2 text-gray-500">{car.loaiXe.TenLoai}</p>
-                <h3 className="text-xl font-semibold text-gray-800 mt-3">Mô Tả</h3>
+              </div>
+              <div className="ml-8 flex flex-col gap-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800">Thông số kỹ thuật</h3>
                 <ul className="mt-2 space-y-2">
-                <li className="flex items-center">
-                    <span>{car.MoTa}</span>
-                  </li>
                   <li className="flex items-center">
                     <span className="font-medium text-gray-600 mr-2">Động cơ:</span>
                     <span>{car.DongCo}</span>
@@ -90,50 +159,53 @@ const Category = () => {
                   </li>
                 </ul>
               </div>
-              <div className="ml-8 flex flex-col gap-4">
-                <div>
-                  <p className="text-2xl font-bold text-gray-800">
-                    Giá bán: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(car.GiaXe)}
-                  </p>
-                  <div className="flex mt-4">
-                    {isCarAvailable ? (
-                      <button 
-                        className="w-48 bg-indigo-600 text-white py-2 mx-4 rounded-md hover:bg-indigo-700 transition duration-300"
-                      >
-                        <Link href={`/Cartestdrive?id=${car.idXe}`}>Đặt Cọc</Link>
-                      </button>
-                    ) : (
-                      <button 
-                        disabled
-                        className="w-48 bg-gray-400 text-white py-2 mx-4 rounded-md cursor-not-allowed"
-                      >
-                        {isCarReserved ? 'Đã đặt cọc' : 'Không thể đặt cọc'}
-                      </button>
-                    )}
 
-                    <button
-                      className={`w-52 ${
-                        isCarAvailable
-                          ? 'bg-slate-300 hover:bg-slate-400'
-                          : 'bg-gray-400 cursor-not-allowed'
-                      } text-black py-2 px-1 mx-4 rounded-md transition duration-300`}
-                    >
-                     <Link href={`/Cartestdrive?id=${car.idXe}`}>Đặt Lịch Hẹn Trải Nghiệm</Link>
-                    </button>
-                  </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800">Giá bán</h3>
+                <p className="mt-2 text-3xl font-bold text-indigo-600">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(car.GiaXe)}
+                </p>
+                <div className="flex">
+                {isCarAvailable ? (
+                <button 
+                  className="mt-4 w-48 bg-indigo-600 text-white py-2 mx-4 rounded-md hover:bg-indigo-700 transition duration-300"
+                >
+                  <Link href={`/Cartestdrive?id=${car.idXe}`}>Đặt cọc ngay</Link>
+                </button>
+              ) : (
+                <button 
+                  disabled
+                  className="mt-4 w-48 $ bg-gray-400 text-white py-2 mx-4 rounded-md cursor-not-allowed "
+                >
+                  {isCarReserved ? 'Đã đặt cọc' : 'Không thể đặt cọc'}
+                </button>
+              )}
+
+              {/* Conditionally render add to cart button */}
+              <button
+                // onClick={handleAddToCart}
+                disabled={!isCarAvailable || addingToCart}
+                className={`mt-4 w-48 ${
+                  isCarAvailable
+                    ? 'bg-slate-600 hover:bg-black'
+                    : 'bg-gray-400 cursor-not-allowed '
+                } text-white py-2 mx-4 rounded-md transition duration-300`}
+              >
+                {addingToCart 
+                  ? 'Đang thêm...' 
+                  : !isCarAvailable
+                  ? (isCarReserved ? "Không thể thêm giỏ hàng" : 'Hết hàng')
+                  : 'Thêm vào giỏ hàng'
+                }
+              </button>
                 </div>
+              </div>
+
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Technical Specifications Section */}
-        <div className="mt-8 bg-blue-100 shadow-xl rounded-lg overflow-hidden p-6">
-          <h2 className="text-2xl font-bold mb-6">Thông Số Kỹ Thuật</h2>
-            <div className="mt-6">
-              <div className="whitespace-pre-line">{car.ThongSoKyThuat}</div>
-            </div>     
-        </div>
+        <CarReviews idXe={car.idXe} />
       </div>
       <Footer />
     </div>
