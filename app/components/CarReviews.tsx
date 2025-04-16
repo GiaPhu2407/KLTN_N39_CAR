@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import ReactStars from "react-rating-stars-component";
-
 interface DanhGiaTraiNghiem {
   idDanhGia: number;
   idLichHen: number;
@@ -184,21 +183,23 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
               >
                 <div className="flex items-center mb-2">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3">
-                  {review.user?.Avatar && review.user.Avatar.length > 0 ? (
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                    <img 
-                      src={review.user?.Avatar} 
-                      alt="Profile Avatar" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-white text-sm">
-                      {review.user?.Hoten ? review.user?.Hoten.charAt(0).toUpperCase() : '?'}
-                    </span>
-                  </div>
-                )}
+                    {review.user?.Avatar && review.user.Avatar.length > 0 ? (
+                      <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                        <img
+                          src={review.user?.Avatar}
+                          alt="Profile Avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span className="text-white text-sm">
+                          {review.user?.Hoten
+                            ? review.user?.Hoten.charAt(0).toUpperCase()
+                            : "?"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <div className="font-medium">
