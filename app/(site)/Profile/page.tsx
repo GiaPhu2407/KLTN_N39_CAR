@@ -15,6 +15,12 @@ const ProfilePage = () => {
   );
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [errors, setErrors] = useState({
+    Email: "",
+    Hoten: "",
+    Sdt: "",
+    Diachi: "",
+  });
 
   const [formData, setFormData] = useState({
     Tentaikhoan: "",
@@ -58,16 +64,74 @@ const ProfilePage = () => {
     fetchUserData();
   }, []);
 
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      Email: "",
+      Hoten: "",
+      Sdt: "",
+      Diachi: "",
+    };
+
+    // Email validation
+    if (!formData.Email.trim()) {
+      newErrors.Email = "Email không được để trống";
+      isValid = false;
+    }
+
+    // Full name validation
+    if (!formData.Hoten.trim()) {
+      newErrors.Hoten = "Họ tên không được để trống";
+      isValid = false;
+    }
+
+    // Phone number validation
+    if (formData.Sdt.trim()) {
+      const phoneRegex = /^\d{10,11}$/;
+      if (!phoneRegex.test(formData.Sdt)) {
+        newErrors.Sdt = "Số điện thoại phải có 10 đến 11 số";
+        isValid = false;
+      }
+    } else {
+      newErrors.Sdt = "Số điện thoại không được để trống";
+      isValid = false;
+    }
+
+    // Address validation
+    if (!formData.Diachi.trim()) {
+      newErrors.Diachi = "Địa chỉ không được để trống";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
+    // Clear error when typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      setMessage("Vui lòng kiểm tra lại thông tin");
+      setMessageType("error");
+      return;
+    }
+
     try {
       // Prepare data for API - join the array to a string if needed by API
       const apiFormData = {
@@ -88,7 +152,7 @@ const ProfilePage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("Profile updated successfully!");
+        setMessage("Cập nhật thông tin thành công!");
         setMessageType("success");
         setIsEditing(false);
 
@@ -108,11 +172,11 @@ const ProfilePage = () => {
           });
         }
       } else {
-        setMessage(data.error || "Failed to update profile");
+        setMessage(data.error || "Cập nhật thông tin thất bại");
         setMessageType("error");
       }
     } catch (error) {
-      setMessage("An error occurred while updating profile");
+      setMessage("Đã xảy ra lỗi khi cập nhật thông tin");
       setMessageType("error");
     }
 
@@ -148,7 +212,7 @@ const ProfilePage = () => {
                   : "bg-blue-500 hover:bg-blue-600"
               } text-white transition-colors`}
             >
-              {isEditing ? "Cancel" : "Edit Profile"}
+              {isEditing ? "Hủy" : "Chỉnh sửa"}
             </button>
           </div>
 
@@ -195,7 +259,7 @@ const ProfilePage = () => {
               {isEditing && (
                 <div className="w-full">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Profile Picture
+                    Ảnh đại diện
                   </label>
                   <Fileupload
                     endpoint="imageUploader"
@@ -211,7 +275,7 @@ const ProfilePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Email
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -219,13 +283,22 @@ const ProfilePage = () => {
                   value={formData.Email}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border ${!isEditing ? "bg-gray-100 text-black" : "bg-white text-black"} border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
+                  className={`mt-1 block w-full rounded-md border ${
+                    !isEditing
+                      ? "bg-gray-100 text-black"
+                      : "bg-white text-black"
+                  } ${
+                    errors.Email ? "border-red-500" : "border-gray-300"
+                  } px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
                 />
+                {errors.Email && (
+                  <p className="mt-1 text-sm text-red-500">{errors.Email}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Full Name
+                  Họ và tên <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -233,13 +306,22 @@ const ProfilePage = () => {
                   value={formData.Hoten}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border ${!isEditing ? "bg-gray-100 text-black" : "bg-white text-black"} border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
+                  className={`mt-1 block w-full rounded-md border ${
+                    !isEditing
+                      ? "bg-gray-100 text-black"
+                      : "bg-white text-black"
+                  } ${
+                    errors.Hoten ? "border-red-500" : "border-gray-300"
+                  } px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
                 />
+                {errors.Hoten && (
+                  <p className="mt-1 text-sm text-red-500">{errors.Hoten}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Phone Number
+                  Số điện thoại <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
@@ -247,13 +329,22 @@ const ProfilePage = () => {
                   value={formData.Sdt}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border ${!isEditing ? "bg-gray-100 text-black" : "bg-white text-black"} border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
+                  className={`mt-1 block w-full rounded-md border ${
+                    !isEditing
+                      ? "bg-gray-100 text-black"
+                      : "bg-white text-black"
+                  } ${
+                    errors.Sdt ? "border-red-500" : "border-gray-300"
+                  } px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
                 />
+                {errors.Sdt && (
+                  <p className="mt-1 text-sm text-red-500">{errors.Sdt}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Address
+                  Địa chỉ <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -261,8 +352,17 @@ const ProfilePage = () => {
                   value={formData.Diachi}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border ${!isEditing ? "bg-gray-100 text-black" : "bg-white text-black"} border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
+                  className={`mt-1 block w-full rounded-md border ${
+                    !isEditing
+                      ? "bg-gray-100 text-black"
+                      : "bg-white text-black"
+                  } ${
+                    errors.Diachi ? "border-red-500" : "border-gray-300"
+                  } px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
                 />
+                {errors.Diachi && (
+                  <p className="mt-1 text-sm text-red-500">{errors.Diachi}</p>
+                )}
               </div>
             </div>
 
@@ -272,7 +372,7 @@ const ProfilePage = () => {
                   type="submit"
                   className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
-                  Save Changes
+                  Lưu thay đổi
                 </button>
               </div>
             )}
