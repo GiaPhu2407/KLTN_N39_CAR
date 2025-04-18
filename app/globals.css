@@ -84,6 +84,10 @@ body {
   animation-play-state: paused;
 }
 
+.animate-fadeleft {
+animation: fadeleft 1s linear;
+}
+
 @keyframes fadeleft {
   0% {
     transform: translateX(-40%);

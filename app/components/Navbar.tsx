@@ -5,42 +5,32 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthContext";
 
+interface LoaiXe {
+  idLoaiXe: number;
+  TenLoai: string;
+  NhanHieu: string;
+  HinhAnh: string;
+}
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loaiXe, setLoaiXe] = useState([
-    {
-      idLoaiXe: 1,
-      TenLoai: "VF 5",
-      NhanHieu: "VinFast",
-      HinhAnh:
-        "https://vinfastauto.com/sites/default/files/styles/our_journey_car_image/public/2023-07/VF%205%20PLUS.png",
-    },
-    {
-      idLoaiXe: 2,
-      TenLoai: "VF 6",
-      NhanHieu: "VinFast",
-      HinhAnh:
-        "https://vinfastauto.com/sites/default/files/styles/our_journey_car_image/public/2023-07/VF%206.png",
-    },
-    {
-      idLoaiXe: 3,
-      TenLoai: "VF 8",
-      NhanHieu: "VinFast",
-      HinhAnh:
-        "https://vinfastauto.com/sites/default/files/styles/our_journey_car_image/public/2023-07/VF%208.png",
-    },
-    {
-      idLoaiXe: 4,
-      TenLoai: "VF 9",
-      NhanHieu: "VinFast",
-      HinhAnh:
-        "https://vinfastauto.com/sites/default/files/styles/our_journey_car_image/public/2023-07/VF%209.png",
-    },
-  ]);
+  const [loaiXe, setLoaiXe] = useState<LoaiXe[]>([]);
 
   const { user, setUser } = useAuth();
   const router = useRouter();
-
+  useEffect(() => {
+    const fetchLoaiXe = async () => {
+      try {
+        const response = await fetch("api/typecar");
+        if (!response.ok) throw new Error("Failed to fetch loai xe");
+        const data = await response.json();
+        setLoaiXe(data || []);
+      } catch (error) {
+        console.error("Failed to fetch loai xe", error);
+        setLoaiXe([]);
+      }
+    };
+    fetchLoaiXe();
+  }, []);
   useEffect(() => {
     // Create an interval to check session status
     const checkSession = async () => {
@@ -124,7 +114,7 @@ export default function Navbar() {
                     <li key={loai.idLoaiXe} className="mt-10">
                       <Link href={`LoaiXe?id=${loai.idLoaiXe}`}>
                         <img
-                          src={loai.HinhAnh}
+                          src={loai.HinhAnh && loai.HinhAnh.trim() !== "" ? loai.HinhAnh : "/default-image.png"}
                           className="hover:animate-fadeleft transition-all duration-75 hover:scale-150"
                           alt={loai.TenLoai}
                         />
@@ -205,7 +195,7 @@ export default function Navbar() {
                   className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
                 >
                   <li>
-                    <a href="/Profiles" className="justify-between">
+                    <a href="/Profile" className="justify-between">
                       Profile
                       <span className="badge">New</span>
                     </a>
@@ -217,7 +207,7 @@ export default function Navbar() {
                     <a href="/Orders">Orders</a>
                   </li>
                   <li>
-                    <a href="/Lichhen">Lich Hen</a>
+                    <a href="/Calender">Calender</a>
                   </li>
                   <li>
                     <a href="/Danhgia">Revivew Car</a>
