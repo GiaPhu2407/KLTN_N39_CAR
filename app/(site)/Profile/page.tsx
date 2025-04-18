@@ -77,6 +77,14 @@ const ProfilePage = () => {
     if (!formData.Email.trim()) {
       newErrors.Email = "Email không được để trống";
       isValid = false;
+    } else {
+      // Check email format
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(formData.Email)) {
+        newErrors.Email =
+          "Email không đúng định dạng (phải có @ và đuôi .com, .vn, ...)";
+        isValid = false;
+      }
     }
 
     // Full name validation
