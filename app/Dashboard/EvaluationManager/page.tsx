@@ -39,24 +39,7 @@ export default function Page() {
         <span className="font-medium">Bạn có chắc muốn xóa đánh giá này?</span>
         <div className="flex gap-2">
           <button
-            onClick={async () => {
-              toast.dismiss(t.id);
-              try {
-                const response = await fetch(`api/danhgia/${id}`, {
-                  method: "DELETE",
-                });
-
-                if (!response.ok) {
-                  throw new Error("Failed to delete review");
-                }
-
-                const data = await response.json();
-                toast.success(data.message);
-                refreshData();
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Lỗi khi xóa đánh giá");
-              }
-            }}
+            
             className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
           >
             Xóa
