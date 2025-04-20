@@ -40,7 +40,9 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
   const [danhGiaList, setDanhGiaList] = useState<DanhGiaTraiNghiem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
 
@@ -52,10 +54,10 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
     try {
       setLoading(true);
       const response = await fetch(
-        `api/phantrang/phantrangdanhgia?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
+        `api/pagination/evaluate?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
       );
       if (!response.ok) throw new Error("Failed to fetch data");
-      
+
       const data = await response.json();
       setDanhGiaList(data.data);
       setPaginationMeta(data.meta);
@@ -70,7 +72,9 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
     setCurrentPage(page);
   };
 
-  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handlePageSizeChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
     setCurrentPage(1); // Reset to first page when changing page size
@@ -79,16 +83,20 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
   // Function to render star rating
   const renderStarRating = (rating: number | null) => {
     if (!rating) return "Chưa đánh giá";
-    
+
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       if (i <= rating) {
         stars.push(
-          <span key={i} className="text-yellow-400">★</span>
+          <span key={i} className="text-yellow-400">
+            ★
+          </span>
         );
       } else {
         stars.push(
-          <span key={i} className="text-gray-300">★</span>
+          <span key={i} className="text-gray-300">
+            ★
+          </span>
         );
       }
     }
@@ -98,12 +106,12 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
   // Format date to display in a more readable format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthContext";
+import SearchModal from "./SearchModal";
 
 interface LoaiXe {
   idLoaiXe: number;
@@ -138,7 +139,9 @@ export default function Navbar() {
         </div>
 
         <div className="justify-center w-10 md:w-60 items-center mr-4 relative">
-          <div className="mb-2">{/* <SearchModal /> */}</div>
+          <div className="mb-2">
+            <SearchModal />
+          </div>
         </div>
 
         <div className="flex w-full justify-end">

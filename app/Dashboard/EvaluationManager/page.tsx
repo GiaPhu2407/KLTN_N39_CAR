@@ -34,57 +34,65 @@ export default function Page() {
   };
 
   const handleDelete = async (id: number) => {
-    toast((t) => (
-      <div className="flex flex-col gap-2">
-        <span className="font-medium">Bạn có chắc muốn xóa đánh giá này?</span>
-        <div className="flex gap-2">
-          <button
-            onClick={async () => {
-              toast.dismiss(t.id);
-              try {
-                const response = await fetch(`api/danhgia/${id}`, {
-                  method: "DELETE",
-                });
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc muốn xóa đánh giá này?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  const response = await fetch(`api/evaluate/${id}`, {
+                    method: "DELETE",
+                  });
 
-                if (!response.ok) {
-                  throw new Error("Failed to delete review");
+                  if (!response.ok) {
+                    throw new Error("Failed to delete review");
+                  }
+
+                  const data = await response.json();
+                  toast.success(data.message);
+                  refreshData();
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error ? err.message : "Lỗi khi xóa đánh giá"
+                  );
                 }
-
-                const data = await response.json();
-                toast.success(data.message);
-                refreshData();
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Lỗi khi xóa đánh giá");
-              }
-            }}
-            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
-          >
-            Xóa
-          </button>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
-          >
-            Hủy
-          </button>
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
         </div>
-      </div>
-    ), {
-      duration: Infinity,
-      position: 'top-center',
-      style: {
-        background: '#fff',
-        color: '#000',
-        padding: '16px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      },
-    });
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
   };
 
   const handleView = (review: ReviewData) => {
     setReviewData(review);
-    
+
     const dialog = document.getElementById("review_modal") as HTMLDialogElement;
     if (dialog) {
       dialog.showModal();
@@ -102,16 +110,20 @@ export default function Page() {
   // Function to render star rating
   const renderStarRating = (rating: number | null) => {
     if (!rating) return "Chưa đánh giá";
-    
+
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       if (i <= rating) {
         stars.push(
-          <span key={i} className="text-yellow-400">★</span>
+          <span key={i} className="text-yellow-400">
+            ★
+          </span>
         );
       } else {
         stars.push(
-          <span key={i} className="text-gray-300">★</span>
+          <span key={i} className="text-gray-300">
+            ★
+          </span>
         );
       }
     }
@@ -121,29 +133,35 @@ export default function Page() {
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
-  if (loading) return (
-    <div className="flex justify-center items-center h-screen" data-theme="light">
-      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
-    </div>
-  );
+  if (loading)
+    return (
+      <div
+        className="flex justify-center items-center h-screen"
+        data-theme="light"
+      >
+        <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+      </div>
+    );
 
   return (
-    <div className="p-2 flex-col justify-center text-center w-full h-[630px]" data-theme="light">
+    <div
+      className="p-2 flex-col justify-center text-center w-full h-[630px]"
+      data-theme="light"
+    >
       <div className="flex justify-between pb-4 w-full">
         <h1 className="text-2xl font-bold  flex-grow text-black">
           Quản Lý Đánh Giá Trải Nghiệm
         </h1>
       </div>
-      
 
       <dialog id="review_modal" className="modal">
         <div className="modal-box w-11/12 max-w-5xl">
@@ -155,9 +173,7 @@ export default function Page() {
               ✕
             </button>
           </form>
-          <h3 className="font-bold text-lg mb-4">
-            Chi Tiết Đánh Giá
-          </h3>
+          <h3 className="font-bold text-lg mb-4">Chi Tiết Đánh Giá</h3>
           {reviewData && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
