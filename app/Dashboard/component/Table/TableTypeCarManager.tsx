@@ -202,7 +202,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
 
             <div className="flex flex-wrap gap-2 w-full md:w-auto">
               <div>
-                <label className="btn text-xs btn-primary">
+                <label className="inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-accent cursor-pointer transition-colors">
                   <input
                     type="file"
                     className="hidden"
@@ -212,7 +212,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                   />
                   <Upload className="h-5 w-5 mr-2 ml-2" />
                   <span className="justify-center text-xs">
-                    {importing ? "Importing..." : "Import File"}
+                    {importing ? "Đang nhập..." : "Nhập File"}
                   </span>
                 </label>
               </div>
@@ -222,7 +222,8 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                   className="btn text-xs btn-primary"
                   onClick={handleExport}
                 >
-                  Export
+                  <FileType className="h-6 w-5 mr-2" />
+                  <span className="">Xuất</span>
                 </button>
               </div>
               <select
@@ -238,7 +239,9 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                 className="btn text-xs btn-success"
                 onClick={handleReport}
               >
-                Generate Report
+                <FileText className="h-6 w-5 mr-2 ml-2" />
+                <span className="text-xs">Tạo</span>
+                <span className="text-xs">Báo Cáo</span>
               </button>
             </div>
           </div>
