@@ -105,10 +105,8 @@ const SearchResults = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // Get the search parameters string
         const queryString = searchParams.toString();
 
-        // Make the API call
         const response = await fetch(
           `/api/searchcar${queryString ? "?" + queryString : ""}`
         );
