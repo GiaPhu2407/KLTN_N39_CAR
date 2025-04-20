@@ -197,7 +197,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
               placeholder="Tìm kiếm..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className="mr-48 input input-bordered h-10 text-sm w-72 max-w-xs"
+              className="input input-bordered h-10 text-sm w-72 max-w-xs"
             />
 
             <div className="flex flex-wrap gap-2 w-full md:w-auto">
