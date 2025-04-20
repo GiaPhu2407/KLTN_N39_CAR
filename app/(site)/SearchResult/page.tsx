@@ -106,7 +106,6 @@ const SearchResults = () => {
     const fetchResults = async () => {
       try {
         const queryString = searchParams.toString();
-
         const response = await fetch(
           `/api/searchcar${queryString ? "?" + queryString : ""}`
         );
@@ -123,6 +122,31 @@ const SearchResults = () => {
 
     fetchResults();
   }, [searchParams]);
+
+  if (loading) {
+    return (
+      <div
+        className="flex justify-center items-center h-screen"
+        data-theme="light"
+      >
+        <div className="loading loading-spinner text-blue-600 loading-lg"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="flex justify-center items-center h-screen"
+        data-theme="light"
+      >
+        <div className="text-2xl font-bold text-red-600">{error}</div>
+        <Link href="/" className="btn btn-primary ml-4">
+          Quay về trang chủ
+        </Link>
+      </div>
+    );
+  }
 
   const loadMore = () => {
     const currentLength = displayedCars.length;

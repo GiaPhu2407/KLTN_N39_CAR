@@ -45,7 +45,6 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-
   useEffect(() => {
     fetchDanhGiaData();
   }, [currentPage, pageSize, reloadKey, searchText]);
