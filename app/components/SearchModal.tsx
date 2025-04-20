@@ -155,19 +155,7 @@ const SearchModal = () => {
               />
             </div>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Động cơ</span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered w-full"
-                value={searchParams.dongCo}
-                onChange={(e) =>
-                  setSearchParams({ ...searchParams, dongCo: e.target.value })
-                }
-              />
-            </div>
+            
           </div>
 
           <div className="mt-6">

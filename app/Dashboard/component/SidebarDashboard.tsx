@@ -37,6 +37,11 @@ const SidebarDashboard: React.FC<SidebarDashboardProps> = ({ isOpen }) => {
       href: "/Dashboard/SuppliesManager",
       label: "Nhà Cung Cấp",
     },
+    {
+      icon: <GiCarDoor />,
+      href: "/Dashboard/EvaluationManager",
+      label: "Đánh Giá",
+    },
   ];
 
   const isActivePath = (path: string) => pathname === path;
