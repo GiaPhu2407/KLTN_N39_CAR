@@ -34,45 +34,7 @@ export default function Page() {
   };
 
   const handleDelete = async (id: number) => {
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-2">
-          <span className="font-medium">
-            Bạn có chắc muốn xóa đánh giá này?
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={async () => {
-                toast.dismiss(t.id);
-                try {
-                  const response = await fetch(`api/evaluate/${id}`, {
-                    method: "DELETE",
-                  });
 
-                  if (!response.ok) {
-                    throw new Error("Failed to delete review");
-                  }
-
-                  const data = await response.json();
-                  toast.success(data.message);
-                  refreshData();
-                } catch (err) {
-                  toast.error(
-                    err instanceof Error ? err.message : "Lỗi khi xóa đánh giá"
-                  );
-                }
-              }}
-              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
-            >
-              Xóa
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
-            >
-              Hủy
-            </button>
-          </div>
         </div>
       ),
       {

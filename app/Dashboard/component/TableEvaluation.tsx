@@ -46,27 +46,6 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
 
-  useEffect(() => {
-    fetchDanhGiaData();
-  }, [currentPage, pageSize, reloadKey, searchText]);
-
-  const fetchDanhGiaData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `api/pagination/evaluate?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch data");
-
-      const data = await response.json();
-      setDanhGiaList(data.data);
-      setPaginationMeta(data.meta);
-    } catch (error) {
-      console.error("Error fetching ratings:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

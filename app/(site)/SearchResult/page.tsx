@@ -338,29 +338,7 @@ const SearchResults = () => {
   const [displayedCars, setDisplayedCars] = useState<Xe[]>([]);
   const carsPerPage = 4;
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        // Get the search parameters string
-        const queryString = searchParams.toString();
 
-        // Make the API call
-        const response = await fetch(
-          `/api/searchcar${queryString ? "?" + queryString : ""}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch results");
-        const data = await response.json();
-        setResults(data.data);
-        setDisplayedCars(data.data.slice(0, carsPerPage));
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResults();
-  }, [searchParams]);
 
   const loadMore = () => {
     const currentLength = displayedCars.length;
