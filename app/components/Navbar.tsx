@@ -144,7 +144,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="flex w-full justify-end">
+        <div className="flex justify-end">
           {!user ? (
             <div className="flex gap-2 pt-2 h-14">
               <Link

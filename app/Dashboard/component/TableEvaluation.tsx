@@ -115,7 +115,7 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-1 pl-14">
       <div className="overflow-x-auto">
         <div className="flex justify-between pb-5">
           <div className="mt-6">
@@ -145,67 +145,109 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
             {/* You can add an ImportExportComponent here if needed */}
           </div>
         </div>
-        <table className="table h-full w-[1000px]">
-          <thead>
-            <tr className="bg-blue-900 text-white text-center">
-              <th>ID</th>
-              <th>Tên Khách Hàng</th>
-              <th>Xe</th>
-              <th>Đánh Giá</th>
-              <th>Nội Dung</th>
-              <th>Ngày Đánh Giá</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="text-center text-black py-4">
-                  Đang tải...
-                </td>
-              </tr>
-            ) : danhGiaList.length === 0 ? (
-              <tr>
-                <td colSpan={10} className="text-center text-black py-4">
-                  Không có dữ liệu đánh giá
-                </td>
-              </tr>
-            ) : (
-              danhGiaList.map((danhGia) => (
-                <tr key={danhGia.idDanhGia} className="text-black text-center">
-                  <th>{danhGia.idDanhGia}</th>
-                  <td>
-                    {danhGia.lichHen?.TenKhachHang || "N/A"}
-                    <div className="text-xs text-gray-500">
-                      {danhGia.lichHen?.Sdt || ""}
-                    </div>
-                  </td>
-                  <td>{danhGia.xe?.TenXe || "N/A"}</td>
-                  <td>{renderStarRating(danhGia.SoSao)}</td>
-                  <td className="max-w-xs truncate">
-                    {danhGia.NoiDung || "Không có nội dung"}
-                  </td>
-                  <td>{formatDate(danhGia.NgayDanhGia)}</td>
-                  <td className="space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => onEdit(danhGia)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                    >
-                      Xem
-                    </button>
-                    <button
-                      onClick={() => onDelete(danhGia.idDanhGia)}
-                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                    >
-                      Xóa
-                    </button>
-                  </td>
+        <div className="relative shadow-md rounded-lg border border-gray-200 w-full overflow-x-auto">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full table-fixed border-collapse">
+              <thead className="bg-gray-50">
+                <tr className="text-white text-center">
+                  <th
+                    scope="col"
+                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
+                  >
+                    ID ĐÁNH GIÁ
+                  </th>
+                  <th
+                    scope="col"
+                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-70"
+                  >
+                    TÊN KHÁCH HÀNG
+                  </th>
+                  <th
+                    scope="col"
+                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
+                  >
+                    Xe
+                  </th>
+                  <th
+                    scope="col"
+                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
+                  >
+                    Đánh Giá
+                  </th>
+                  <th
+                    scope="col"
+                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
+                  >
+                    Nội Dung
+                  </th>
+                  <th
+                    scope="col"
+                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-52"
+                  >
+                    Ngày Đánh Giá
+                  </th>
+                  <th
+                    scope="col"
+                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
+                  >
+                    Action
+                  </th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="text-center text-black py-4">
+                      Đang tải...
+                    </td>
+                  </tr>
+                ) : danhGiaList.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="text-center text-black py-4">
+                      Không có dữ liệu đánh giá
+                    </td>
+                  </tr>
+                ) : (
+                  danhGiaList.map((danhGia) => (
+                    <tr
+                      key={danhGia.idDanhGia}
+                      className="text-black text-center"
+                    >
+                      <th>{danhGia.idDanhGia}</th>
+                      <td>
+                        {danhGia.lichHen?.TenKhachHang || "N/A"}
+                        <div className="text-xs text-gray-500">
+                          {danhGia.lichHen?.Sdt || ""}
+                        </div>
+                      </td>
+                      <td>{danhGia.xe?.TenXe || "N/A"}</td>
+                      <td>{renderStarRating(danhGia.SoSao)}</td>
+                      <td className="max-w-xs truncate">
+                        {danhGia.NoiDung || "Không có nội dung"}
+                      </td>
+                      <td>{formatDate(danhGia.NgayDanhGia)}</td>
+                      <td className="space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(danhGia)}
+                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        >
+                          🖊️
+                        </button>
+                        <button
+                          onClick={() => onDelete(danhGia.idDanhGia)}
+                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        >
+                          ❌
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {paginationMeta && (

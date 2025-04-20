@@ -250,7 +250,7 @@ export default function Page() {
         </div>
       </dialog>
 
-      <div className="flex w-full justify-center">
+      <div className="">
         <TableDanhGiaTraiNghiem
           onEdit={handleView}
           onDelete={handleDelete}
