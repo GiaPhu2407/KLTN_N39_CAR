@@ -56,10 +56,19 @@ export default function Page() {
           </span>
           <div className="flex gap-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 toast.dismiss(t.id);
-                toast.success("Đã xóa người dùng thành công!");
-                refreshData();
+                try {
+                  // Since there's no API, we'll just show success message
+                  toast.success("Đã xóa người dùng thành công!");
+                  refreshData();
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error
+                      ? err.message
+                      : "Lỗi khi xóa người dùng"
+                  );
+                }
               }}
               className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
             >
@@ -75,7 +84,7 @@ export default function Page() {
         </div>
       ),
       {
-        duration: Infinity, // Don't auto-dismiss
+        duration: Infinity,
         position: "top-center",
         style: {
           background: "#fff",
@@ -120,34 +129,90 @@ export default function Page() {
     }
   };
 
+  const validateForm = () => {
+    const errors = [];
+
+    if (!formData.Tentaikhoan.trim()) {
+      errors.push("Tên tài khoản không được để trống");
+    }
+
+    if (!isEditing && !formData.Matkhau.trim()) {
+      errors.push("Mật khẩu không được để trống");
+    }
+
+    if (!formData.Hoten.trim()) {
+      errors.push("Họ tên không được để trống");
+    }
+
+    if (!formData.Sdt.trim()) {
+      errors.push("Số điện thoại không được để trống");
+    } else if (!/^[0-9]{10,11}$/.test(formData.Sdt)) {
+      errors.push("Số điện thoại không hợp lệ (cần 10-11 số)");
+    }
+
+    if (!formData.Email.trim()) {
+      errors.push("Email không được để trống");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.Email)) {
+      errors.push("Email không hợp lệ");
+    }
+
+    if (!formData.Diachi.trim()) {
+      errors.push("Địa chỉ không được để trống");
+    }
+
+    if (!formData.idRole) {
+      errors.push("Vui lòng chọn vai trò");
+    }
+
+    return errors;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Mock successful submission
-    toast.success(isEditing ? "Cập nhật thành công!" : "Thêm mới thành công!");
-    setFormData(initialFormData);
-    setIsEditing(false);
-    setEditingId(null);
-    refreshData();
+    const errors = validateForm();
+    if (errors.length > 0) {
+      toast.error(errors.join(", "));
+      return;
+    }
 
-    // Close the dialog after successful submission
-    const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
-    if (dialog) {
-      dialog.close();
+    try {
+      // Mock successful submission
+      toast.success(
+        isEditing
+          ? "Cập nhật người dùng thành công!"
+          : "Thêm mới người dùng thành công!"
+      );
+      setFormData(initialFormData);
+      setIsEditing(false);
+      setEditingId(null);
+      refreshData();
+
+      // Close the dialog after successful submission
+      const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
+      if (dialog) {
+        dialog.close();
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : `Lỗi ${isEditing ? "cập nhật" : "tạo"} người dùng`
+      );
     }
   };
 
   const handleModalClose = () => {
-    if (!isEditing) {
-      setFormData(initialFormData);
-    }
+    setFormData(initialFormData);
+    setIsEditing(false);
+    setEditingId(null);
     const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
     if (dialog) {
       dialog.close();
     }
   };
 
-  const handleAddNew = () => {
+  const handleAddNewClick = () => {
     setFormData(initialFormData);
     setIsEditing(false);
     setEditingId(null);
@@ -158,21 +223,21 @@ export default function Page() {
   };
 
   return (
-    <div className="p-2 w-full h-[630px]" data-theme="light">
-      <Toaster />
-      <div className="flex w-full mb-6">
-        <h1 className="text-2xl font-bold mt-1 ml-10 text-black whitespace-nowrap">
+    <div
+      className="p-2 flex-col justify-center text-center w-full h-[630px]"
+      data-theme="light"
+    >
+      <div className="flex pb-4 w-full justify-between" data-theme="light">
+        <h1 className="text-2xl font-bold text-black ml-10">
           Quản Lý Tài Khoản Người Dùng
         </h1>
-        <div className="flex justify-end gap-4 w-full mr-4">
-          <button className="btn btn-primary" onClick={handleAddNew}>
-            Thêm mới
-          </button>
-        </div>
+        <button className="btn text-xs btn-accent" onClick={handleAddNewClick}>
+          Thêm mới
+        </button>
       </div>
 
-      <dialog id="my_modal_3" className="modal" data-theme="light">
-        <div className="modal-box w-11/12 max-w-5xl">
+      <dialog id="my_modal_3" className="modal opacity-100" data-theme="light">
+        <div className="modal-box w-full max-w-none" data-theme="light">
           <form method="dialog">
             <button
               className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -256,7 +321,7 @@ export default function Page() {
                         Số điện thoại
                       </label>
                       <input
-                        type="text"
+                        type="tel"
                         id="Sdt"
                         name="Sdt"
                         value={formData.Sdt}
@@ -350,13 +415,11 @@ export default function Page() {
         </div>
       </dialog>
 
-      <div className="flex w-full justify-center px-10">
-        <TableUser
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          reloadKey={reloadKey}
-        />
-      </div>
+      <TableUser
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        reloadKey={reloadKey}
+      />
     </div>
   );
 }

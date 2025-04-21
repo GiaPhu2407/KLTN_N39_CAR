@@ -183,12 +183,12 @@ const TableUser: React.FC<TableUserProps> = ({
 
   return (
     <div className="w-full">
-      <div className="overflow-hidden">
+      <div className="overflow-x-auto">
         <div className="">
           <div className="inline-block min-w-full align-middle">
             <div className="flex justify-between pb-5">
               <div className="mt-3">
-                <label htmlFor="pageSize" className="text-sm">
+                <label htmlFor="pageSize" className="text-sm ml-64">
                   Số mục mỗi trang:
                 </label>
                 <select
@@ -219,120 +219,130 @@ const TableUser: React.FC<TableUserProps> = ({
                 </button>
               </div>
             </div>
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead className="bg-gray-50">
-                <tr className="text-white text-center">
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider  w-16"
-                  >
-                    ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                  >
-                    Tên tài khoản
-                  </th>
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                  >
-                    Họ tên
-                  </th>
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                  >
-                    Số điện thoại
-                  </th>
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                  >
-                    Địa chỉ
-                  </th>
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                  >
-                    Email
-                  </th>
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                  >
-                    Vai trò
-                  </th>
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                  >
-                    Ngày đăng ký
-                  </th>
-                  <th
-                    scope="col"
-                    className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                  >
-                    Thao tác
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {currentUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="px-3 py-4 text-sm text-center">
-                      Không có dữ liệu người dùng
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-300 border-collapse">
+                <thead className="bg-gray-50">
+                  <tr className="text-center">
+                    <th
+                      scope="col"
+                      className="px-12 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20"
+                    >
+                      ID
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
+                    >
+                      Tên tài khoản
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40"
+                    >
+                      Họ tên
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
+                    >
+                      Số điện thoại
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-40 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-48"
+                    >
+                      Địa chỉ
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40"
+                    >
+                      Email
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-28"
+                    >
+                      Vai trò
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
+                    >
+                      Ngày đăng ký
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-24"
+                    >
+                      Thao tác
+                    </th>
                   </tr>
-                ) : (
-                  currentUsers.map((user) => (
-                    <tr key={user.idUsers} className="hover:bg-gray-50">
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {user.idUsers}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {user.Tentaikhoan}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {user.Hoten}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {user.Sdt}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {user.Diachi}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {user.Email}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {getRoleName(user.idRole)}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {formatDateTime(user.Ngaydangky)}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => onEdit(user)}
-                            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                          >
-                            Sửa
-                          </button>
-                          <button
-                            onClick={() => onDelete(user.idUsers)}
-                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                          >
-                            Xóa
-                          </button>
-                        </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {currentUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-4 text-sm text-center">
+                        Không có dữ liệu người dùng
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    currentUsers.map((user) => (
+                      <tr key={user.idUsers} className="hover:bg-gray-50">
+                        <td className="px-10 py-4 text-sm text-gray-900">
+                          {user.idUsers}
+                        </td>
+                        <td className="px-10 py-4 text-sm text-gray-900 overflow-hidden text-ellipsis">
+                          <div className="max-w-full overflow-hidden text-ellipsis">
+                            {user.Tentaikhoan}
+                          </div>
+                        </td>
+                        <td className="px-10 py-4 text-sm text-gray-900 overflow-hidden text-ellipsis">
+                          <div className="max-w-full overflow-hidden text-ellipsis">
+                            {user.Hoten}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {user.Sdt}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 overflow-hidden text-ellipsis">
+                          <div className="max-w-full overflow-hidden text-ellipsis">
+                            {user.Diachi}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 overflow-hidden text-ellipsis">
+                          <div className="max-w-full overflow-hidden text-ellipsis">
+                            {user.Email}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {getRoleName(user.idRole)}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {formatDateTime(user.Ngaydangky)}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => onEdit(user)}
+                              className="p-1 text-blue-500 hover:text-blue-700"
+                            >
+                              🖊️
+                            </button>
+                            <button
+                              onClick={() => onDelete(user.idUsers)}
+                              className="p-1 text-red-500 hover:text-red-700"
+                            >
+                              ❌
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
