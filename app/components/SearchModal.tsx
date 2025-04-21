@@ -65,7 +65,7 @@ const SearchModal = () => {
 
   return (
     <div className="w-full">
-      <div className=" gap-2 " onClick={handleShowModal}>
+      <div className="gap- 2" onClick={handleShowModal}>
         <Search className="h-6 w-6 text-4xl md:absolute"></Search>
         <div className="hidden md:block md:pl-7">Search xe</div>
       </div>

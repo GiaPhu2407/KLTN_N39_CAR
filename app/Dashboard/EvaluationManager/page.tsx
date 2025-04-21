@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 
 import toast, { Toaster } from "react-hot-toast";
-import TableDanhGiaTraiNghiem from "../component/TableEvaluation";
+import TableDanhGiaTraiNghiem from "../component/Table/TableEvaluation";
 
 interface ReviewData {
   idDanhGia: number;
@@ -13,7 +13,7 @@ interface ReviewData {
   SoSao: number | null;
   NoiDung: string | null;
   NgayDanhGia: string;
-  lichHenTraiNghiem: {
+  lichHen: {
     TenKhachHang: string | null;
     Sdt: string | null;
     Email: string | null;
@@ -154,109 +154,109 @@ export default function Page() {
 
   return (
     <div
-      className="p-2 flex-col justify-center text-center w-full h-[630px]"
-      data-theme="light"
-    >
-      <div className="flex justify-between pb-4 w-full">
-        <h1 className="text-2xl font-bold  flex-grow text-black">
-          Quản Lý Đánh Giá Trải Nghiệm
-        </h1>
-      </div>
+  className="p-2 flex-col justify-center text-center w-full h-[630px]"
+  data-theme="light"
+>
+  <div className="flex justify-between pb-4 w-full">
+    <h1 className="text-2xl font-bold flex-grow text-black text-center">
+      Quản Lý Đánh Giá Trải Nghiệm
+    </h1>
+  </div>
 
-      <dialog id="review_modal" className="modal">
-        <div className="modal-box w-11/12 max-w-5xl">
-          <form method="dialog">
-            <button
-              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-              onClick={handleModalClose}
-            >
-              ✕
-            </button>
-          </form>
-          <h3 className="font-bold text-lg mb-4">Chi Tiết Đánh Giá</h3>
-          {reviewData && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Khách Hàng
-                  </label>
-                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-left">
-                    {reviewData.lichHenTraiNghiem?.TenKhachHang || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Số Điện Thoại
-                  </label>
-                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-left">
-                    {reviewData.lichHenTraiNghiem?.Sdt || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-left">
-                    {reviewData.lichHenTraiNghiem?.Email || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Xe
-                  </label>
-                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-left">
-                    {reviewData.xe?.TenXe || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Ngày Đánh Giá
-                  </label>
-                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-left">
-                    {formatDate(reviewData.NgayDanhGia)}
-                  </p>
-                </div>
-                <div>
-                  <label className="block font-medium text-gray-700 mb-1">
-                    Đánh Giá Sao
-                  </label>
-                  <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-left">
-                    {renderStarRating(reviewData.SoSao)}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-medium text-gray-700 mb-1">
-                  Nội Dung Đánh Giá
-                </label>
-                <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-left min-h-32">
-                  {reviewData.NoiDung || "Không có nội dung"}
-                </div>
-              </div>
-
-              <div className="flex justify-end mt-6">
-                <button
-                  type="button"
-                  onClick={handleModalClose}
-                  className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-                >
-                  Đóng
-                </button>
+  <dialog id="review_modal" className="modal">
+    <div className="modal-box w-11/12 max-w-5xl">
+      <form method="dialog">
+        <button
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          onClick={handleModalClose}
+        >
+          ✕
+        </button>
+      </form>
+      <h3 className="font-bold text-lg mb-4 text-center">Chi Tiết Đánh Giá</h3>
+      {reviewData && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-medium text-gray-700 mb-1 text-center">
+                Khách Hàng
+              </label>
+              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                {reviewData.lichHen?.TenKhachHang || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block font-medium text-gray-700 mb-1 text-center">
+                Số Điện Thoại
+              </label>
+              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                {reviewData.lichHen?.Sdt || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block font-medium text-gray-700 mb-1 text-center">
+                Email
+              </label>
+              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                {reviewData.lichHen?.Email || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block font-medium text-gray-700 mb-1 text-center">
+                Xe
+              </label>
+              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                {reviewData.xe?.TenXe || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block font-medium text-gray-700 mb-1 text-center">
+                Ngày Đánh Giá
+              </label>
+              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                {formatDate(reviewData.NgayDanhGia)}
+              </p>
+            </div>
+            <div>
+              <label className="block font-medium text-gray-700 mb-1 text-center">
+                Đánh Giá Sao
+              </label>
+              <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 flex justify-center">
+                {renderStarRating(reviewData.SoSao)}
               </div>
             </div>
-          )}
-        </div>
-      </dialog>
+          </div>
 
-      <div className="">
-        <TableDanhGiaTraiNghiem
-          onEdit={handleView}
-          onDelete={handleDelete}
-          reloadKey={reloadKey}
-        />
-      </div>
+          <div>
+            <label className="block font-medium text-gray-700 mb-1 text-center">
+              Nội Dung Đánh Giá
+            </label>
+            <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center min-h-32">
+              {reviewData.NoiDung || "Không có nội dung"}
+            </div>
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <button
+              type="button"
+              onClick={handleModalClose}
+              className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+  </dialog>
+
+  <div className="w-full">
+    <TableDanhGiaTraiNghiem
+      onEdit={handleView}
+      onDelete={handleDelete}
+      reloadKey={reloadKey}
+    />
+  </div>
+</div>
   );
 }
