@@ -20,17 +20,25 @@ export async function GET(req: NextRequest) {
       whereCondition.idUser = Number(session.user.id);
     }
 
-    if (search) {
+    const searchAsNumber = !isNaN(Number(search)) ? Number(search) : undefined;
+
+    if (
+      searchAsNumber !== undefined &&
+      searchAsNumber >= 1 &&
+      searchAsNumber <= 5
+    ) {
+      whereCondition.SoSao = searchAsNumber;
+    } else if (search) {
       whereCondition.OR = [
         {
-          lichHen: {
+          lichHenTraiNghiem: {
             TenKhachHang: {
               contains: search,
             },
           },
         },
         {
-          lichHen: {
+          lichHenTraiNghiem: {
             Sdt: {
               contains: search,
             },
@@ -50,6 +58,7 @@ export async function GET(req: NextRequest) {
         },
       ];
     }
+
     const totalRecords = await prisma.danhGiaTraiNghiem.count({
       where: whereCondition,
     });

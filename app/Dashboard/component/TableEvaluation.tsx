@@ -8,7 +8,7 @@ interface DanhGiaTraiNghiem {
   SoSao: number | null;
   NoiDung: string | null;
   NgayDanhGia: string;
-  lichHen: {
+  lichHenTraiNghiem: {
     TenKhachHang: string | null;
     Sdt: string | null;
     Email: string | null;
@@ -215,9 +215,9 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
                     >
                       <th>{danhGia.idDanhGia}</th>
                       <td>
-                        {danhGia.lichHen?.TenKhachHang || "N/A"}
+                        {danhGia.lichHenTraiNghiem?.TenKhachHang || "N/A"}
                         <div className="text-xs text-gray-500">
-                          {danhGia.lichHen?.Sdt || ""}
+                          {danhGia.lichHenTraiNghiem?.Sdt || ""}
                         </div>
                       </td>
                       <td>{danhGia.xe?.TenXe || "N/A"}</td>
