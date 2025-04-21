@@ -126,31 +126,31 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
               <tr className="text-white text-center">
                 <th
                   scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
+                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
                 >
                   Id Nhà Cung Cấp
                 </th>
                 <th
                   scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-52"
+                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-52"
                 >
                   Tên Nhà Cung Cấp
                 </th>
                 <th
                   scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40"
+                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40"
                 >
                   Số Điện Thoại
                 </th>
                 <th
                   scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48"
+                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-48"
                 >
                   Email
                 </th>
                 <th
                   scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
+                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
                 >
                   Action
                 </th>
@@ -175,20 +175,20 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
                 isNhaCungCapTable.map((nhacungcap, index) => (
                   <tr
                     key={nhacungcap.idNhaCungCap}
-                    className={`text-gray-800 hover:bg-gray-50 ${
+                    className={`text-gray-800 text-center hover:bg-gray-50 ${
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
-                    <td className="p-3 text-sm font-medium truncate">
+                    <td className="p-3 text-center font-medium truncate">
                       {nhacungcap.idNhaCungCap}
                     </td>
-                    <td className="p-3 text-sm truncate">
+                    <td className="p-3 text-center truncate">
                       {nhacungcap.TenNhaCungCap}
                     </td>
-                    <td className="p-3 text-sm truncate">{nhacungcap.Sdt}</td>
-                    <td className="p-3 text-sm truncate">{nhacungcap.Email}</td>
-                    <td className="p-3 text-sm">
-                      <div className="flex gap-2">
+                    <td className="p-3 text-center truncate">{nhacungcap.Sdt}</td>
+                    <td className="p-3 text-center truncate">{nhacungcap.Email}</td>
+                    <td className="p-3 text-center">
+                      <div className="flex justify-center space-x-2">
                         <div
                           onClick={() => onEdit(nhacungcap)}
                           className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
