@@ -13,7 +13,7 @@ interface User {
   Ngaydangky: string;
   role?: {
     TenNguoiDung: string;
-  }
+  };
 }
 
 interface Role {
@@ -43,7 +43,9 @@ const TableUser: React.FC<TableUserProps> = ({
   const [roles, setRoles] = useState<Role[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
 
@@ -63,7 +65,9 @@ const TableUser: React.FC<TableUserProps> = ({
 
   useEffect(() => {
     setLoading(true);
-    fetch(`api/pagination/userpaging?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`)
+    fetch(
+      `api/pagination/userpaging?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
+    )
       .then((response) => {
         if (!response.ok) throw new Error("Failed to fetch data");
         return response.json();
@@ -79,18 +83,18 @@ const TableUser: React.FC<TableUserProps> = ({
   }, [currentPage, pageSize, reloadKey, searchText]);
 
   const getRoleName = (idRole: number): string => {
-    const role = roles.find(role => role.idRole === idRole);
+    const role = roles.find((role) => role.idRole === idRole);
     return role?.TenNguoiDung || "N/A";
   };
 
   const formatDateTime = (dateString?: string | null) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("vi-VN", {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
       });
     } catch (error) {
       return dateString;
@@ -108,34 +112,7 @@ const TableUser: React.FC<TableUserProps> = ({
     setPageSize(newSize);
     setCurrentPage(1);
   };
-  const handleExport = async () => {
-    try {
-      const response = await fetch("api/users?export=true", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ search: searchText }),
-      });
 
-      if (!response.ok) {
-        throw new Error("Export failed");
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "NguoiDung_list.xlsx";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch (error) {
-      console.error("Export error:", error);
-      toast.error("Xuất Excel thất bại");
-    }
-
-  }
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
@@ -158,7 +135,7 @@ const TableUser: React.FC<TableUserProps> = ({
                   <option value="50">50</option>
                 </select>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center">
                 <input
                   type="text"
                   placeholder="Tìm kiếm..."
@@ -166,12 +143,7 @@ const TableUser: React.FC<TableUserProps> = ({
                   onChange={(e) => setSearchText(e.target.value)}
                   className="input input-bordered w-full max-w-xs"
                 />
-                <button
-                  onClick={handleExport}
-                  className="btn btn-outline btn-success"
-                >
-                  Xuất Excel
-                </button>
+                {/* Excel export button removed */}
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -315,10 +287,11 @@ const TableUser: React.FC<TableUserProps> = ({
               <button
                 key={index + 1}
                 onClick={() => handlePageChange(index + 1)}
-                className={`px-3 py-1 rounded ${currentPage === index + 1
+                className={`px-3 py-1 rounded ${
+                  currentPage === index + 1
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
+                }`}
               >
                 {index + 1}
               </button>
