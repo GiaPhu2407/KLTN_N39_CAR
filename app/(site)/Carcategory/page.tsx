@@ -125,9 +125,13 @@ const Category = () => {
             </div>
             <div className="flex flex-col ml-16 w-full h-full">
               <div className="p-8">
-                <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{car.loaiXe.NhanHieu}</div>
+              <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
+                  {car.loaiXe?.NhanHieu || "Không rõ nhãn hiệu"}
+                </div>
                 <h2 className="block mt-1 text-3xl leading-tight font-bold text-black">{car.TenXe}</h2>
-                <p className="mt-2 text-gray-500">{car.loaiXe.TenLoai}</p>
+                <p className="mt-2 text-gray-500">
+                  {car.loaiXe?.TenLoai || "Không rõ loại xe"}
+                </p>
                 <h3 className="text-xl font-semibold text-gray-800 mt-3">Mô Tả</h3>
                 <ul className="mt-2 space-y-2">
                 <li className="flex items-center">

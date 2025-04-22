@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import toast, { Toaster } from "react-hot-toast";
 import TableUser from "../component/Table/TableUsers";
@@ -30,22 +30,39 @@ export default function Page() {
     Email: "",
     idRole: "",
   };
-
-  // Mock roles data
-  const mockRoles: Role[] = [
-    { idRole: 1, TenNguoiDung: "Admin" },
-    { idRole: 2, TenNguoiDung: "Nhân viên" },
-    { idRole: 3, TenNguoiDung: "Khách hàng" },
-  ];
-
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [roleList, setRoleList] = useState<Role[]>([]);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [showToast, setShowToast] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const refreshData = () => {
     setReloadKey((prevKey) => prevKey + 1);
   };
+  useEffect(() => {
+    fetch("api/role")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch loai xe data");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("role data:", data);
+        setRoleList(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        toast.error("Failed to fetch role data");
+        console.error("Failed to fetch loai xe", err);
+        setLoading(false);
+      });
+  }, []);
 
   const handleDelete = async (id: number) => {
     toast(
@@ -60,6 +77,15 @@ export default function Page() {
                 toast.dismiss(t.id);
                 try {
                   // Since there's no API, we'll just show success message
+                  const response = await fetch(`api/users/${id}`, {
+                    method: "DELETE",
+                  });
+
+                  if (!response.ok) {
+                    throw new Error("Failed to delete supplier");
+                  }
+
+                  const data = await response.json();
                   toast.success("Đã xóa người dùng thành công!");
                   refreshData();
                 } catch (err) {
@@ -98,13 +124,9 @@ export default function Page() {
     );
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
@@ -167,22 +189,32 @@ export default function Page() {
     return errors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-
     const errors = validateForm();
     if (errors.length > 0) {
-      toast.error(errors.join(", "));
+      errors.forEach((err) => toast.error(err));
       return;
     }
+    const url = isEditing ? `api/users/${editingId}` : 'api/users';
+    const method = isEditing ? 'PUT' : 'POST';
 
     try {
-      // Mock successful submission
-      toast.success(
-        isEditing
-          ? "Cập nhật người dùng thành công!"
-          : "Thêm mới người dùng thành công!"
-      );
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...formData }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} product`);
+      }
+
+      const data = await response.json();
+      toast.success(data.message);
       setFormData(initialFormData);
       setIsEditing(false);
       setEditingId(null);
@@ -193,34 +225,37 @@ export default function Page() {
       if (dialog) {
         dialog.close();
       }
+
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : `Lỗi ${isEditing ? "cập nhật" : "tạo"} người dùng`
-      );
+      toast.error(err instanceof Error ? err.message : `Error ${isEditing ? 'updating' : 'creating'} product`);
     }
   };
 
   const handleModalClose = () => {
-    setFormData(initialFormData);
-    setIsEditing(false);
-    setEditingId(null);
+    if (!isEditing) {
+      setFormData(initialFormData);
+    }
     const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
     if (dialog) {
       dialog.close();
     }
   };
 
-  const handleAddNewClick = () => {
-    setFormData(initialFormData);
-    setIsEditing(false);
-    setEditingId(null);
-    const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
-    if (dialog) {
-      dialog.showModal();
-    }
-  };
+  if (loading) return (
+    <div className="flex justify-center items-center h-screen" data-theme="light">
+      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+    </div>
+  );
+
+  // const handleAddNewClick = () => {
+  //   setFormData(initialFormData);
+  //   setIsEditing(false);
+  //   setEditingId(null);
+  //   const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
+  //   if (dialog) {
+  //     dialog.showModal();
+  //   }
+  // };
 
   return (
     <div
@@ -231,9 +266,9 @@ export default function Page() {
         <h1 className="text-2xl font-bold text-black ml-10">
           Quản Lý Tài Khoản Người Dùng
         </h1>
-        <button className="btn text-xs btn-accent" onClick={handleAddNewClick}>
+        {/* <button className="btn text-xs btn-accent" onClick={handleAddNewClick}>
           Thêm mới
-        </button>
+        </button> */}
       </div>
 
       <dialog id="my_modal_3" className="modal opacity-100" data-theme="light">
@@ -387,7 +422,7 @@ export default function Page() {
                         required
                       >
                         <option value="">Chọn vai trò</option>
-                        {mockRoles.map((role) => (
+                        {roleList.map((role) => (
                           <option
                             key={role.idRole}
                             value={role.idRole}
@@ -418,7 +453,7 @@ export default function Page() {
       <TableUser
         onEdit={handleEdit}
         onDelete={handleDelete}
-        reloadKey={reloadKey}
+        reloadKey={refreshData}
       />
     </div>
   );

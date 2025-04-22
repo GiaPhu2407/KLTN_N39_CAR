@@ -11,6 +11,9 @@ interface User {
   Email: string;
   idRole: number;
   Ngaydangky: string;
+  role?: {
+    TenNguoiDung: string;
+  }
 }
 
 interface Role {
@@ -21,7 +24,14 @@ interface Role {
 interface TableUserProps {
   onEdit: (user: User) => void;
   onDelete: (id: number) => void;
-  reloadKey: number;
+  reloadKey: (id: number) => void;
+}
+interface PaginationMeta {
+  totalRecords: number;
+  totalPage: number;
+  page: number;
+  limit_size: number;
+  skip: number;
 }
 
 const TableUser: React.FC<TableUserProps> = ({
@@ -29,131 +39,58 @@ const TableUser: React.FC<TableUserProps> = ({
   onDelete,
   reloadKey,
 }) => {
-  // Mock data for roles
-  const mockRoles: Role[] = [
-    { idRole: 1, TenNguoiDung: "Admin" },
-    { idRole: 2, TenNguoiDung: "Nhân viên" },
-    { idRole: 3, TenNguoiDung: "Khách hàng" },
-  ];
-
-  // Mock data for users
-  const mockUsers: User[] = [
-    {
-      idUsers: 1,
-      Tentaikhoan: "admin",
-      Matkhau: "******",
-      Hoten: "Nguyễn Văn Admin",
-      Sdt: "0987654321",
-      Diachi: "123 Đường Lê Lợi, TP. Hồ Chí Minh",
-      Email: "admin@example.com",
-      idRole: 1,
-      Ngaydangky: "2023-01-15",
-    },
-    {
-      idUsers: 2,
-      Tentaikhoan: "nhanvien1",
-      Matkhau: "******",
-      Hoten: "Trần Thị Nhân Viên",
-      Sdt: "0912345678",
-      Diachi: "456 Đường Nguyễn Huệ, TP. Hồ Chí Minh",
-      Email: "nhanvien1@example.com",
-      idRole: 2,
-      Ngaydangky: "2023-02-20",
-    },
-    {
-      idUsers: 3,
-      Tentaikhoan: "khachhang1",
-      Matkhau: "******",
-      Hoten: "Lê Văn Khách",
-      Sdt: "0909876543",
-      Diachi: "789 Đường Võ Văn Tần, TP. Hồ Chí Minh",
-      Email: "khachhang1@example.com",
-      idRole: 3,
-      Ngaydangky: "2023-03-10",
-    },
-    {
-      idUsers: 4,
-      Tentaikhoan: "khachhang2",
-      Matkhau: "******",
-      Hoten: "Phạm Thị Hương",
-      Sdt: "0976543210",
-      Diachi: "101 Đường Cách Mạng Tháng 8, TP. Hồ Chí Minh",
-      Email: "khachhang2@example.com",
-      idRole: 3,
-      Ngaydangky: "2023-04-05",
-    },
-    {
-      idUsers: 5,
-      Tentaikhoan: "nhanvien2",
-      Matkhau: "******",
-      Hoten: "Hoàng Minh Tuấn",
-      Sdt: "0965432109",
-      Diachi: "202 Đường 3/2, TP. Hồ Chí Minh",
-      Email: "nhanvien2@example.com",
-      idRole: 2,
-      Ngaydangky: "2023-05-12",
-    },
-    {
-      idUsers: 6,
-      Tentaikhoan: "khachhang3",
-      Matkhau: "******",
-      Hoten: "Ngô Thanh Tâm",
-      Sdt: "0954321098",
-      Diachi: "303 Đường Nguyễn Đình Chiểu, TP. Hồ Chí Minh",
-      Email: "khachhang3@example.com",
-      idRole: 3,
-      Ngaydangky: "2023-06-18",
-    },
-    {
-      idUsers: 7,
-      Tentaikhoan: "khachhang4",
-      Matkhau: "******",
-      Hoten: "Đỗ Minh Khoa",
-      Sdt: "0943210987",
-      Diachi: "404 Đường Hai Bà Trưng, TP. Hồ Chí Minh",
-      Email: "khachhang4@example.com",
-      idRole: 3,
-      Ngaydangky: "2023-07-20",
-    },
-  ];
-
   const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
+  const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
 
-  // Effect to initialize and filter data
   useEffect(() => {
-    // Set the initial data
-    setUsers(mockUsers);
+    fetch("api/role")
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch data");
+        return response.json();
+      })
+      .then((data) => {
+        setRoles(data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }, []);
 
-    // Filter and paginate data
-    const filtered = mockUsers.filter(
-      (user) =>
-        user.Hoten.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.Email.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.Tentaikhoan.toLowerCase().includes(searchText.toLowerCase())
-    );
-
-    setFilteredUsers(filtered);
-    setTotalPages(Math.ceil(filtered.length / pageSize));
-  }, [searchText, pageSize, reloadKey]);
+  useEffect(() => {
+    setLoading(true);
+    fetch(`api/pagination/userpaging?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch data");
+        return response.json();
+      })
+      .then((data) => {
+        setUsers(data.data);
+        setPaginationMeta(data.meta);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }, [currentPage, pageSize, reloadKey, searchText]);
 
   const getRoleName = (idRole: number): string => {
-    const role = mockRoles.find((role) => role.idRole === idRole);
+    const role = roles.find(role => role.idRole === idRole);
     return role?.TenNguoiDung || "N/A";
   };
 
   const formatDateTime = (dateString?: string | null) => {
-    if (!dateString) return "";
+    if (!dateString) return '';
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
       });
     } catch (error) {
       return dateString;
@@ -171,16 +108,34 @@ const TableUser: React.FC<TableUserProps> = ({
     setPageSize(newSize);
     setCurrentPage(1);
   };
+  const handleExport = async () => {
+    try {
+      const response = await fetch("api/users?export=true", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ search: searchText }),
+      });
 
-  const handleExport = () => {
-    toast.success("Đã xuất dữ liệu thành công!");
-  };
+      if (!response.ok) {
+        throw new Error("Export failed");
+      }
 
-  // Calculate current users to display
-  const indexOfLastUser = currentPage * pageSize;
-  const indexOfFirstUser = indexOfLastUser - pageSize;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "NguoiDung_list.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Xuất Excel thất bại");
+    }
 
+  }
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
@@ -280,14 +235,14 @@ const TableUser: React.FC<TableUserProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {currentUsers.length === 0 ? (
+                  {users.length === 0 ? (
                     <tr>
                       <td colSpan={9} className="px-4 py-4 text-sm text-center">
                         Không có dữ liệu người dùng
                       </td>
                     </tr>
                   ) : (
-                    currentUsers.map((user) => (
+                    users.map((user) => (
                       <tr key={user.idUsers} className="hover:bg-gray-50">
                         <td className="px-10 py-4 text-sm text-gray-900">
                           {user.idUsers}
@@ -346,40 +301,39 @@ const TableUser: React.FC<TableUserProps> = ({
           </div>
         </div>
       </div>
-
-      <div className="mt-4 flex flex-col sm:flex-row justify-end items-center gap-4">
-        <div className="flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-gray-300"
-          >
-            Trước
-          </button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+      {paginationMeta && (
+        <div className="mt-4 flex flex-col sm:flex-row justify-end items-center gap-4">
+          <div className="flex flex-wrap justify-center gap-2">
             <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`px-3 py-1 rounded ${
-                currentPage === page
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-gray-300"
             >
-              {page}
+              Trước
             </button>
-          ))}
+            {[...Array(paginationMeta.totalPage)].map((_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`px-3 py-1 rounded ${currentPage === index + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                {index + 1}
+              </button>
+            ))}
 
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-gray-300"
-          >
-            Sau
-          </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === paginationMeta.totalPage}
+              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-gray-300"
+            >
+              Sau
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
