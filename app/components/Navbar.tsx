@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../components/AuthContext";
+import SearchModal from "./SearchModal";
+import NotificationComponent from "./Notification";
 
 interface LoaiXe {
   idLoaiXe: number;
@@ -137,10 +139,12 @@ export default function Navbar() {
         </div>
 
         <div className="justify-center w-10 md:w-60 items-center mr-4 relative">
-          <div className="mb-2">{/* <SearchModal /> */}</div>
+          <div className="mb-2">
+            <SearchModal />
+          </div>
         </div>
 
-        <div className="flex w-full justify-end">
+        <div className="flex justify-end">
           {!user ? (
             <div className="flex gap-2 pt-2 h-14">
               <Link
@@ -159,6 +163,7 @@ export default function Navbar() {
           ) : (
             <div className="flex relative">
               {/* <NotificationComponent /> */}
+              <NotificationComponent />
 
               <div className="dropdown dropdown-end hidden xl:block">
                 <div

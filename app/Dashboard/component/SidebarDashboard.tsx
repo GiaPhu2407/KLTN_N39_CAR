@@ -6,6 +6,7 @@ import { GrUserManager } from "react-icons/gr";
 import { FaCar } from "react-icons/fa";
 import { GiCarDoor } from "react-icons/gi";
 import { FaShippingFast } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 
 interface SidebarLink {
   icon: React.ReactElement;
@@ -36,6 +37,16 @@ const SidebarDashboard: React.FC<SidebarDashboardProps> = ({ isOpen }) => {
       icon: <FaShippingFast />,
       href: "/Dashboard/SuppliesManager",
       label: "Nhà Cung Cấp",
+    },
+    {
+      icon: <GiCarDoor />,
+      href: "/Dashboard/EvaluationManager",
+      label: "Đánh Giá",
+    },
+    {
+      icon: <FaUser />,
+      href: "/Dashboard/ManagerUser",
+      label: "Tài Khoản Người Dùng",
     },
   ];
 
