@@ -112,7 +112,7 @@ export async function GET() {
   try {
     const session = await getSession();
     const pickupSchedules = await prisma.lichHenTraiNghiem.findMany({
-      where: { idUser: session.idUser },
+      where: { idUser: session.idUsers },
       include: {
         xe: true,
         loaiXe: true,

@@ -130,7 +130,7 @@ export default function Page() {
   const handleEdit = (user: any) => {
     setFormData({
       Tentaikhoan: user.Tentaikhoan,
-      Matkhau: user.Matkhau || "",
+      Matkhau: "", // Removed password when editing
       Hoten: user.Hoten,
       Sdt: user.Sdt,
       Diachi: user.Diachi,
@@ -153,6 +153,7 @@ export default function Page() {
       errors.push("Tên tài khoản không được để trống");
     }
 
+    // Only validate password when adding a new user, not when editing
     if (!isEditing && !formData.Matkhau.trim()) {
       errors.push("Mật khẩu không được để trống");
     }
@@ -191,6 +192,13 @@ export default function Page() {
       errors.forEach((err) => toast.error(err));
       return;
     }
+
+    // When editing, remove the password field if it's empty
+    const dataToSubmit = { ...formData };
+    // if (isEditing && !dataToSubmit.Matkhau) {
+    //   delete dataToSubmit.Matkhau;
+    // }
+
     const url = isEditing ? `api/users/${editingId}` : "api/users";
     const method = isEditing ? "PUT" : "POST";
 
@@ -200,7 +208,7 @@ export default function Page() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...formData }),
+        body: JSON.stringify(dataToSubmit),
       });
 
       if (!response.ok) {
@@ -233,9 +241,7 @@ export default function Page() {
   };
 
   const handleModalClose = () => {
-    if (!isEditing) {
-      setFormData(initialFormData);
-    }
+    setFormData(initialFormData);
     const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
     if (dialog) {
       dialog.close();
@@ -257,8 +263,11 @@ export default function Page() {
       className="p-2 flex-col justify-center text-center w-full h-[630px]"
       data-theme="light"
     >
-      <div className="flex pb-4 w-full justify-between" data-theme="light">
-        <h1 className="text-2xl font-bold text-black ml-10">
+      <div
+        className="flex pb-4 w-full justify-between ml-10"
+        data-theme="light"
+      >
+        <h1 className="text-2xl font-bold text-black">
           Quản Lý Tài Khoản Người Dùng
         </h1>
       </div>
@@ -297,24 +306,26 @@ export default function Page() {
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="Matkhau"
-                  className="block font-medium text-gray-700 text-sm"
-                >
-                  Mật khẩu
-                </label>
-                <input
-                  type="password"
-                  id="Matkhau"
-                  name="Matkhau"
-                  value={formData.Matkhau}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required={!isEditing}
-                  placeholder={isEditing ? "Để trống nếu không thay đổi" : ""}
-                />
-              </div>
+              {/* Only show password field when adding a new user */}
+              {!isEditing && (
+                <div>
+                  <label
+                    htmlFor="Matkhau"
+                    className="block font-medium text-gray-700 text-sm"
+                  >
+                    Mật khẩu
+                  </label>
+                  <input
+                    type="password"
+                    id="Matkhau"
+                    name="Matkhau"
+                    value={formData.Matkhau}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+              )}
 
               <div>
                 <label
