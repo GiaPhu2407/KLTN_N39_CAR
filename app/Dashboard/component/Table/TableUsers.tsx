@@ -135,7 +135,7 @@ const TableUser: React.FC<TableUserProps> = ({
                   <option value="50">50</option>
                 </select>
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center mr-10">
                 <input
                   type="text"
                   placeholder="Tìm kiếm..."
