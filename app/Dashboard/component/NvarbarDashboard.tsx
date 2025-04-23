@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
 import { UserAuth } from "@/app/types/auth";
+import NotificationComponent from "@/app/components/Notification";
 
 interface CartItem {
   idGioHang: number;
@@ -47,45 +48,9 @@ const Navbardashboard: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       }
     };
 
-    const fetchNotifications = async () => {
-      // Mock data to match your example image
-      const mockNotifications: Notification[] = [
-        {
-          id: 1,
-          message: "Đặt cọc mới #1 cần xử lý",
-          timestamp: "21/04/2025,9:00:56 PM",
-          isRead: false,
-        },
-        {
-          id: 2,
-          message: "Đặt cọc mới #2 cần xử lý",
-          timestamp: "21/04/2025,9:02:00 PM",
-          isRead: false,
-        },
-      ];
-      setNotifications(mockNotifications);
-    };
-
     fetchSession();
-    fetchNotifications();
 
     // Close notification dropdown when clicking outside
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
-      ) {
-        const dropdown = document.getElementById("notification-dropdown");
-        if (dropdown) {
-          dropdown.removeAttribute("open");
-        }
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
   }, []);
 
   const handleLogout = async () => {
@@ -98,21 +63,6 @@ const Navbardashboard: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       console.error("Logout failed:", error);
     }
   };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  const deleteNotification = (id: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent closing the dropdown
-    setNotifications(
-      notifications.filter((notification) => notification.id !== id)
-    );
-  };
-
-  const unreadCount = notifications.filter(
-    (notification) => !notification.isRead
-  ).length;
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-base-100 border-b z-50 w-full">
@@ -144,98 +94,8 @@ const Navbardashboard: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
         </div>
 
         {/* Notification Icon and Dropdown */}
-        <div className="dropdown dropdown-end mr-2" ref={notificationRef}>
-          <details id="notification-dropdown" className="dropdown">
-            <summary className="btn btn-ghost btn-circle">
-              <div className="indicator">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-                {unreadCount > 0 && (
-                  <span className="badge badge-sm badge-primary indicator-item">
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
-            </summary>
-            <div className="dropdown-content z-[100] menu shadow bg-base-100 rounded-box w-80">
-              <div className="p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-lg">
-                    Thông báo{" "}
-                    {unreadCount > 0 && (
-                      <span className="ml-1">{unreadCount}</span>
-                    )}
-                  </h3>
-                  <button
-                    onClick={clearAllNotifications}
-                    className="btn btn-sm btn-ghost"
-                  >
-                    Xóa tất cả
-                  </button>
-                </div>
-                <div className="divider my-0"></div>
-
-                {notifications.length > 0 ? (
-                  <ul className="menu p-0">
-                    {notifications.map((notification) => (
-                      <li
-                        key={notification.id}
-                        className="border-b last:border-b-0"
-                      >
-                        <div className="flex justify-between items-center p-2 hover:bg-base-200">
-                          <div className="flex-1">
-                            <div className="font-medium">
-                              {notification.message}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {notification.timestamp}
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) =>
-                              deleteNotification(notification.id, e)
-                            }
-                            className="btn btn-ghost btn-sm btn-circle"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="py-4 text-center text-gray-500">
-                    Không có thông báo nào
-                  </div>
-                )}
-              </div>
-            </div>
-          </details>
+        <div>
+          <NotificationComponent />
         </div>
 
         {/* User Avatar Dropdown */}

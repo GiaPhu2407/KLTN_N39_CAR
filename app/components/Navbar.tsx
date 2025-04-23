@@ -7,6 +7,7 @@ import { useAuth } from "../components/AuthContext";
 import SearchModal from "./SearchModal";
 import NotificationComponent from "./Notification";
 
+
 interface LoaiXe {
   idLoaiXe: number;
   TenLoai: string;
