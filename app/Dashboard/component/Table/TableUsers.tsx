@@ -119,8 +119,8 @@ const TableUser: React.FC<TableUserProps> = ({
         <div className="">
           <div className="inline-block min-w-full align-middle">
             <div className="flex justify-between pb-5">
-              <div className="mt-3">
-                <label htmlFor="pageSize" className="text-sm ml-64">
+              <div className="mt-3 ml-10">
+                <label htmlFor="pageSize" className="text-sm">
                   Số mục mỗi trang:
                 </label>
                 <select
@@ -143,7 +143,6 @@ const TableUser: React.FC<TableUserProps> = ({
                   onChange={(e) => setSearchText(e.target.value)}
                   className="input input-bordered w-full max-w-xs"
                 />
-                {/* Excel export button removed */}
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -152,55 +151,55 @@ const TableUser: React.FC<TableUserProps> = ({
                   <tr className="text-center">
                     <th
                       scope="col"
-                      className="px-12 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
                     >
                       ID
                     </th>
                     <th
                       scope="col"
-                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
                     >
                       Tên tài khoản
                     </th>
                     <th
                       scope="col"
-                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40"
                     >
                       Họ tên
                     </th>
                     <th
                       scope="col"
-                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
                     >
                       Số điện thoại
                     </th>
                     <th
                       scope="col"
-                      className="px-40 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-48"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-48"
                     >
                       Địa chỉ
                     </th>
                     <th
                       scope="col"
-                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40"
                     >
                       Email
                     </th>
                     <th
                       scope="col"
-                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-28"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-28"
                     >
                       Vai trò
                     </th>
                     <th
                       scope="col"
-                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32"
                     >
                       Ngày đăng ký
                     </th>
                     <th
                       scope="col"
-                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-24"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-24"
                     >
                       Thao tác
                     </th>
@@ -216,15 +215,15 @@ const TableUser: React.FC<TableUserProps> = ({
                   ) : (
                     users.map((user) => (
                       <tr key={user.idUsers} className="hover:bg-gray-50">
-                        <td className="px-10 py-4 text-sm text-gray-900">
+                        <td className="px-4 py-4 text-sm text-gray-900">
                           {user.idUsers}
                         </td>
-                        <td className="px-10 py-4 text-sm text-gray-900 overflow-hidden text-ellipsis">
+                        <td className="px-4 py-4 text-sm text-gray-900 overflow-hidden text-ellipsis">
                           <div className="max-w-full overflow-hidden text-ellipsis">
                             {user.Tentaikhoan}
                           </div>
                         </td>
-                        <td className="px-10 py-4 text-sm text-gray-900 overflow-hidden text-ellipsis">
+                        <td className="px-4 py-4 text-sm text-gray-900 overflow-hidden text-ellipsis">
                           <div className="max-w-full overflow-hidden text-ellipsis">
                             {user.Hoten}
                           </div>
