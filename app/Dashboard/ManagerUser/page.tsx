@@ -307,26 +307,6 @@ export default function Page() {
               </div>
 
               {/* Only show password field when adding a new user */}
-              {!isEditing && (
-                <div>
-                  <label
-                    htmlFor="Matkhau"
-                    className="block font-medium text-gray-700 text-sm"
-                  >
-                    Mật khẩu
-                  </label>
-                  <input
-                    type="password"
-                    id="Matkhau"
-                    name="Matkhau"
-                    value={formData.Matkhau}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-              )}
-
               <div>
                 <label
                   htmlFor="Hoten"
