@@ -306,7 +306,6 @@ export default function Page() {
                 />
               </div>
 
-              {/* Only show password field when adding a new user */}
               <div>
                 <label
                   htmlFor="Hoten"
@@ -389,7 +388,7 @@ export default function Page() {
                 </select>
               </div>
 
-              <div className="col-span-2">
+              <div>
                 <label
                   htmlFor="Diachi"
                   className="block font-medium text-gray-700 text-sm"
