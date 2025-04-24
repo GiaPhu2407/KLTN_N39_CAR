@@ -100,14 +100,14 @@ const Information = () => {
 
         {/* Call to action section */}
         <div className="mt-16 text-center">
-          <div className="bg-gradient-to-r from-green-500 to-blue-600 p-8 md:p-12 rounded-xl shadow-xl">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Khám phá ngay hôm nay</h2>
-            <p className="text-white text-lg mb-8">Trải nghiệm cùng VinFast - Nâng tầm di chuyển xanh, tiết kiệm chi phí</p>
-            <button className="bg-white text-green-600 hover:bg-green-50 font-medium py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
-              Tìm hiểu thêm
-            </button>
-          </div>
-        </div>
+  <div className="bg-gradient-to-r from-green-500 to-blue-600 p-8 md:p-12 rounded-xl shadow-xl bg-cover bg-center" style={{backgroundImage: "url('https://vinfastauto.com/themes/porto/img/homepage-v2/join-the-charge.webp')"}}>
+    <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Khám phá ngay hôm nay</h2>
+    <p className="text-white text-lg mb-8">Trải nghiệm cùng VinFast - Nâng tầm di chuyển xanh, tiết kiệm chi phí</p>
+    <button className="bg-white text-green-600 hover:bg-green-50 font-medium py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+      Tìm hiểu thêm
+    </button>
+  </div>
+</div>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ interface ReviewData {
   SoSao: number | null;
   NoiDung: string | null;
   NgayDanhGia: string;
-  lichHen: {
+  lichHenTraiNghiem: {
     TenKhachHang: string | null;
     Sdt: string | null;
     Email: string | null;
@@ -182,7 +182,7 @@ export default function Page() {
                 Khách Hàng
               </label>
               <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
-                {reviewData.lichHen?.TenKhachHang || "N/A"}
+                {reviewData.lichHenTraiNghiem?.TenKhachHang || "N/A"}
               </p>
             </div>
             <div>
@@ -190,7 +190,7 @@ export default function Page() {
                 Số Điện Thoại
               </label>
               <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
-                {reviewData.lichHen?.Sdt || "N/A"}
+                {reviewData.lichHenTraiNghiem?.Sdt || "N/A"}
               </p>
             </div>
             <div>
@@ -198,7 +198,7 @@ export default function Page() {
                 Email
               </label>
               <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
-                {reviewData.lichHen?.Email || "N/A"}
+                {reviewData.lichHenTraiNghiem?.Email || "N/A"}
               </p>
             </div>
             <div>
