@@ -90,23 +90,23 @@ body {
 
 @keyframes fadeleft {
   0% {
-    transform: translateX(-40%) scale(0);
+    transform: translateX(-40%) scale(1);
     opacity: 0;
   }
   50% {
-    transform: translateX(-30%) scale(0.2);
+    transform: translateX(-30%) scale(1.2);
     opacity: 0.5;
   }
   60% {
-    transform: translateX(-25%) scale(0.3);
+    transform: translateX(-25%) scale(1.3);
     opacity: 0.6;
   }
   80% {
-    transform: translateX(-10%) scale(0.4);
+    transform: translateX(-10%) scale(1.4);
     opacity: 0.8;
   }
   100% {
-    transform: translateX(0) scale(0.5);
+    transform: translateX(0) scale(1.5);
     opacity: 1;
   }
 }

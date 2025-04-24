@@ -118,7 +118,7 @@ export default function Navbar() {
             <div className="image-container">
               <img
                 src={loai.HinhAnh && loai.HinhAnh.trim() !== "" ? loai.HinhAnh : "/default-image.png"}
-                className="transition-all duration-300 "
+                className="transition-all duration-300"
                 alt={loai.TenLoai}
               />
             </div>
