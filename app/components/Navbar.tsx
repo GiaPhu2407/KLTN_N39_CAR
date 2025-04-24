@@ -71,7 +71,7 @@ export default function Navbar() {
 
   return (
     <div data-theme="light">
-      <div className="navbar opacity-90 bg-base-100 shadow-sm fixed z-50">
+      <div className="navbar bg-base-100 shadow-sm fixed z-50">
         <div className="flex px-4 w-full py-2">
           <Link href="/">
             <Image
@@ -111,23 +111,25 @@ export default function Navbar() {
                 </span>
               </div>
               <div className="flex flex-grow">
-                <ul className="flex gap-20 justify-center z-[1] w-full p-2 h-40">
-                  {loaiXe.map((loai) => (
-                    <li key={loai.idLoaiXe} className="mt-10">
-                      <Link href={`LoaiXe?id=${loai.idLoaiXe}`}>
-                        <img
-                          src={loai.HinhAnh && loai.HinhAnh.trim() !== "" ? loai.HinhAnh : "/default-image.png"}
-                          className="hover:animate-fadeleft transition-all duration-75 hover:scale-150"
-                          alt={loai.TenLoai}
-                        />
-                        <div className="text-center mt-3 font-medium">
-                          {loai.TenLoai}
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+    <ul className="flex gap-20 justify-center z-[1] w-full p-2 h-40">
+      {loaiXe.map((loai) => (
+        <li key={loai.idLoaiXe} className="mt-10">
+          <Link href={`Cartype?id=${loai.idLoaiXe}`}>
+            <div className="image-container">
+              <img
+                src={loai.HinhAnh && loai.HinhAnh.trim() !== "" ? loai.HinhAnh : "/default-image.png"}
+                className="transition-all duration-300"
+                alt={loai.TenLoai}
+              />
+            </div>
+            <div className="text-center mt-3 font-medium">
+              {loai.TenLoai}
+            </div>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </div>
             </div>
 
             <button className="font-semibold font-serif py-2 transition-all duration-500 text-blue-500 hover:text-red-500 bg-white">
