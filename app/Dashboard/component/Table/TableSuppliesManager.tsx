@@ -84,123 +84,100 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
   };
 
   return (
-    <div className="space-y-1 pl-14">
-      <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
-        <div className="flex items-center">
-          <label
-            htmlFor="pageSize"
-            className="text-sm font-medium text-gray-700"
-          >
-            Số mục mỗi trang:
-          </label>
-          <select
-            id="pageSize"
-            value={pageSize}
-            onChange={handlePageSizeChange}
-            className="ml-2 border border-gray-300 rounded px-3 py-1 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-4">
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="input border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          {/* 5. Truyền callback vào component ImportExportSuppliers */}
-          <ImportExportSuppliers onImportSuccess={handleImportSuccess} />
-        </div>
-      </div>
+    <div className="flex flex-col w-full">
+      <div className="w-full">
+        <div className="flex flex-col md:flex-row justify-between pb-5 gap-4">
+          <div className="mt-2 md:mt-6 ml-4 md:ml-20">
+            <label htmlFor="pageSize" className="text-sm">
+              Số mục mỗi trang:
+            </label>
+            <select
+              id="pageSize"
+              value={pageSize}
+              onChange={handlePageSizeChange}
+              className="border rounded px-2 py-1 ml-2"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
 
-      {/* Table container with fixed layout and controlled width */}
-      <div className="relative shadow-md rounded-lg border border-gray-200 w-full overflow-x-auto">
-        <div className="overflow-x-auto w-full">
-          <table className="w-full table-fixed border-collapse">
-            <thead className="bg-gray-50">
-              <tr className="text-white text-center">
-                <th
-                  scope="col"
-                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-28"
-                >
+          <div className="flex flex-col md:flex-row items-center gap-4 mx-4 md:mx-0">
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="input input-bordered h-10 text-sm w-full md:w-72 max-w-xs"
+            />
+
+            {/* Import/Export component */}
+            <ImportExportSuppliers onImportSuccess={handleImportSuccess} />
+          </div>
+        </div>
+
+        <div className="w-full overflow-x-auto px-4 md:px-10">
+          <table className="table text-center table-auto w-full min-w-[640px]">
+            <thead className="text-center">
+              <tr className="bg-gray-50">
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Id Nhà Cung Cấp
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-52"
-                >
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Tên Nhà Cung Cấp
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40"
-                >
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Số Điện Thoại
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-48"
-                >
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Email
                 </th>
-                <th
-                  scope="col"
-                  className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
-                >
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Action
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="p-4 text-sm text-center">
-                    <span className="text-gray-500">Đang tải...</span>
+                  <td colSpan={5} className="px-3 py-4 text-sm text-center">
+                    <span>Đang tải...</span>
                   </td>
                 </tr>
               ) : !isNhaCungCapTable || isNhaCungCapTable.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-4 text-sm text-center">
-                    <span className="text-gray-500">
-                      Không có dữ liệu nhà cung cấp
-                    </span>
+                  <td colSpan={5} className="px-3 py-4 text-sm text-center">
+                    Không có dữ liệu nhà cung cấp
                   </td>
                 </tr>
               ) : (
                 isNhaCungCapTable.map((nhacungcap, index) => (
                   <tr
                     key={nhacungcap.idNhaCungCap}
-                    className={`text-gray-800 text-center hover:bg-gray-50 ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    }`}
+                    className={`text-black text-center ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                   >
-                    <td className="p-3 text-center font-medium truncate">
-                      {nhacungcap.idNhaCungCap}
-                    </td>
-                    <td className="p-3 text-center truncate">
-                      {nhacungcap.TenNhaCungCap}
-                    </td>
-                    <td className="p-3 text-center truncate">{nhacungcap.Sdt}</td>
-                    <td className="p-3 text-center truncate">{nhacungcap.Email}</td>
-                    <td className="p-3 text-center">
-                      <div className="flex justify-center space-x-2">
-                        <div
+                    <td className="px-3 py-3">{nhacungcap.idNhaCungCap}</td>
+                    <td className="px-3 py-3">{nhacungcap.TenNhaCungCap}</td>
+                    <td className="px-3 py-3">{nhacungcap.Sdt}</td>
+                    <td className="px-3 py-3">{nhacungcap.Email}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex gap-3 justify-center">
+                        <button
+                          type="button"
                           onClick={() => onEdit(nhacungcap)}
                           className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           🖊️
-                        </div>
-                        <div
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => onDelete(nhacungcap.idNhaCungCap)}
                           className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           ❌
-                        </div>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -211,38 +188,35 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
         </div>
       </div>
 
-      {/* Fixed width pagination with better overflow handling */}
       {paginationMeta && (
-        <div className="mt-4 overflow-x-auto">
-          <div className="flex items-center justify-end min-w-max">
+        <div className="flex justify-end space-x-2 mt-4 px-4 md:px-10">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
+              className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors disabled:bg-gray-100 disabled:text-gray-400"
             >
               Trước
             </button>
 
-            <div className="flex overflow-x-auto px-1 mx-1 gap-1">
-              {[...Array(paginationMeta.totalPage)].map((_, index) => (
-                <button
-                  key={index + 1}
-                  onClick={() => handlePageChange(index + 1)}
-                  className={`px-4 py-2 rounded shadow-sm text-sm font-medium min-w-8 ${
-                    currentPage === index + 1
-                      ? "bg-indigo-600 text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            </div>
+            {[...Array(paginationMeta.totalPage)].map((_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`px-3 py-1 rounded ${
+                  currentPage === index + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
 
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === paginationMeta.totalPage}
-              className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
+              className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors disabled:bg-gray-100 disabled:text-gray-400"
             >
               Sau
             </button>
