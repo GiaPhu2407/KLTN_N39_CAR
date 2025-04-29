@@ -7,6 +7,8 @@ import { FaCar } from "react-icons/fa";
 import { GiCarDoor } from "react-icons/gi";
 import { FaShippingFast } from "react-icons/fa";
 import { FaUser } from "react-icons/fa";
+import { PiHandDepositFill } from "react-icons/pi";
+import { AiOutlineSchedule } from "react-icons/ai";
 
 interface SidebarLink {
   icon: React.ReactElement;
@@ -47,6 +49,16 @@ const SidebarDashboard: React.FC<SidebarDashboardProps> = ({ isOpen }) => {
       icon: <FaUser />,
       href: "/Dashboard/ManagerUser",
       label: "Tài Khoản Người Dùng",
+    },
+    {
+      icon: <PiHandDepositFill />,
+      href: "/Dashboard/ManagerDeposit",
+      label: "Đặt Cọc",
+    },
+    {
+      icon: <AiOutlineSchedule />,
+      href: "/Dashboard/ManagerSchedule",
+      label: "Lịch Hẹn Trải Nghiệm Xe",
     },
   ];
 
