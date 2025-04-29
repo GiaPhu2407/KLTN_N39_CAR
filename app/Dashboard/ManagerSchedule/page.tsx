@@ -24,7 +24,7 @@ import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import toast, { Toaster } from "react-hot-toast";
-import { PickupScheduleForm } from "@/app/components/ModalLichHen";
+import { PickupScheduleForm } from "@/app/components/ModalAppoiment";
 
 // Extended interface with status
 interface PickupSchedule {
