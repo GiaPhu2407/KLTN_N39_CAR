@@ -8,7 +8,7 @@ interface DanhGiaTraiNghiem {
   SoSao: number | null;
   NoiDung: string | null;
   NgayDanhGia: string;
-  lichHen: {
+  lichHenTraiNghiem: {
     TenKhachHang: string | null;
     Sdt: string | null;
     Email: string | null;
@@ -115,10 +115,10 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
   };
 
   return (
-    <div className="space-y-1 pl-14">
-  <div className="overflow-x-auto">
-    <div className="flex justify-between pb-5">
-      <div className="mt-6">
+    <div className="flex flex-col w-full">
+  <div className="w-full">
+    <div className="flex flex-col md:flex-row justify-between pb-5 gap-4">
+      <div className="mt-2 md:mt-6 ml-4 md:ml-20">
         <label htmlFor="pageSize" className="text-sm">
           Số mục mỗi trang:
         </label>
@@ -126,7 +126,7 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
           id="pageSize"
           value={pageSize}
           onChange={handlePageSizeChange}
-          className="border rounded px-2 py-1"
+          className="border rounded px-2 py-1 ml-2"
         >
           <option value="5">5</option>
           <option value="10">10</option>
@@ -134,135 +134,112 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
           <option value="50">50</option>
         </select>
       </div>
-      <div className="flex pr-7 items-center gap-4">
+
+      <div className="flex items-center gap-4 mx-4 md:mx-0 md:pr-7">
         <input
           type="text"
           placeholder="Tìm kiếm..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="input input-bordered w-full h-10 text-sm max-w-xs"
+          className="input input-bordered h-10 text-sm w-full md:w-72 max-w-xs"
         />
         {/* You can add an ImportExportComponent here if needed */}
       </div>
     </div>
-    <div className="relative shadow-md rounded-lg border border-gray-200 w-full overflow-x-auto">
-      <div className="overflow-x-auto w-full">
-        <table className="w-full table-fixed border-collapse">
-          <thead className="bg-gray-50">
-            <tr className="text-white text-center">
-              <th
-                scope="col"
-                className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
-              >
-                ID ĐÁNH GIÁ
-              </th>
-              <th
-                scope="col"
-                className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-70"
-              >
-                TÊN KHÁCH HÀNG
-              </th>
-              <th
-                scope="col"
-                className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
-              >
-                Xe
-              </th>
-              <th
-                scope="col"
-                className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
-              >
-                Đánh Giá
-              </th>
-              <th
-                scope="col"
-                className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
-              >
-                Nội Dung
-              </th>
-              <th
-                scope="col"
-                className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-52"
-              >
-                Ngày Đánh Giá
-              </th>
-              <th
-                scope="col"
-                className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-50"
-              >
-                Action
-              </th>
+
+    <div className="w-full overflow-x-auto px-4 md:px-10">
+      <table className="table text-center table-auto w-full min-w-[800px]">
+        <thead className="text-center">
+          <tr className="bg-gray-50">
+            <th className="py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              ID ĐÁNH GIÁ
+            </th>
+            <th className="py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              TÊN KHÁCH HÀNG
+            </th>
+            <th className="py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Xe
+            </th>
+            <th className="py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Đánh Giá
+            </th>
+            <th className="py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Nội Dung
+            </th>
+            <th className="py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Ngày Đánh Giá
+            </th>
+            <th className="py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Action
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            <tr>
+              <td colSpan={7} className="px-3 py-4 text-sm text-center">
+                <span>Đang tải...</span>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="text-center text-black py-4">
-                  Đang tải...
+          ) : danhGiaList.length === 0 ? (
+            <tr>
+              <td colSpan={7} className="px-3 py-4 text-sm text-center">
+                Không có dữ liệu đánh giá
+              </td>
+            </tr>
+          ) : (
+            danhGiaList.map((danhGia, index) => (
+              <tr key={danhGia.idDanhGia} className={`text-black text-center ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}>
+                <td className="px-2 py-3">{danhGia.idDanhGia}</td>
+                <td className="px-2 py-3">
+                  {danhGia.lichHenTraiNghiem?.TenKhachHang || "N/A"}
+                  <div className="text-xs text-gray-500">
+                    {danhGia.lichHenTraiNghiem?.Sdt || ""}
+                  </div>
+                </td>
+                <td className="px-2 py-3">{danhGia.xe?.TenXe || "N/A"}</td>
+                <td className="px-2 py-3">
+                  <div className="flex justify-center">
+                    {renderStarRating(danhGia.SoSao)}
+                  </div>
+                </td>
+                <td className="px-2 py-3 max-w-xs truncate">
+                  {danhGia.NoiDung || "Không có nội dung"}
+                </td>
+                <td className="px-2 py-3">{formatDate(danhGia.NgayDanhGia)}</td>
+                <td className="px-2 py-3">
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(danhGia)}
+                      className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                    >
+                      👁️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(danhGia.idDanhGia)}
+                      className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                    >
+                      ❌
+                    </button>
+                  </div>
                 </td>
               </tr>
-            ) : danhGiaList.length === 0 ? (
-              <tr>
-                <td colSpan={10} className="text-center text-black py-4">
-                  Không có dữ liệu đánh giá
-                </td>
-              </tr>
-            ) : (
-              danhGiaList.map((danhGia) => (
-                <tr
-                  key={danhGia.idDanhGia}
-                  className="text-black text-center hover:bg-gray-50"
-                >
-                  <td className="p-3 text-center">{danhGia.idDanhGia}</td>
-                  <td className="p-3 text-center">
-                    {danhGia.lichHen?.TenKhachHang || "N/A"}
-                    <div className="text-xs text-gray-500 text-center">
-                      {danhGia.lichHen?.Sdt || ""}
-                    </div>
-                  </td>
-                  <td className="p-3 text-center">{danhGia.xe?.TenXe || "N/A"}</td>
-                  <td className="p-3 text-center">
-                    <div className="flex justify-center">
-                      {renderStarRating(danhGia.SoSao)}
-                    </div>
-                  </td>
-                  <td className="p-3 text-center max-w-xs truncate">
-                    {danhGia.NoiDung || "Không có nội dung"}
-                  </td>
-                  <td className="p-3 text-center">{formatDate(danhGia.NgayDanhGia)}</td>
-                  <td className="p-3 text-center">
-                    <div className="flex justify-center space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(danhGia)}
-                        className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
-                      >
-                        👁️
-                      </button>
-                      <button
-                        onClick={() => onDelete(danhGia.idDanhGia)}
-                        className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
-                      >
-                        ❌
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   </div>
 
   {paginationMeta && (
-    <div className="flex justify-end space-x-2 mt-4">
-      <div className="flex space-x-3">
+    <div className="flex justify-end space-x-2 mt-4 px-4 md:px-10">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-gray-300"
+          className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors disabled:bg-gray-100 disabled:text-gray-400"
         >
           Trước
         </button>
@@ -284,7 +261,7 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === paginationMeta.totalPage}
-          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-gray-300"
+          className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors disabled:bg-gray-100 disabled:text-gray-400"
         >
           Sau
         </button>
@@ -294,6 +271,5 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
 </div>
   );
 };
- 
 
 export default TableDanhGiaTraiNghiem;

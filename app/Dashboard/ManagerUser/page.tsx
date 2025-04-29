@@ -29,17 +29,23 @@ export default function Page() {
     Email: "",
     idRole: "",
   };
+
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [roleList, setRoleList] = useState<Role[]>([]);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [showToast, setShowToast] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
+  
 
   const refreshData = () => {
     setReloadKey((prevKey) => prevKey + 1);
   };
-
+ 
   useEffect(() => {
     fetch("api/role")
       .then((response) => {
@@ -61,154 +67,98 @@ export default function Page() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-2">
-          <span className="font-medium">
-            Bạn có chắc muốn xóa người dùng này?
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={async () => {
-                toast.dismiss(t.id);
-                try {
-                  const response = await fetch(`api/users/${id}`, {
-                    method: "DELETE",
-                  });
-
-                  if (!response.ok) {
-                    throw new Error("Failed to delete supplier");
-                  }
-
-                  const data = await response.json();
-                  toast.success("Đã xóa người dùng thành công!");
-                  refreshData();
-                } catch (err) {
-                  toast.error(
-                    err instanceof Error
-                      ? err.message
-                      : "Lỗi khi xóa người dùng"
-                  );
+    toast((t) => (
+      <div className="flex flex-col gap-2">
+        <span className="font-medium">Bạn có chắc muốn xóa nhà cung cấp này?</span>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                const response = await fetch(`api/users/${id}`, {
+                  method: "DELETE",
+                });
+  
+                if (!response.ok) {
+                  throw new Error("Failed to delete supplier");
                 }
-              }}
-              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
-            >
-              Xóa
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
-            >
-              Hủy
-            </button>
-          </div>
+  
+                const data = await response.json();
+                toast.success(data.message);
+                refreshData();
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Lỗi khi xóa nhà cung cấp");
+              }
+            }}
+            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+          >
+            Xóa
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+          >
+            Hủy
+          </button>
         </div>
-      ),
-      {
-        duration: Infinity,
-        position: "top-center",
-        style: {
-          background: "#fff",
-          color: "#000",
-          padding: "16px",
-          borderRadius: "8px",
-          boxShadow:
-            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-        },
-      }
-    );
+      </div>
+    ), {
+      duration: Infinity, // Don't auto-dismiss
+      position: 'top-center',
+      style: {
+        background: '#fff',
+        color: '#000',
+        padding: '16px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      },
+    });
   };
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleEdit = (user: any) => {
+  const handleEdit = (product: any) => {
     setFormData({
-      Tentaikhoan: user.Tentaikhoan,
-      Matkhau: user.Matkhau || "",
-      Hoten: user.Hoten,
-      Sdt: user.Sdt,
-      Diachi: user.Diachi,
-      Email: user.Email,
-      idRole: user.idRole.toString(),
+      Tentaikhoan: product.Tentaikhoan,
+      Matkhau: product.Matkhau,
+      Hoten: product.Hoten,
+      Sdt: product.Sdt,
+      Diachi: product.Diachi,
+      Email: product.Email,
+      idRole: product.idRole.toString(),
     });
     setIsEditing(true);
-    setEditingId(user.idUsers);
-
+    setEditingId(product.idUsers);
+    // Show the dialog after setting the form data
     const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
     if (dialog) {
       dialog.showModal();
     }
   };
 
-  const validateForm = () => {
-    const errors = [];
-
-    if (!formData.Tentaikhoan.trim()) {
-      errors.push("Tên tài khoản không được để trống");
-    }
-
-    if (!isEditing && !formData.Matkhau.trim()) {
-      errors.push("Mật khẩu không được để trống");
-    }
-
-    if (!formData.Hoten.trim()) {
-      errors.push("Họ tên không được để trống");
-    }
-
-    if (!formData.Sdt.trim()) {
-      errors.push("Số điện thoại không được để trống");
-    } else if (!/^[0-9]{10,11}$/.test(formData.Sdt)) {
-      errors.push("Số điện thoại không hợp lệ (cần 10-11 số)");
-    }
-
-    if (!formData.Email.trim()) {
-      errors.push("Email không được để trống");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.Email)) {
-      errors.push("Email không hợp lệ");
-    }
-
-    if (!formData.Diachi.trim()) {
-      errors.push("Địa chỉ không được để trống");
-    }
-
-    if (!formData.idRole) {
-      errors.push("Vui lòng chọn vai trò");
-    }
-
-    return errors;
-  };
-
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e:any) => {
     e.preventDefault();
-    const errors = validateForm();
-    if (errors.length > 0) {
-      errors.forEach((err) => toast.error(err));
-      return;
-    }
-    const url = isEditing ? `api/users/${editingId}` : "api/users";
-    const method = isEditing ? "PUT" : "POST";
+    const url = isEditing ? `api/users/${editingId}` : 'api/users';
+    const method = isEditing ? 'PUT' : 'POST';
 
     try {
       const response = await fetch(url, {
         method,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...formData }),
+        body: JSON.stringify({...formData }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.message ||
-            `Failed to ${isEditing ? "update" : "create"} product`
-        );
+        throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} product`);
       }
 
       const data = await response.json();
@@ -223,12 +173,9 @@ export default function Page() {
       if (dialog) {
         dialog.close();
       }
+
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : `Error ${isEditing ? "updating" : "creating"} product`
-      );
+      toast.error(err instanceof Error ? err.message : `Error ${isEditing ? 'updating' : 'creating'} product`);
     }
   };
 
@@ -242,23 +189,22 @@ export default function Page() {
     }
   };
 
-  if (loading)
-    return (
-      <div
-        className="flex justify-center items-center h-screen"
-        data-theme="light"
-      >
-        <span className="loading loading-spinner text-blue-600 loading-lg"></span>
-      </div>
-    );
+  if (loading) return (
+    <div className="flex justify-center items-center h-screen" data-theme = "light">
+      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+    </div>
+  );
 
   return (
     <div
       className="p-2 flex-col justify-center text-center w-full h-[630px]"
       data-theme="light"
     >
-      <div className="flex pb-4 w-full justify-between" data-theme="light">
-        <h1 className="text-2xl font-bold text-black ml-10">
+      <div
+        className="flex pb-4 w-full justify-between ml-10"
+        data-theme="light"
+      >
+        <h1 className="text-2xl font-bold text-black">
           Quản Lý Tài Khoản Người Dùng
         </h1>
       </div>
@@ -294,25 +240,6 @@ export default function Page() {
                   onChange={handleChange}
                   className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="Matkhau"
-                  className="block font-medium text-gray-700 text-sm"
-                >
-                  Mật khẩu
-                </label>
-                <input
-                  type="password"
-                  id="Matkhau"
-                  name="Matkhau"
-                  value={formData.Matkhau}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required={!isEditing}
-                  placeholder={isEditing ? "Để trống nếu không thay đổi" : ""}
                 />
               </div>
 
@@ -398,7 +325,7 @@ export default function Page() {
                 </select>
               </div>
 
-              <div className="col-span-2">
+              <div>
                 <label
                   htmlFor="Diachi"
                   className="block font-medium text-gray-700 text-sm"
