@@ -24,7 +24,7 @@ import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import toast, { Toaster } from "react-hot-toast";
-import { PickupScheduleForm } from "@/app/components/ModalAppoiment";
+import { PickupScheduleForm } from "@/app/Dashboard/component/Table/TableManagerAppointment";
 
 // Extended interface with status
 interface PickupSchedule {
@@ -167,77 +167,34 @@ const PickupScheduleCalendar: FC = () => {
 
   // Fetch data effects
   useEffect(() => {
-    // Giả lập dữ liệu trả về từ API
-    const fakeLoaixeData = [
-      { idLoaiXe: 1, TenLoai: "Sedan" },
-      { idLoaiXe: 2, TenLoai: "SUV" },
-      { idLoaiXe: 3, TenLoai: "Hatchback" },
-    ];
+    Promise.all([
+      fetch("api/typecar").then((res) => res.json()),
+      fetch("api/car").then((res) => res.json()),
+      fetch("api/testDriveAppointment").then((res) => res.json()),
+    ])
+      .then(([loaiXeData, xeData, schedulesData]) => {
+        setLoaiXeList(loaiXeData);
+        setXeList(xeData);
 
-    const fakeXeData = [
-      { idXe: 1, TenXe: "Toyota Camry 2023" },
-      { idXe: 2, TenXe: "Honda CR-V 2023" },
-      { idXe: 3, TenXe: "Mazda 3 2023" },
-    ];
+        // Transform schedules into calendar events
+        const calendarEvents: Event[] = schedulesData.map(
+          (schedule: PickupSchedule) => ({
+            title: `${getStatusBadge(schedule.trangThai).text} - ${schedule.NoiDung} - ${schedule.TenKhachHang}`,
+            start: new Date(schedule.NgayHen),
+            end: addHours(new Date(schedule.NgayHen), 1),
+            resource: schedule,
+          })
+        );
 
-    const fakeSchedulesData = [
-      {
-        idLichHen: 1,
-        TenKhachHang: "Nguyễn Văn A",
-        Sdt: "0912345678",
-        Email: "nguyenvana@example.com",
-        idXe: 1,
-        idLoaiXe: 1,
-        NgayHen: "2023-04-30T09:00:00",
-        GioHen: "09:00",
-        DiaDiem: "showroom",
-        NoiDung: "Lịch hẹn lấy xe",
-        trangThai: "APPROVED",
-        xe: { TenXe: "Toyota Camry 2023" },
-      },
-      {
-        idLichHen: 2,
-        TenKhachHang: "Trần Thị B",
-        Sdt: "0912345679",
-        Email: "tranthib@example.com",
-        idXe: 2,
-        idLoaiXe: 2,
-        NgayHen: "2023-05-01T14:00:00",
-        GioHen: "14:00",
-        DiaDiem: "Tại nhà",
-        NoiDung: "Lịch hẹn lấy xe",
-        trangThai: "PENDING",
-        xe: { TenXe: "Honda CR-V 2023" },
-      },
-      {
-        idLichHen: 3,
-        TenKhachHang: "Lê Hoàng C",
-        Sdt: "0912345680",
-        Email: "lehoangc@example.com",
-        idXe: 3,
-        idLoaiXe: 3,
-        NgayHen: "2023-05-02T16:00:00",
-        GioHen: "16:00",
-        DiaDiem: "showroom",
-        NoiDung: "Lịch hẹn lấy xe",
-        trangThai: "REJECTED",
-        xe: { TenXe: "Mazda 3 2023" },
-      },
-    ];
-
-    setLoaiXeList(fakeLoaixeData);
-    setXeList(fakeXeData);
-
-    // Chuyển đổi dữ liệu lịch hẹn thành các sự kiện của calendar
-    const calendarEvents: Event[] = fakeSchedulesData.map((schedule) => ({
-      title: `${getStatusBadge(schedule.trangThai).text} - ${schedule.NoiDung} - ${schedule.TenKhachHang}`,
-      start: new Date(schedule.NgayHen),
-      end: addHours(new Date(schedule.NgayHen), 1),
-      resource: schedule,
-    }));
-
-    setEvents(calendarEvents);
-    setIsLoading(false);
+        setEvents(calendarEvents);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching data:", err);
+        toast.error("Không thể tải dữ liệu");
+        setError("Có lỗi xảy ra khi tải dữ liệu");
+        setIsLoading(false);
+      });
   }, []);
 
   // Event handlers
@@ -274,6 +231,118 @@ const PickupScheduleCalendar: FC = () => {
 
     // Close modal
     setIsModalOpen(false);
+  };
+
+  const handleDelete = async (id: number) => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc muốn xóa lịch hẹn này?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  // Gửi request xóa lịch hẹn từ server
+                  const response = await fetch(
+                    `api/testDriveAppointment/${id}`,
+                    {
+                      method: "DELETE",
+                    }
+                  );
+
+                  if (!response.ok) {
+                    throw new Error("Xóa lịch hẹn thất bại");
+                  }
+
+                  // Gọi lại API để lấy danh sách lịch hẹn mới
+                  const updatedSchedules = await fetch(
+                    "api/testDriveAppointment"
+                  )
+                    .then((res) => res.json())
+                    .then((data) => data);
+
+                  // Cập nhật lại sự kiện
+                  const updatedEvents: Event[] = updatedSchedules.map(
+                    (schedule: PickupSchedule) => ({
+                      title: `${getStatusBadge(schedule.trangThai).text} - ${schedule.NoiDung} - ${schedule.TenKhachHang}`,
+                      start: new Date(schedule.NgayHen),
+                      end: addHours(new Date(schedule.NgayHen), 1),
+                      resource: schedule,
+                    })
+                  );
+
+                  // Cập nhật lại danh sách sự kiện
+                  setEvents(updatedEvents);
+                  toast.success("Xóa lịch hẹn thành công");
+
+                  // Đóng modal sau khi xóa
+                  setIsModalOpen(false);
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error
+                      ? err.message
+                      : "Có lỗi xảy ra khi xóa lịch hẹn"
+                  );
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
+  // Update status handler
+
+  // Event drag and drop handlers
+  const onEventResize: withDragAndDropProps["onEventResize"] = (data) => {
+    const { start, end } = data;
+
+    setEvents((currentEvents) => {
+      return currentEvents.map((event) => {
+        if (event.start === data.event.start) {
+          return { ...event, start: new Date(start), end: new Date(end) };
+        }
+        return event;
+      });
+    });
+  };
+
+  const onEventDrop: withDragAndDropProps["onEventDrop"] = (data) => {
+    const { start, end, event } = data;
+
+    setEvents((currentEvents) => {
+      return currentEvents.map((evt) => {
+        if (evt.start === event.start) {
+          return { ...evt, start: new Date(start), end: new Date(end) };
+        }
+        return evt;
+      });
+    });
   };
 
   // Rendering
@@ -331,8 +400,9 @@ const PickupScheduleCalendar: FC = () => {
           defaultView="week"
           events={events}
           localizer={localizer}
-          onEventDrop={handleSelectEvent}
-          onEventResize={handleSelectEvent}
+          onEventDrop={onEventDrop}
+          onEventResize={onEventResize}
+          onSelectEvent={handleSelectEvent}
           eventPropGetter={eventStyleGetter}
           resizable
           style={{ height: "100vh" }}
@@ -358,6 +428,31 @@ const PickupScheduleCalendar: FC = () => {
             <h3 className="font-bold text-lg mb-4">
               {selectedSchedule ? "Cập Nhật Lịch Hẹn" : "Thêm Mới Lịch Hẹn"}
             </h3>
+
+            {selectedSchedule && (
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Trạng thái hiện tại:</span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm ${getStatusBadge(selectedSchedule.trangThai).color}`}
+                  >
+                    {getStatusBadge(selectedSchedule.trangThai).text}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {selectedSchedule && (
+              <div className="flex justify-end items-center">
+                <button
+                  className="bg-red-500 rounded-md w-28 h-8 text-sm"
+                  onClick={() => handleDelete(selectedSchedule.idLichHen)}
+                >
+                  Xóa Lịch Hẹn
+                </button>
+              </div>
+            )}
+
             <PickupScheduleForm
               initialData={
                 selectedSchedule
