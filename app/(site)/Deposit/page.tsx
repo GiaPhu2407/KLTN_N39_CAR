@@ -47,7 +47,7 @@ const Depositpage = () => {
   });
 
   const [user, setUser] = useState<UserAuth | null>({
-    id: "user-123",
+    idUsers: "user-123",
     email: "user@example.com",
     name: "Nguyễn Văn A",
   });
