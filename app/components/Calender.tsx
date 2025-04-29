@@ -26,7 +26,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import toast, { Toaster } from "react-hot-toast";
 import { PickupScheduleForm } from "./ModalLichHen";
 
-
 // Extended interface with status
 interface PickupSchedule {
   idLichHen: number;
@@ -60,9 +59,9 @@ const locales = {
   "vi-VN": {
     ...vi,
     option: {
-      weekStartsOn: 1 // 0 is Sunday, 1 is Monday
-    }
-  }
+      weekStartsOn: 1, // 0 is Sunday, 1 is Monday
+    },
+  },
 };
 
 // Localizer setup
@@ -83,20 +82,20 @@ const end = addHours(start, 2);
 // Status badge renderer
 const getStatusBadge = (status?: string) => {
   switch (status) {
-    case 'APPROVED':
+    case "APPROVED":
       return {
-        color: 'bg-green-100 text-green-800',
-        text: 'Đã duyệt'
+        color: "bg-green-100 text-green-800",
+        text: "Đã duyệt",
       };
-    case 'REJECTED':
+    case "REJECTED":
       return {
-        color: 'bg-red-100 text-red-800',
-        text: 'Từ chối'
+        color: "bg-red-100 text-red-800",
+        text: "Từ chối",
       };
     default:
       return {
-        color: 'bg-yellow-100 text-yellow-800',
-        text: 'Chờ xử lý'
+        color: "bg-yellow-100 text-yellow-800",
+        text: "Chờ xử lý",
       };
   }
 };
@@ -104,17 +103,17 @@ const getStatusBadge = (status?: string) => {
 // Event style getter for calendar
 const eventStyleGetter = (event: Event) => {
   const schedule = event.resource as PickupSchedule;
-  const status = schedule.trangThai || 'PENDING';
-  
+  const status = schedule.trangThai || "PENDING";
+
   // Define colors based on status
   const styleMap: Record<string, React.CSSProperties> = {
-    'APPROVED': { backgroundColor: '#10b981', borderColor: '#047857' },
-    'REJECTED': { backgroundColor: '#ef4444', borderColor: '#b91c1c' },
-    'PENDING': { backgroundColor: '#f59e0b', borderColor: '#d97706' }
+    APPROVED: { backgroundColor: "#10b981", borderColor: "#047857" },
+    REJECTED: { backgroundColor: "#ef4444", borderColor: "#b91c1c" },
+    PENDING: { backgroundColor: "#f59e0b", borderColor: "#d97706" },
   };
-  
+
   return {
-    style: styleMap[status] || styleMap['PENDING']
+    style: styleMap[status] || styleMap["PENDING"],
   };
 };
 
@@ -130,7 +129,8 @@ const PickupScheduleCalendar: FC = () => {
   const [loaiXeList, setLoaiXeList] = useState<LoaiXe[]>([]);
   const [xeList, setXeList] = useState<Xe[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<PickupSchedule | null>(null);
+  const [selectedSchedule, setSelectedSchedule] =
+    useState<PickupSchedule | null>(null);
 
   // Navigation handlers
   const onNavigate = (newDate: Date, view: string, action: NavigateAction) => {
@@ -168,29 +168,33 @@ const PickupScheduleCalendar: FC = () => {
   // Fetch data effects
   useEffect(() => {
     Promise.all([
-      fetch("/api/typecar").then(res => res.json()),
-      fetch("/api/car").then(res => res.json()),
-      fetch("/api/calendartestcar").then(res => res.json())
-    ]).then(([loaiXeData, xeData, schedulesData]) => {
-      setLoaiXeList(loaiXeData);
-      setXeList(xeData);
+      fetch("/api/typecar").then((res) => res.json()),
+      fetch("/api/car").then((res) => res.json()),
+      fetch("/api/calendartestcar").then((res) => res.json()),
+    ])
+      .then(([loaiXeData, xeData, schedulesData]) => {
+        setLoaiXeList(loaiXeData);
+        setXeList(xeData);
 
-      // Transform schedules into calendar events
-      const calendarEvents: Event[] = schedulesData.map((schedule: PickupSchedule) => ({
-        title: `${getStatusBadge(schedule.trangThai).text} - ${schedule.NoiDung} - ${schedule.TenKhachHang}`,
-        start: new Date(schedule.NgayHen),
-        end: addHours(new Date(schedule.NgayHen), 1),
-        resource: schedule,
-      }));
+        // Transform schedules into calendar events
+        const calendarEvents: Event[] = schedulesData.map(
+          (schedule: PickupSchedule) => ({
+            title: `${getStatusBadge(schedule.trangThai).text} - ${schedule.NoiDung} - ${schedule.TenKhachHang}`,
+            start: new Date(schedule.NgayHen),
+            end: addHours(new Date(schedule.NgayHen), 1),
+            resource: schedule,
+          })
+        );
 
-      setEvents(calendarEvents);
-      setIsLoading(false);
-    }).catch(err => {
-      console.error("Error fetching data:", err);
-      toast.error("Không thể tải dữ liệu");
-      setError("Có lỗi xảy ra khi tải dữ liệu");
-      setIsLoading(false);
-    });
+        setEvents(calendarEvents);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching data:", err);
+        toast.error("Không thể tải dữ liệu");
+        setError("Có lỗi xảy ra khi tải dữ liệu");
+        setIsLoading(false);
+      });
   }, []);
 
   // Event handlers
@@ -209,7 +213,8 @@ const PickupScheduleCalendar: FC = () => {
     setEvents((prevEvents) => {
       // Remove existing event if editing
       const filteredEvents = prevEvents.filter(
-        event => (event.resource as PickupSchedule).idLichHen !== newSchedule.idLichHen
+        (event) =>
+          (event.resource as PickupSchedule).idLichHen !== newSchedule.idLichHen
       );
 
       // Add new event
@@ -220,7 +225,7 @@ const PickupScheduleCalendar: FC = () => {
           start: new Date(newSchedule.NgayHen),
           end: addHours(new Date(newSchedule.NgayHen), 1),
           resource: newSchedule,
-        }
+        },
       ];
     });
 
@@ -232,7 +237,9 @@ const PickupScheduleCalendar: FC = () => {
     toast(
       (t) => (
         <div className="flex flex-col gap-2">
-          <span className="font-medium">Bạn có chắc muốn xóa lịch hẹn này?</span>
+          <span className="font-medium">
+            Bạn có chắc muốn xóa lịch hẹn này?
+          </span>
           <div className="flex gap-2">
             <button
               onClick={async () => {
@@ -242,33 +249,37 @@ const PickupScheduleCalendar: FC = () => {
                   const response = await fetch(`/api/calendartestcar/${id}`, {
                     method: "DELETE",
                   });
-  
+
                   if (!response.ok) {
                     throw new Error("Xóa lịch hẹn thất bại");
                   }
-  
+
                   // Gọi lại API để lấy danh sách lịch hẹn mới
                   const updatedSchedules = await fetch("/api/calendartestcar")
                     .then((res) => res.json())
                     .then((data) => data);
-  
+
                   // Cập nhật lại sự kiện
-                  const updatedEvents: Event[] = updatedSchedules.map((schedule: PickupSchedule) => ({
-                    title: `${getStatusBadge(schedule.trangThai).text} - ${schedule.NoiDung} - ${schedule.TenKhachHang}`,
-                    start: new Date(schedule.NgayHen),
-                    end: addHours(new Date(schedule.NgayHen), 1),
-                    resource: schedule,
-                  }));
-  
+                  const updatedEvents: Event[] = updatedSchedules.map(
+                    (schedule: PickupSchedule) => ({
+                      title: `${getStatusBadge(schedule.trangThai).text} - ${schedule.NoiDung} - ${schedule.TenKhachHang}`,
+                      start: new Date(schedule.NgayHen),
+                      end: addHours(new Date(schedule.NgayHen), 1),
+                      resource: schedule,
+                    })
+                  );
+
                   // Cập nhật lại danh sách sự kiện
                   setEvents(updatedEvents);
                   toast.success("Xóa lịch hẹn thành công");
-  
+
                   // Đóng modal sau khi xóa
                   setIsModalOpen(false);
                 } catch (err) {
                   toast.error(
-                    err instanceof Error ? err.message : "Có lỗi xảy ra khi xóa lịch hẹn"
+                    err instanceof Error
+                      ? err.message
+                      : "Có lỗi xảy ra khi xóa lịch hẹn"
                   );
                 }
               }}
@@ -301,7 +312,6 @@ const PickupScheduleCalendar: FC = () => {
   };
 
   // Update status handler
-  
 
   // Event drag and drop handlers
   const onEventResize: withDragAndDropProps["onEventResize"] = (data) => {
@@ -354,7 +364,6 @@ const PickupScheduleCalendar: FC = () => {
       <CardHeader>
         <div className="flex items-center">
           <CardTitle>Lịch Hẹn Trải Nghiệm Xe</CardTitle>
-          
         </div>
       </CardHeader>
       <CardContent>
@@ -385,7 +394,7 @@ const PickupScheduleCalendar: FC = () => {
           onSelectEvent={handleSelectEvent}
           eventPropGetter={eventStyleGetter}
           resizable
-          style={{ height: "100vh", }}
+          style={{ height: "100vh" }}
           views={["month", "week", "day", "agenda"]}
           messages={{
             month: "Tháng",
@@ -408,45 +417,51 @@ const PickupScheduleCalendar: FC = () => {
             <h3 className="font-bold text-lg mb-4">
               {selectedSchedule ? "Cập Nhật Lịch Hẹn" : "Thêm Mới Lịch Hẹn"}
             </h3>
-            
+
             {selectedSchedule && (
               <div>
                 <div className="flex items-center gap-2 pb-2">
                   <span className="font-medium">Trạng thái hiện tại:</span>
-                  <span className={`px-3 py-1 rounded-full text-sm ${getStatusBadge(selectedSchedule.trangThai).color}`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm ${getStatusBadge(selectedSchedule.trangThai).color}`}
+                  >
                     {getStatusBadge(selectedSchedule.trangThai).text}
                   </span>
                 </div>
               </div>
             )}
 
-{selectedSchedule && (
-  <div className="flex justify-end items-center">
-    {selectedSchedule.trangThai !== 'APPROVED' && (
-      <button
-        className="bg-red-500 rounded-md w-28 h-8 text-sm text-white"
-        onClick={() => handleDelete(selectedSchedule.idLichHen)}
-      >
-        Xóa Lịch Hẹn
-      </button>
-    )}
-  </div>
-)}
+            {selectedSchedule && (
+              <div className="flex justify-end items-center">
+                {selectedSchedule.trangThai !== "APPROVED" && (
+                  <button
+                    className="bg-red-500 rounded-md w-28 h-8 text-sm text-white"
+                    onClick={() => handleDelete(selectedSchedule.idLichHen)}
+                  >
+                    Xóa Lịch Hẹn
+                  </button>
+                )}
+              </div>
+            )}
 
             <PickupScheduleForm
-              initialData={selectedSchedule ? {
-                idLichHen: selectedSchedule.idLichHen,
-                TenKhachHang: selectedSchedule.TenKhachHang,
-                Sdt: selectedSchedule.Sdt,
-                Email: selectedSchedule.Email,
-                idXe: selectedSchedule.idXe.toString(),
-                idLoaiXe: selectedSchedule.idLoaiXe.toString(),
-                NgayHen: new Date(selectedSchedule.NgayHen),
-                GioHen: selectedSchedule.GioHen,
-                DiaDiem: selectedSchedule.DiaDiem,
-                NoiDung: selectedSchedule.NoiDung,
-                trangThai: selectedSchedule.trangThai || 'PENDING',
-              } : undefined}
+              initialData={
+                selectedSchedule
+                  ? {
+                      idLichHen: selectedSchedule.idLichHen,
+                      TenKhachHang: selectedSchedule.TenKhachHang,
+                      Sdt: selectedSchedule.Sdt,
+                      Email: selectedSchedule.Email,
+                      idXe: selectedSchedule.idXe.toString(),
+                      idLoaiXe: selectedSchedule.idLoaiXe.toString(),
+                      NgayHen: new Date(selectedSchedule.NgayHen),
+                      GioHen: selectedSchedule.GioHen,
+                      DiaDiem: selectedSchedule.DiaDiem,
+                      NoiDung: selectedSchedule.NoiDung,
+                      trangThai: selectedSchedule.trangThai || "PENDING",
+                    }
+                  : undefined
+              }
               onSubmitSuccess={handleSubmitSuccess}
             />
           </div>

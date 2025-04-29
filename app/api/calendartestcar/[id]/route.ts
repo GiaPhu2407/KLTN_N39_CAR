@@ -3,14 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/app/lib/auth";
 import { createNotification } from "@/lib/create-notification";
 
+// PUT Function with fixed user ID handling
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Get current user session
-    const session = await getSession();
-
     // Access id properly through params
     const id = params.id;
 
@@ -26,20 +24,14 @@ export async function PUT(
       NoiDung,
     } = await req.json();
 
-    // Debug log
     console.log("Updating Schedule ID:", id);
-    console.log("NgayHen:", NgayHen);
-    console.log("GioHen:", GioHen);
 
     // Handle dates properly based on what's actually coming from the client
     let pickupDate;
 
-    // If GioHen is an ISO string (which appears to be the case)
     if (GioHen && typeof GioHen === "string" && GioHen.includes("T")) {
-      // Use GioHen as the primary date/time since it contains both date and time
       pickupDate = new Date(GioHen);
     } else {
-      // Fallback to using NgayHen and parse the time portion
       pickupDate = new Date(NgayHen);
 
       if (GioHen && GioHen.includes(":")) {
@@ -53,8 +45,6 @@ export async function PUT(
     if (isNaN(pickupDate.getTime())) {
       throw new Error("Invalid date/time values provided");
     }
-
-    console.log("Combined DateTime:", pickupDate.toISOString());
 
     // Check if appointment exists
     const existingLichHen = await prisma.lichHenTraiNghiem.findUnique({
@@ -72,6 +62,9 @@ export async function PUT(
       );
     }
 
+    // IMPORTANT: Log the customer ID for debugging
+    console.log("Current appointment's user ID:", existingLichHen.idUser);
+
     // Update database
     const updatedLichHen = await prisma.lichHenTraiNghiem.update({
       where: { idLichHen: parseInt(id) },
@@ -86,6 +79,8 @@ export async function PUT(
         DiaDiem: DiaDiem.trim(),
         NoiDung: NoiDung.trim(),
         trangThai: "PENDING",
+        // IMPORTANT: Make sure we're not changing the user ID during update
+        // idUser: existingLichHen.idUser, // Uncomment this if idUser is getting changed
       },
       include: {
         xe: true,
@@ -94,40 +89,51 @@ export async function PUT(
     });
 
     // Format date and time for notifications
-    const formattedDate = pickupDate.toLocaleDateString("vi-VN");
-    const formattedTime = pickupDate.toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const formattedDate = new Date(NgayHen).toLocaleDateString("vi-VN");
+    const formattedTime =
+      typeof GioHen === "string" && !GioHen.includes("T")
+        ? GioHen
+        : pickupDate.toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
 
-    // Get all staff members with role ID 2
+    // Get all staff members (role ID 2)
     const staffMembers = await prisma.users.findMany({
       where: {
-        idRole: 2, // Role ID for staff
+        idRole: 2,
       },
     });
 
-    // Create notifications for all staff members
+    // Create notifications for staff members
     await Promise.all(
       staffMembers.map((staff) =>
         createNotification({
           userId: staff.idUsers,
           type: "appointment_update",
-          message: `Lịch hẹn đã cập nhật: ${TenKhachHang} - ${
+          message: `Lịch hẹn được cập nhật: ${TenKhachHang} - ${
             updatedLichHen.xe?.TenXe || "Xe không xác định"
           } - ${formattedDate} ${formattedTime}`,
         })
       )
     );
 
-    // Create a notification for the user who owns the appointment
-    await createNotification({
-      userId: existingLichHen.idUser || session.idUsers,
-      type: "appointment_update",
-      message: `Lịch hẹn trải nghiệm xe ${
-        updatedLichHen.xe?.TenXe || "không xác định"
-      } của bạn đã được cập nhật thành công vào ngày ${formattedDate} lúc ${formattedTime}`,
-    });
+    // CRITICAL FIX: Use the original customer ID from the existing appointment record
+    // Don't do another database lookup which could cause issues
+    if (existingLichHen.idUser) {
+      console.log(
+        `Creating customer notification for user ID: ${existingLichHen.idUser}`
+      );
+
+      // Direct notification to the user stored in the appointment record
+      await createNotification({
+        userId: existingLichHen.idUser, // Use the ID directly from the appointment record
+        type: "appointment_update",
+        message: `Lịch hẹn trải nghiệm xe ${
+          updatedLichHen.xe?.TenXe || "không xác định"
+        } của bạn đã được cập nhật vào ngày ${formattedDate} lúc ${formattedTime}`,
+      });
+    }
 
     return NextResponse.json(updatedLichHen);
   } catch (error: any) {
@@ -139,18 +145,16 @@ export async function PUT(
   }
 }
 
+// DELETE Function with fixed user ID handling
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Get current user session
-    const session = await getSession();
-
     const id = parseInt(params.id);
 
-    // First, fetch the appointment details before deleting it
-    const appointmentToDelete = await prisma.lichHenTraiNghiem.findUnique({
+    // Fetch appointment details before deletion to use in notification
+    const lichHen = await prisma.lichHenTraiNghiem.findUnique({
       where: { idLichHen: id },
       include: {
         xe: true,
@@ -158,53 +162,72 @@ export async function DELETE(
       },
     });
 
-    if (!appointmentToDelete) {
+    if (!lichHen) {
       return NextResponse.json(
         { error: "Không tìm thấy lịch hẹn" },
         { status: 404 }
       );
     }
 
-    // Store details for notification
-    const tenKhachHang = appointmentToDelete.TenKhachHang;
-    const tenXe = appointmentToDelete.xe?.TenXe || "không xác định";
-    const ngayHen = new Date(appointmentToDelete.NgayHen);
-    const formattedDate = ngayHen.toLocaleDateString("vi-VN");
-    const formattedTime = ngayHen.toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const userId = appointmentToDelete.idUser;
+    // IMPORTANT: Log the customer ID for debugging
+    console.log("Appointment's user ID before deletion:", lichHen.idUser);
+
+    // Format date and time for notifications
+    const formattedDate = lichHen.NgayHen
+      ? new Date(lichHen.NgayHen).toLocaleDateString("vi-VN")
+      : "không xác định";
+
+    const formattedTime = lichHen.GioHen
+      ? new Date(lichHen.GioHen).toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "không xác định";
+
+    // CRITICAL FIX: Store customer ID before deleting the appointment
+    // and make sure we're capturing the correct ID
+    const customerId = lichHen.idUser;
+    console.log(`Captured customer ID before deletion: ${customerId}`);
 
     // Delete the appointment
     const deletedLichHen = await prisma.lichHenTraiNghiem.delete({
       where: { idLichHen: id },
     });
 
-    // Get all staff members with role ID 2
+    // Get all staff members (role ID 2)
     const staffMembers = await prisma.users.findMany({
       where: {
-        idRole: 2, // Role ID for staff
+        idRole: 2,
       },
     });
 
-    // Create notifications for all staff members
+    // Create deletion notifications for staff members
     await Promise.all(
       staffMembers.map((staff) =>
         createNotification({
           userId: staff.idUsers,
           type: "appointment_delete",
-          message: `Lịch hẹn đã bị hủy: ${tenKhachHang} - ${tenXe} - ${formattedDate} ${formattedTime}`,
+          message: `Lịch hẹn đã bị hủy: ${lichHen.TenKhachHang} - ${
+            lichHen.xe?.TenXe || "Xe không xác định"
+          } - ${formattedDate} ${formattedTime}`,
         })
       )
     );
 
-    // Create a notification for the user who owned the appointment
-    if (userId) {
+    // CRITICAL FIX: Use the original customer ID captured before deletion
+    // Don't do another database lookup which could cause issues
+    if (customerId) {
+      console.log(
+        `Creating deletion notification for customer ID: ${customerId}`
+      );
+
+      // Direct notification to the user ID captured before deletion
       await createNotification({
-        userId: userId,
+        userId: customerId, // Use the ID directly from the appointment record
         type: "appointment_delete",
-        message: `Lịch hẹn trải nghiệm xe ${tenXe} của bạn vào ngày ${formattedDate} lúc ${formattedTime} đã bị hủy`,
+        message: `Lịch hẹn trải nghiệm xe ${
+          lichHen.xe?.TenXe || "không xác định"
+        } của bạn vào ngày ${formattedDate} lúc ${formattedTime} đã bị hủy`,
       });
     }
 
@@ -215,7 +238,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("Pickup schedule deletion error:", error.message);
     return NextResponse.json(
-      { error: "Không thể xóa lịch hẹn", details: error.message },
+      { error: "Không thể xóa lịch hẹn lấy xe", details: error.message },
       { status: 500 }
     );
   }

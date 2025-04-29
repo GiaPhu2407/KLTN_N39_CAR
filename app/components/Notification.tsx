@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { NotificationBell } from "./NotificationBell";
 
-
-
 export default function NotificationComponent() {
   const [userId, setUserId] = useState<number | null>(null);
 
