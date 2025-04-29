@@ -116,6 +116,7 @@ export async function GET() {
       include: {
         xe: true,
         loaiXe: true,
+        user: true,
       },
     });
     return NextResponse.json(pickupSchedules);
