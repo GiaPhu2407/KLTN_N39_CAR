@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import moment from "moment";
 
 interface DatCoc {
   idDatCoc: number;
@@ -12,7 +11,7 @@ interface DatCoc {
     Hoten: string;
     Email: string;
     Sdt: string;
-  };
+  },
   xe?: {
     TenXe: string;
     HinhAnh: string;
@@ -22,13 +21,14 @@ interface DatCoc {
     NgayLayXe: string;
     GioHenLayXe: string;
     DiaDiem: string;
-  }>;
+  }>
 }
 
-interface TableDashboardProps {
-  onEdit: (product: DatCoc) => void;
+
+interface TableDepositProps {
+  onEdit: (deposit: DatCoc) => void;
   onDelete: (id: number) => void;
-  reloadKey: (id: number) => void;
+  reloadKey: number;
 }
 
 interface PaginationMeta {
@@ -39,132 +39,54 @@ interface PaginationMeta {
   skip: number;
 }
 
-const TableDatCoc: React.FC<TableDashboardProps> = ({
+const TableDeposit: React.FC<TableDepositProps> = ({
   onEdit,
   onDelete,
   reloadKey,
 }) => {
-  const [isDatCocTable, setDatCocTable] = useState<DatCoc[]>([]);
+  const [deposits, setDeposits] = useState<DatCoc[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(
-    null
-  );
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     setLoading(true);
-
-    // Dữ liệu giả
-    const fakeData: DatCoc[] = [
-      {
-        idDatCoc: 1,
-        idXe: 1,
-        idKhachHang: 1,
-        SotienDat: 20000000,
-        NgayDat: "2023-04-15T10:00:00",
-        TrangThaiDat: "Đã Đặt Cọc",
-        khachHang: {
-          Hoten: "Nguyễn Văn A",
-          Email: "nguyenvana@example.com",
-          Sdt: "0912345678",
-        },
-        xe: {
-          TenXe: "Toyota Camry 2023",
-          HinhAnh: "/images/toyota_camry.jpg",
-          GiaXe: 100000000,
-        },
-        LichHenLayXe: [
-          {
-            NgayLayXe: "2023-04-20",
-            GioHenLayXe: "09:00",
-            DiaDiem: "Showroom",
-          },
-        ],
-      },
-      {
-        idDatCoc: 2,
-        idXe: 2,
-        idKhachHang: 2,
-        SotienDat: 15000000,
-        NgayDat: "2023-04-17T11:00:00",
-        TrangThaiDat: "Chờ xác nhận",
-        khachHang: {
-          Hoten: "Trần Thị B",
-          Email: "tranthib@example.com",
-          Sdt: "0912345679",
-        },
-        xe: {
-          TenXe: "Honda CR-V 2023",
-          HinhAnh: "/images/honda_crv.jpg",
-          GiaXe: 120000000,
-        },
-        LichHenLayXe: [
-          {
-            NgayLayXe: "2023-04-22",
-            GioHenLayXe: "14:00",
-            DiaDiem: "Tại nhà",
-          },
-        ],
-      },
-      {
-        idDatCoc: 3,
-        idXe: 3,
-        idKhachHang: 3,
-        SotienDat: 25000000,
-        NgayDat: "2023-04-18T12:00:00",
-        TrangThaiDat: "Đã xác nhận",
-        khachHang: {
-          Hoten: "Lê Hoàng C",
-          Email: "lehoangc@example.com",
-          Sdt: "0912345680",
-        },
-        xe: {
-          TenXe: "Mazda 3 2023",
-          HinhAnh: "/images/mazda_3.jpg",
-          GiaXe: 95000000,
-        },
-        LichHenLayXe: [
-          {
-            NgayLayXe: "2023-04-25",
-            GioHenLayXe: "16:00",
-            DiaDiem: "Showroom",
-          },
-        ],
-      },
-    ];
-
-    setDatCocTable(fakeData);
-    setPaginationMeta({
-      totalRecords: fakeData.length,
-      totalPage: Math.ceil(fakeData.length / pageSize),
-      page: currentPage,
-      limit_size: pageSize,
-      skip: 0,
-    });
-    setLoading(false);
-  }, [currentPage, pageSize, reloadKey]);
+    fetch(`api/pagination/deposit?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch data");
+        return response.json();
+      })
+      .then((data) => {
+        setDeposits(data.data);
+        setPaginationMeta(data.meta);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setLoading(false);
+      });
+  }, [currentPage, pageSize, reloadKey, searchText]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const handlePageSizeChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
     setCurrentPage(1);
   };
 
   const formatDateTime = (dateString?: string | null) => {
-    if (!dateString) return "";
+    if (!dateString) return '';
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
       });
     } catch (error) {
       return dateString;
@@ -172,12 +94,12 @@ const TableDatCoc: React.FC<TableDashboardProps> = ({
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND' 
     }).format(amount);
   };
-
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Chờ xác nhận":
@@ -207,8 +129,8 @@ const TableDatCoc: React.FC<TableDashboardProps> = ({
     <div className="flex flex-col w-full">
       <div className="w-full">
         <div className="flex flex-col md:flex-row justify-between pb-5 gap-4">
-          <div className="mt-2 md:mt-6 ml-4 md:ml-20">
-            <label htmlFor="pageSize" className="text-sm font-medium">
+          <div className="flex items-center mt-2 md:mt-6 ml-4 md:ml-20">
+            <label htmlFor="pageSize" className="text-sm font-medium mr-2">
               Số mục mỗi trang:
             </label>
             <select
@@ -223,43 +145,56 @@ const TableDatCoc: React.FC<TableDashboardProps> = ({
               <option value="50">50</option>
             </select>
           </div>
+          
+          <div className="flex items-center mr-4 md:mr-20">
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
-        <div className="w-full overflow-x-auto px-4 md:px-10">
+        <div className="w-full overflow-x-auto  md:px-10">
           <table className="table text-center table-auto w-full min-w-[640px]">
             <thead className="text-center">
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                ID
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Khách Hàng
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                SĐT
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Xe
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Giá Xe
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Trạng Thái
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Số Tiền Đặt
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Ngày Đặt
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Ngày Hẹn
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Địa Điểm
-              </th>
-              <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Thao Tác
-              </th>
+              <tr>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  ID
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Khách Hàng
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  SĐT
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Xe
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Giá Xe
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-36">
+  Trạng Thái
+</th>
+
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Số Tiền Đặt
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Ngày Đặt
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Ngày Hẹn
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Địa Điểm
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Thao Tác
+                </th>
+              </tr>
             </thead>
             <tbody>
               {loading ? (
@@ -268,54 +203,61 @@ const TableDatCoc: React.FC<TableDashboardProps> = ({
                     Đang tải...
                   </td>
                 </tr>
+              ) : deposits.length === 0 ? (
+                <tr>
+                  <td colSpan={13} className="text-center py-4">
+                    Không có dữ liệu
+                  </td>
+                </tr>
               ) : (
-                isDatCocTable.map((donhang, index) => (
+                deposits.map((deposit, index) => (
                   <tr
-                    key={donhang.idDatCoc}
+                    key={deposit.idDatCoc}
                     className={`text-black text-center ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                   >
-                    <td className="px-3 py-3">{donhang.idDatCoc}</td>
+                    <td className="px-3 py-3">{deposit.idDatCoc}</td>
                     <td className="px-3 py-3">
-                      {donhang.khachHang?.Hoten || "Chưa xác định"}
+                      {deposit.khachHang?.Hoten || "Chưa xác định"}
                     </td>
                     <td className="px-3 py-3">
-                      {donhang.khachHang?.Sdt || "N/A"}
+                      {deposit.khachHang?.Sdt || "N/A"}
                     </td>
                     <td className="px-3 py-3">
-                      {donhang.xe?.TenXe || "Chưa chọn"}
+                      {deposit.xe?.TenXe || "Chưa chọn"}
                     </td>
                     <td className="px-3 py-3">
-                      {formatCurrency(donhang.xe?.GiaXe || 0)}
+                      {formatCurrency(deposit.xe?.GiaXe || 0)}
+                    </td>
+                    <td className="px-4 py-3">
+  <span
+    className={`px-3 w-full text-center py-1 rounded-full ${getStatusColor(deposit.TrangThaiDat)} whitespace-nowrap`}
+  >
+    {deposit.TrangThaiDat}
+  </span>
+</td>
+
+                    <td className="px-3 py-3">
+                      {formatCurrency(deposit.SotienDat)}
                     </td>
                     <td className="px-3 py-3">
-                      <span
-                        className={`px-3 py-1 rounded-full ${getStatusColor(donhang.TrangThaiDat)}`}
-                      >
-                        {donhang.TrangThaiDat}
-                      </span>
+                      {formatDateTime(deposit.NgayDat)}
                     </td>
                     <td className="px-3 py-3">
-                      {formatCurrency(donhang.SotienDat)}
+                      {formatDateTime(deposit.LichHenLayXe?.[0]?.NgayLayXe)}
                     </td>
                     <td className="px-3 py-3">
-                      {formatDateTime(donhang.NgayDat)}
+                      {deposit.LichHenLayXe?.[0]?.DiaDiem || "Chưa xác định"}
                     </td>
                     <td className="px-3 py-3">
-                      {formatDateTime(donhang.LichHenLayXe?.[0]?.NgayLayXe)}
-                    </td>
-                    <td className="px-3 py-3">
-                      {donhang.LichHenLayXe?.[0]?.DiaDiem || "Chưa xác định"}
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-center">
                         <button
-                          onClick={() => onEdit(donhang)}
+                          onClick={() => onEdit(deposit)}
                           className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           🖊️
                         </button>
                         <button
-                          onClick={() => onDelete(donhang.idDatCoc)}
+                          onClick={() => onDelete(deposit.idDatCoc)}
                           className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           ❌
@@ -368,4 +310,4 @@ const TableDatCoc: React.FC<TableDashboardProps> = ({
   );
 };
 
-export default TableDatCoc;
+export default TableDeposit;
