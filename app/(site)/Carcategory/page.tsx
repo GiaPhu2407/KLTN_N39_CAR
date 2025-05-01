@@ -169,7 +169,7 @@ const Category = () => {
                       <button 
                         className="w-48 bg-indigo-600 text-white py-2 mx-4 rounded-md hover:bg-indigo-700 transition duration-300"
                       >
-                        <Link href={`/Cartestdrive?id=${car.idXe}`}>Đặt Cọc</Link>
+                        <Link href={`/Deposit?id=${car.idXe}`}>Đặt Cọc</Link>
                       </button>
                     ) : (
                       <button 

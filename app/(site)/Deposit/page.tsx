@@ -1,15 +1,23 @@
 "use client";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 import Footer from "@/app/components/Footer";
 import { UserAuth } from "@/app/types/auth";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
-import { Toaster } from "react-hot-toast";
+import "react-datepicker/dist/react-datepicker.css";
+import { loadStripe } from "@stripe/stripe-js";
+
+// Initialize Stripe (replace with your actual publishable key)
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface Car {
   idXe: number;
   TenXe: string;
   GiaXe: number;
+  HinhAnh: string;
+  MauSac: string;
+  NamSanXuat: string;
   khachHang: {
     Hoten: string;
     Sdt: string;
@@ -22,6 +30,7 @@ interface DepositFormData {
   phoneNumber: string;
   email: string;
   depositAmount: number;
+  depositPercentage: number;
 }
 
 interface PickupScheduleData {
@@ -30,43 +39,347 @@ interface PickupScheduleData {
   DiaDiem: string;
 }
 
-const Depositpage = () => {
+interface StripePaymentData {
+  clientSecret: string;
+  depositAmount: number;
+  totalAmount: number;
+  depositPercentage: number;
+}
+
+const CarDepositPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  const [car, setCar] = useState<Car | null>({
-    idXe: 1,
-    TenXe: "Toyota Camry 2023",
-    GiaXe: 100000000,
-    khachHang: {
-      Hoten: "Nguyễn Văn A",
-      Sdt: "0912345678",
-      Diachi: "123 Đường Lê Lợi, TP.HCM",
-    },
-  });
-
-  const [user, setUser] = useState<UserAuth | null>({
-    id: "user-123",
-    email: "user@example.com",
-    name: "Nguyễn Văn A",
-  });
-
+  const [car, setCar] = useState<Car | null>(null);
+  const [user, setUser] = useState<UserAuth | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pickupSchedule, setPickupSchedule] = useState<PickupScheduleData>({
-    NgayLayXe: new Date(),
-    GioHenLayXe: "10:00",
-    DiaDiem: "showroom",
+    NgayLayXe: null,
+    GioHenLayXe: "",
+    DiaDiem: "",
   });
-
   const [formData, setFormData] = useState<DepositFormData>({
-    fullName: "Nguyễn Văn A",
-    phoneNumber: "0912345678",
-    email: "user@example.com",
-    depositAmount: 20000000,
+    fullName: "",
+    phoneNumber: "",
+    email: "",
+    depositAmount: 0,
+    depositPercentage: 20, // Default to 20%
   });
+  
+  // Stripe payment states
+  const [showStripePayment, setShowStripePayment] = useState(false);
+  const [stripePaymentData, setStripePaymentData] = useState<StripePaymentData | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'CASH'>('CASH');
 
+  // Deposit percentage options
+  const DEPOSIT_PERCENTAGES = [
+    { value: 10, label: '10% Trả góp' },
+    { value: 20, label: '20% Trả góp' },
+    { value: 30, label: '30% Trả góp' },
+    { value: 40, label: '40% Trả góp' },
+    { value: 50, label: '50% Trả góp' },
+    { value: 100, label: 'Thanh toán toàn bộ' }
+  ];
+
+  // Fetch user information
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch("/api/auth/session");
+        const sessionData = await response.json();
+
+        if (!sessionData) {
+          toast.error("Vui lòng đăng nhập");
+          router.push("/Login");
+          return;
+        }
+
+        setUser(sessionData);
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin người dùng:", err);
+        toast.error("Vui lòng đăng nhập");
+        router.push("/Login");
+      } finally {
+        // If car details are not yet loaded, change loading state
+        if (!car) setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, [router, car]);
+
+  // Fetch car details
+  useEffect(() => {
+    const fetchCarDetails = async () => {
+      if (!id) {
+        setError("Không tìm thấy mã xe");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/car/${id}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.idXe) {
+          throw new Error("Không có thông tin xe");
+        }
+
+        setCar(data);
+        // Set default deposit amount to 20% of car price
+        setFormData((prev) => ({
+          ...prev,
+          depositAmount: Math.round(data.GiaXe * 0.2),
+        }));
+        setLoading(false);
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin xe:", err);
+        setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+        setLoading(false);
+        toast.error("Không thể tải thông tin xe");
+      }
+    };
+
+    fetchCarDetails();
+  }, [id, router]);
+
+  // Pre-fill user data when user is loaded
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user.Hoten || "",
+        phoneNumber: user.Sdt || "",
+        email: user.Email || "",
+      }));
+    }
+  }, [user]);
+
+  const calculateDepositAmount = (percentage: number) => {
+    if (!car) return 0;
+    return Math.round(car.GiaXe * (percentage / 100));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    if (name === 'depositPercentage') {
+      const percentage = Number(value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: percentage,
+        depositAmount: calculateDepositAmount(percentage)
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handlePickupScheduleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setPickupSchedule((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handlePaymentMethodChange = (method: 'STRIPE' | 'CASH') => {
+    setPaymentMethod(method);
+  };
+
+  const initiateStripePayment = async () => {
+    if (!car || !user) {
+      toast.error("Thông tin không đầy đủ");
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          vehicles: [
+            {
+              idXe: car.idXe,
+              SoLuong: 1, // Assuming one car per deposit
+            },
+          ],
+          depositPercentage: formData.depositPercentage / 100, // Convert to decimal
+          // Include pickup schedule data
+          pickupSchedule: {
+            NgayLayXe: pickupSchedule.NgayLayXe?.toISOString(),
+            GioHenLayXe: pickupSchedule.GioHenLayXe,
+            DiaDiem: pickupSchedule.DiaDiem,
+          }
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Không thể khởi tạo thanh toán");
+      }
+  
+      const data = await response.json();
+      setStripePaymentData(data);
+      setShowStripePayment(true);
+    } catch (error) {
+      console.error("Lỗi khởi tạo thanh toán:", error);
+      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    // Validate form
+    if (!formData.fullName || !formData.phoneNumber || !formData.email || 
+        !pickupSchedule.NgayLayXe || !pickupSchedule.GioHenLayXe || !pickupSchedule.DiaDiem) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+
+    if (paymentMethod === 'STRIPE') {
+      initiateStripePayment();
+    } else {
+      handleCashDeposit();
+    }
+  };
+  
+  const handleCashDeposit = async () => {
+    if (!car || !user) return;
+    
+    try {
+      // Submit deposit request
+      const depositResponse = await fetch("/api/deposit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idXe: car.idXe,
+          idKhachHang: user.idUsers,
+          NgayDat: new Date().toISOString(),
+          SotienDat: formData.depositAmount,
+          TrangThaiDat: "Chờ xác nhận",
+          khachHang: {
+            hoTen: formData.fullName,
+            soDienThoai: formData.phoneNumber,
+            email: formData.email,
+          },
+        }),
+      });
+  
+      if (!depositResponse.ok) {
+        throw new Error("Không thể tạo đơn đặt cọc");
+      }
+  
+      const depositData = await depositResponse.json();
+  
+      // Create pickup schedule with user-entered data
+      const pickupResponse = await fetch("/api/appointment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idDatCoc: depositData.idDatCoc,
+          idXe: car.idXe,
+          idKhachHang: user.idUsers,
+          NgayLayXe: pickupSchedule.NgayLayXe?.toISOString(),
+          GioHenLayXe: pickupSchedule.GioHenLayXe,
+          DiaDiem: pickupSchedule.DiaDiem,
+        }),
+      });
+  
+      if (!pickupResponse.ok) {
+        throw new Error("Không thể tạo lịch hẹn lấy xe");
+      }
+  
+      // Show success toast and redirect
+      toast.success("Đặt cọc và lịch hẹn thành công!");
+      router.push("/");
+    } catch (error) {
+      console.error("Lỗi khi đặt cọc:", error);
+      toast.error("Có lỗi xảy ra. Vui lòng thử lại sau.");
+    }
+  };
+
+  const handleStripeSuccess = () => {
+    toast.success("Thanh toán thành công!");
+    setShowStripePayment(false);
+    router.push("/");
+  };
+
+  const handleStripeCancel = () => {
+    setShowStripePayment(false);
+  };
+
+  if (loading)
+    return (
+      <div
+        className="flex justify-center items-center h-screen"
+        data-theme="light"
+      >
+        <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex justify-center items-center h-screen text-center">
+        <div className="text-2xl font-bold text-red-600">{error}</div>
+      </div>
+    );
+
+  if (!car)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-2xl font-bold text-gray-800">
+          Không tìm thấy thông tin xe
+        </div>
+      </div>
+    );
+    const validateForm = () => {
+      // Kiểm tra số điện thoại
+      const phoneRegex = /^(0[1-9]{1}[0-9]{8,9})$/;
+      if (!formData.phoneNumber) {
+        toast.error("Vui lòng nhập số điện thoại");
+        return false;
+      }
+      if (!phoneRegex.test(formData.phoneNumber)) {
+        toast.error("Số điện thoại phải có 10-11 chữ số và bắt đầu bằng 0");
+        return false;
+      }
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+      if (!formData.email) {
+        toast.error("Vui lòng nhập email");
+        return false;
+      }
+      if (!emailRegex.test(formData.email)) {
+        toast.error("Chỉ chấp nhận địa chỉ Gmail hợp lệ (ví dụ: example@gmail.com)");
+        return false;
+      }
+    
+      return true;
+    };
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Toaster position="top-right" />
@@ -82,7 +395,7 @@ const Depositpage = () => {
                 currency: "VND",
               }).format(car.GiaXe)}
             </p>
-            <form className="space-y-6">
+            <form onSubmit={handleFormSubmit} className="space-y-6">
               <div className="flex justify-between gap-6">
                 <div className="flex-1">
                   <div className="form-control">
@@ -93,6 +406,7 @@ const Depositpage = () => {
                       type="text"
                       name="fullName"
                       value={formData.fullName}
+                      onChange={handleInputChange}
                       className="input input-bordered bg-slate-300 text-black w-full"
                       placeholder="Nhập họ và tên"
                       required
@@ -108,6 +422,7 @@ const Depositpage = () => {
                       type="tel"
                       name="phoneNumber"
                       value={formData.phoneNumber}
+                      onChange={handleInputChange}
                       className="input input-bordered bg-slate-300 text-black w-full"
                       placeholder="Nhập số điện thoại"
                       required
@@ -125,6 +440,7 @@ const Depositpage = () => {
                       type="email"
                       name="email"
                       value={formData.email}
+                      onChange={handleInputChange}
                       className="input input-bordered bg-slate-300 text-black w-full"
                       placeholder="Nhập email"
                       required
@@ -140,8 +456,11 @@ const Depositpage = () => {
                       type="number"
                       name="depositAmount"
                       value={formData.depositAmount}
+                      onChange={handleInputChange}
                       className="input input-bordered bg-slate-300 text-black w-full"
                       required
+                      min={Math.round(car.GiaXe * 0.1)}
+                      max={Math.round(car.GiaXe * 0.5)}
                     />
                     <label className="label">
                       <span className="label-text-alt text-black">
@@ -193,6 +512,7 @@ const Depositpage = () => {
                       type="time"
                       name="GioHenLayXe"
                       value={pickupSchedule.GioHenLayXe}
+                      onChange={handlePickupScheduleChange}
                       className="input input-bordered bg-slate-300 w-full"
                       required
                     />
@@ -207,6 +527,7 @@ const Depositpage = () => {
                 <select
                   name="DiaDiem"
                   value={pickupSchedule.DiaDiem}
+                  onChange={handlePickupScheduleChange}
                   className="select select-bordered bg-slate-300 text-black w-full"
                   required
                 >
@@ -218,7 +539,9 @@ const Depositpage = () => {
               </div>
 
               <div className="flex gap-4 mt-6">
-                <button type="button" className="btn  flex-1">
+                <button type="button"
+                  onClick={() => router.push(`/Carcategory?id=${car.idXe}`)}
+                  className="btn  flex-1">
                   Hủy
                 </button>
                 <button type="submit" className="btn btn-primary flex-1">
@@ -234,4 +557,4 @@ const Depositpage = () => {
   );
 };
 
-export default Depositpage;
+export default CarDepositPage;
