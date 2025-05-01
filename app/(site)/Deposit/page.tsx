@@ -408,10 +408,10 @@ const CarDepositPage = () => {
                 currency: "VND",
               }).format(car.GiaXe)}
             </p>
-            <form onSubmit={handleFormSubmit} className="space-y-6">
+            <form onSubmit={handleFormSubmit} className="space-y-4">
               <div className="flex justify-between gap-6">
                 <div className="flex-1">
-                  <div className="form-control">
+                  <div className="form-control flex flex-col space-y-2">
                     <label className="label">
                       <span>Họ và tên</span>
                     </label>
@@ -427,7 +427,7 @@ const CarDepositPage = () => {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <div className="form-control">
+                  <div className="form-control flex flex-col space-y-2">
                     <label className="label">
                       <span>Số điện thoại</span>
                     </label>
@@ -445,7 +445,7 @@ const CarDepositPage = () => {
               </div>
               <div className="flex justify-between gap-6 h-28">
                 <div className="flex-1">
-                  <div className="form-control">
+                  <div className="form-control flex flex-col space-y-2">
                     <label className="label">
                       <span>Email</span>
                     </label>
@@ -461,7 +461,7 @@ const CarDepositPage = () => {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <div className="form-control">
+                  <div className="form-control flex flex-col space-y-2">
                     <label className="label">
                       <span>Số tiền đặt cọc</span>
                     </label>
@@ -493,9 +493,9 @@ const CarDepositPage = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between gap-6 h-20">
+              <div className="flex justify-between gap-6 h-28 items-center">
                 <div className="flex-1">
-                  <div className="form-control">
+                  <div className="form-control flex flex-col space-y-2">
                     <label className="label">
                       <span>Ngày lấy xe</span>
                     </label>
@@ -517,7 +517,7 @@ const CarDepositPage = () => {
                 </div>
 
                 <div className="flex-1">
-                  <div className="form-control">
+                  <div className="form-control flex flex-col space-y-2">
                     <label className="label">
                       <span>Giờ hẹn lấy xe</span>
                     </label>
@@ -532,7 +532,6 @@ const CarDepositPage = () => {
                   </div>
                 </div>
               </div>
-
               <div className="form-control">
                 <label className="label">
                   <span>Địa điểm lấy xe</span>
@@ -550,7 +549,6 @@ const CarDepositPage = () => {
                   <option value="other">Địa điểm khác</option>
                 </select>
               </div>
-
               <div className="flex gap-4 mt-6">
                 <button
                   type="button"

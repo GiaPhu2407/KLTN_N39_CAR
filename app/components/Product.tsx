@@ -81,7 +81,7 @@ const CarItem = ({ car, category }: CarItemProps) => {
             </p>
             <div className="card-actions flex flex-col sm:flex-row gap-2 sm:gap-4 w-full mt-2">
               <button className="btn bg-[#1464F4] w-full sm:w-24 text-white text-sm">
-                <Link href={`Datcoc?id=${car.idXe}`}>Đặt Cọc</Link>
+                <Link href={`Deposit?id=${car.idXe}`}>Đặt Cọc</Link>
               </button>
               <Link
                 href={`Carcategory?id=${car.idXe}`}
