@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
-    "@stripe/stripe-js": "^7.2.0",
+    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/stripe-js": "^7.3.0",
     "@tailwindcss/cli": "^4.0.17",
     "@tailwindcss/vite": "^4.0.17",
     "@uploadthing/react": "^7.3.0",
