@@ -175,7 +175,7 @@ model LichHenLayXe {
   idXe           Int?      
   idKhachHang    Int?      
   NgayLayXe      DateTime? 
-  GioHenLayXe    DateTime? 
+  GioHenLayXe    String? 
   DiaDiem        String?   @db.VarChar(225)
   datCoc         DatCoc?   @relation(fields: [idDatCoc], references: [idDatCoc])
   xe             Xe?       @relation(fields: [idXe], references: [idXe])

@@ -12,7 +12,9 @@ import CheckoutForm from "@/app/components/Stripecomponents";
 import Image from "next/image";
 
 // Initialize Stripe (replace with your actual publishable key)
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 interface Car {
   idXe: number;
@@ -73,17 +75,18 @@ const CarDepositPage = () => {
 
   // Stripe payment states
   const [showStripePayment, setShowStripePayment] = useState(false);
-  const [stripePaymentData, setStripePaymentData] = useState<StripePaymentData | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'CASH'>('CASH');
+  const [stripePaymentData, setStripePaymentData] =
+    useState<StripePaymentData | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "CASH">("CASH");
 
   // Deposit percentage options
   const DEPOSIT_PERCENTAGES = [
-    { value: 10, label: '10% Trả góp' },
-    { value: 20, label: '20% Trả góp' },
-    { value: 30, label: '30% Trả góp' },
-    { value: 40, label: '40% Trả góp' },
-    { value: 50, label: '50% Trả góp' },
-    { value: 100, label: 'Thanh toán toàn bộ' }
+    { value: 10, label: "10% Trả góp" },
+    { value: 20, label: "20% Trả góp" },
+    { value: 30, label: "30% Trả góp" },
+    { value: 40, label: "40% Trả góp" },
+    { value: 50, label: "50% Trả góp" },
+    { value: 100, label: "Thanh toán toàn bộ" },
   ];
 
   // Fetch user information
@@ -170,15 +173,16 @@ const CarDepositPage = () => {
     return Math.round(car.GiaXe * (percentage / 100));
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-
-    if (name === 'depositPercentage') {
+    if (name === "depositPercentage") {
       const percentage = Number(value);
       setFormData((prev) => ({
         ...prev,
         [name]: percentage,
-        depositAmount: calculateDepositAmount(percentage)
+        depositAmount: calculateDepositAmount(percentage),
       }));
     } else {
       setFormData((prev) => ({
@@ -198,7 +202,7 @@ const CarDepositPage = () => {
     }));
   };
 
-  const handlePaymentMethodChange = (method: 'STRIPE' | 'CASH') => {
+  const handlePaymentMethodChange = (method: "STRIPE" | "CASH") => {
     setPaymentMethod(method);
   };
 
@@ -229,7 +233,7 @@ const CarDepositPage = () => {
             NgayLayXe: pickupSchedule.NgayLayXe?.toISOString(),
             GioHenLayXe: pickupSchedule.GioHenLayXe,
             DiaDiem: pickupSchedule.DiaDiem,
-          }
+          },
         }),
       });
 
@@ -259,7 +263,7 @@ const CarDepositPage = () => {
       return;
     }
 
-    if (paymentMethod === 'STRIPE') {
+    if (paymentMethod === "STRIPE") {
       initiateStripePayment();
     } else {
       handleCashDeposit();
@@ -377,7 +381,9 @@ const CarDepositPage = () => {
       return false;
     }
     if (!emailRegex.test(formData.email)) {
-      toast.error("Chỉ chấp nhận địa chỉ Gmail hợp lệ (ví dụ: example@gmail.com)");
+      toast.error(
+        "Chỉ chấp nhận địa chỉ Gmail hợp lệ (ví dụ: example@gmail.com)"
+      );
       return false;
     }
 
@@ -616,5 +622,6 @@ const CarDepositPage = () => {
     </div>
   );
 };
+
 
 export default CarDepositPage;

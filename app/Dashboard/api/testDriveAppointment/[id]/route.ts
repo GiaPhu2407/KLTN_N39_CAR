@@ -1,111 +1,51 @@
-import { sendEmail } from "@/app/Dashboard/api/emailService/route";
+import { sendEmail } from "@/app/emailService/route";
 import {
   deleteAppointmentEmailTemplate,
   updateAppointmentEmailTemplate,
-} from "@/app//Dashboard/api/emailTemplate/route";
+  createAppointmentEmailTemplate,
+} from "@/app/emailTemplate/route";
 import prisma from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { createNotification } from "@/lib/create-notification";
 
-export async function PUT(
+export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const { id } = params;
-
-    const {
-      TenKhachHang,
-      Sdt,
-      Email,
-      idLoaiXe,
-      idXe,
-      NgayHen,
-      GioHen,
-      DiaDiem,
-      NoiDung,
-    } = await req.json();
-
-    const GioHenLayXe24h = convertTo24Hour(GioHen);
-    const pickupDate = new Date(NgayHen);
-
-    if (isNaN(pickupDate.getTime())) {
-      throw new Error("Giá trị ngày không hợp lệ");
-    }
-
-    const [hours, minutes] = GioHenLayXe24h.split(":").map(Number);
-    pickupDate.setHours(hours, minutes, 0, 0);
-
-    const existingLichHen = await prisma.lichHenTraiNghiem.findUnique({
+    const appointment = await prisma.lichHenTraiNghiem.findUnique({
       where: { idLichHen: parseInt(id) },
+      include: {
+        xe: true,
+        loaiXe: true,
+      },
     });
 
-    if (!existingLichHen) {
+    if (!appointment) {
       return NextResponse.json(
         { error: "Không tìm thấy lịch hẹn" },
         { status: 404 }
       );
     }
 
-    const updatedLichHen = await prisma.lichHenTraiNghiem.update({
-      where: { idLichHen: parseInt(id) },
-      data: {
-        TenKhachHang: TenKhachHang?.trim() || "",
-        Sdt: Sdt?.trim() || "",
-        Email: Email?.trim() || "",
-        idXe: parseInt(idXe),
-        idLoaiXe: parseInt(idLoaiXe),
-        GioHen: pickupDate,
-        NgayHen: pickupDate.toISOString(),
-        DiaDiem: DiaDiem?.trim() || "",
-        NoiDung: NoiDung?.trim() || "",
-      },
-      include: {
-        xe: true,
-      },
-    });
-
-    // Ensure required data is available before sending email
-    if (updatedLichHen && updatedLichHen.Email) {
-      const emailHtml = updateAppointmentEmailTemplate({
-        TenKhachHang: updatedLichHen.TenKhachHang || "",
-        NgayHen: updatedLichHen.NgayHen || null,
-        GioHen: GioHen || "",
-        DiaDiem: updatedLichHen.DiaDiem || "",
-        NoiDung: updatedLichHen.NoiDung || "",
-        xe: {
-          TenXe: updatedLichHen.xe?.TenXe || null,
-        },
+    // Tạo thông báo xem chi tiết
+    if (appointment.idUser) {
+      await createNotification({
+        userId: appointment.idUser,
+        type: "appointment_view",
+        message: `Bạn đã xem chi tiết lịch hẹn lái thử xe ${appointment.xe?.TenXe || "không xác định"}`,
       });
-
-      await sendEmail(
-        updatedLichHen.Email,
-        "Cập nhật lịch hẹn lái thử xe",
-        emailHtml
-      );
     }
 
-    return NextResponse.json(updatedLichHen);
+    return NextResponse.json(appointment);
   } catch (error: any) {
-    console.error("Pickup schedule update error:", error.message);
+    console.error("Get appointment error:", error);
     return NextResponse.json(
-      { error: "Không thể cập nhật lịch hẹn lấy xe", details: error.message },
+      { error: "Không thể lấy thông tin lịch hẹn", details: error.message },
       { status: 500 }
     );
   }
-}
-
-function convertTo24Hour(time12h: string): string {
-  const [time, modifier] = time12h.split(" ");
-
-  let [hours, minutes] = time.split(":").map(Number);
-
-  if (modifier === "PM" && hours !== 12) {
-    hours += 12;
-  } else if (modifier === "AM" && hours === 12) {
-    hours = 0;
-  }
-
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 }
 
 export async function DELETE(
@@ -113,62 +53,284 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
-
-    // Lấy thông tin lịch hẹn trước khi xóa để gửi email
-    const lichHenToDelete = await prisma.lichHenTraiNghiem.findUnique({
-      where: { idLichHen: id },
-      include: { xe: true },
+    const { id } = params;
+    const appointment = await prisma.lichHenTraiNghiem.findUnique({
+      where: { idLichHen: parseInt(id) },
+      include: {
+        xe: true,
+      },
     });
 
-    if (!lichHenToDelete) {
+    if (!appointment) {
       return NextResponse.json(
         { error: "Không tìm thấy lịch hẹn" },
         { status: 404 }
       );
     }
 
-    // Gửi email thông báo hủy lịch hẹn nếu có email
-    if (lichHenToDelete.Email) {
-      // Format giờ hẹn từ DateTime sang chuỗi giờ
-      const gioHen = lichHenToDelete.GioHen
-        ? new Date(lichHenToDelete.GioHen).toLocaleTimeString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "";
+    // Lưu thông tin trước khi xóa
+    const userId = appointment.idUser;
+    const customerName = appointment.TenKhachHang || "Khách hàng";
+    const carName = appointment.xe?.TenXe || "không xác định";
+    const formattedDate = appointment.NgayHen
+      ? new Date(appointment.NgayHen).toLocaleDateString("vi-VN")
+      : "không xác định";
 
+    // Xóa lịch hẹn
+    await prisma.lichHenTraiNghiem.delete({
+      where: { idLichHen: parseInt(id) },
+    });
+
+    // Tạo thông báo cho nhân viên
+    const staffMembers = await prisma.users.findMany({
+      where: { idRole: 2 }, // Role nhân viên
+    });
+
+    await Promise.all(
+      staffMembers.map((staff) =>
+        createNotification({
+          userId: staff.idUsers,
+          type: "appointment_delete",
+          message: `Lịch hẹn đã hủy: ${customerName} - ${carName} - ${formattedDate}`,
+        })
+      )
+    );
+
+    // Tạo thông báo cho khách hàng
+    if (userId) {
+      await createNotification({
+        userId: userId,
+        type: "appointment_delete",
+        message: `Lịch hẹn lái thử xe ${carName} của bạn đã được hủy`,
+      });
+
+      // Tạo thông báo cho khách hàng khác
+      const otherCustomers = await prisma.users.findMany({
+        where: { idRole: 1, NOT: { idUsers: userId } }, // Role khách hàng
+      });
+
+      await Promise.all(
+        otherCustomers.map((customer) =>
+          createNotification({
+            userId: customer.idUsers,
+            type: "appointment_delete",
+            message: `Lịch hẹn ${carName} của ${customerName} đã hủy`,
+          })
+        )
+      );
+    }
+
+    // Gửi email xác nhận hủy
+    if (appointment.Email) {
       const emailHtml = deleteAppointmentEmailTemplate({
-        TenKhachHang: lichHenToDelete.TenKhachHang || "",
-        NgayHen: lichHenToDelete.NgayHen || null,
-        GioHen: gioHen,
-        DiaDiem: lichHenToDelete.DiaDiem || "",
-        NoiDung: lichHenToDelete.NoiDung || "",
+        TenKhachHang: customerName,
+        NgayHen: appointment.NgayHen || null,
+        GioHen: appointment.GioHen
+          ? new Date(appointment.GioHen).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "",
+        DiaDiem: appointment.DiaDiem || "",
+        NoiDung: "Hủy lịch hẹn lái thử xe",
         xe: {
-          TenXe: lichHenToDelete.xe?.TenXe || null,
+          TenXe: carName,
         },
       });
 
       await sendEmail(
-        lichHenToDelete.Email,
-        "Thông báo hủy lịch hẹn lái thử xe",
+        appointment.Email,
+        "Xác nhận hủy lịch hẹn lái thử xe",
         emailHtml
       );
     }
 
-    // Sau khi gửi email thành công, tiến hành xóa lịch hẹn
-    const deletedLichHen = await prisma.lichHenTraiNghiem.delete({
-      where: { idLichHen: id },
+    return NextResponse.json({ message: "Đã hủy lịch hẹn thành công" });
+  } catch (error: any) {
+    console.error("Delete appointment error:", error);
+    return NextResponse.json(
+      { error: "Không thể hủy lịch hẹn", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+    const body = await req.json();
+
+    // Lấy dữ liệu hiện tại
+    const existingAppointment = await prisma.lichHenTraiNghiem.findUnique({
+      where: { idLichHen: parseInt(id) },
+      include: {
+        xe: true,
+        loaiXe: true,
+      },
     });
 
-    return NextResponse.json(
-      { deletedLichHen, message: "Xóa lịch hẹn thành công" },
-      { status: 200 }
+    if (!existingAppointment) {
+      return NextResponse.json(
+        { error: "Không tìm thấy lịch hẹn" },
+        { status: 404 }
+      );
+    }
+
+    // Chuẩn bị dữ liệu cập nhật - giữ nguyên giá trị cũ nếu không có giá trị mới
+    const updateData: any = {
+      TenKhachHang: body.TenKhachHang ?? existingAppointment.TenKhachHang,
+      Sdt: body.Sdt ?? existingAppointment.Sdt,
+      Email: body.Email ?? existingAppointment.Email,
+      DiaDiem: body.DiaDiem ?? existingAppointment.DiaDiem,
+      NoiDung: body.NoiDung ?? existingAppointment.NoiDung,
+      idXe:
+        body.idXe !== undefined
+          ? parseInt(body.idXe)
+          : existingAppointment.idXe,
+      idLoaiXe:
+        body.idLoaiXe !== undefined
+          ? parseInt(body.idLoaiXe)
+          : existingAppointment.idLoaiXe,
+    };
+
+    // Xử lý ngày và giờ
+    let newDate = existingAppointment.NgayHen
+      ? new Date(existingAppointment.NgayHen)
+      : new Date();
+    let newTime = existingAppointment.GioHen
+      ? new Date(existingAppointment.GioHen)
+      : new Date();
+
+    if (body.NgayHen) {
+      const parsedDate = new Date(body.NgayHen);
+      if (!isNaN(parsedDate.getTime())) {
+        newDate = parsedDate;
+      }
+    }
+
+    if (body.GioHen) {
+      try {
+        const timeStr = body.GioHen.toString();
+        if (timeStr.includes(":")) {
+          const [hours, minutes] = timeStr.split(":").map(Number);
+          if (!isNaN(hours) && !isNaN(minutes)) {
+            newTime.setHours(hours, minutes, 0, 0);
+          }
+        } else {
+          const hours = parseInt(timeStr);
+          if (!isNaN(hours)) {
+            newTime.setHours(hours, 0, 0, 0);
+          }
+        }
+      } catch (error) {
+        console.error("Error processing time:", error);
+      }
+    }
+
+    // Kết hợp ngày và giờ
+    const combinedDateTime = new Date(newDate);
+    combinedDateTime.setHours(newTime.getHours(), newTime.getMinutes(), 0, 0);
+
+    updateData.NgayHen = combinedDateTime;
+    updateData.GioHen = combinedDateTime;
+
+    // Thực hiện cập nhật
+    const updatedAppointment = await prisma.lichHenTraiNghiem.update({
+      where: { idLichHen: parseInt(id) },
+      data: updateData,
+      include: {
+        xe: true,
+        loaiXe: true,
+      },
+    });
+
+    // Thông tin cho thông báo
+    const userId = updatedAppointment.idUser;
+    const customerName = updatedAppointment.TenKhachHang || "Khách hàng";
+    const carName = updatedAppointment.xe?.TenXe || "không xác định";
+    const formattedDate = updatedAppointment.NgayHen
+      ? new Date(updatedAppointment.NgayHen).toLocaleDateString("vi-VN")
+      : "không xác định";
+    const formattedTime = updatedAppointment.GioHen
+      ? new Date(updatedAppointment.GioHen).toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "không xác định";
+
+    // Thông báo cho nhân viên
+    const staffMembers = await prisma.users.findMany({
+      where: { idRole: 2 },
+    });
+
+    await Promise.all(
+      staffMembers.map((staff) =>
+        createNotification({
+          userId: staff.idUsers,
+          type: "appointment_update",
+          message: `Lịch hẹn cập nhật: ${customerName} - ${carName} - ${formattedDate} ${formattedTime}`,
+        })
+      )
     );
+
+    // Thông báo cho khách hàng
+    if (userId) {
+      await createNotification({
+        userId: userId,
+        type: "appointment_update",
+        message: `Lịch hẹn ${carName} của bạn đã cập nhật: ${formattedDate} ${formattedTime}`,
+      });
+
+      // Thông báo cho khách hàng khác
+      const otherCustomers = await prisma.users.findMany({
+        where: { idRole: 1, NOT: { idUsers: userId } },
+      });
+
+      await Promise.all(
+        otherCustomers.map((customer) =>
+          createNotification({
+            userId: customer.idUsers,
+            type: "appointment_update",
+            message: `Lịch hẹn ${carName} của ${customerName} đã cập nhật`,
+          })
+        )
+      );
+    }
+
+    // Gửi email xác nhận
+    if (updatedAppointment.Email) {
+      const emailHtml = updateAppointmentEmailTemplate({
+        TenKhachHang: customerName,
+        NgayHen: updatedAppointment.NgayHen || null,
+        GioHen: formattedTime,
+        DiaDiem: updatedAppointment.DiaDiem || "",
+        NoiDung: updatedAppointment.NoiDung || "Cập nhật lịch hẹn",
+        xe: {
+          TenXe: carName,
+        },
+      });
+
+      await sendEmail(
+        updatedAppointment.Email,
+        "Xác nhận cập nhật lịch hẹn",
+        emailHtml
+      );
+    }
+
+    return NextResponse.json({
+      appointment: updatedAppointment,
+      message: "Cập nhật lịch hẹn thành công",
+    });
   } catch (error: any) {
-    console.error("Lỗi khi xóa lịch hẹn:", error);
+    console.error("Update appointment error:", error);
     return NextResponse.json(
-      { error: "Không thể xóa lịch hẹn", details: error.message },
+      {
+        error: "Không thể cập nhật lịch hẹn",
+        details: error.message,
+      },
       { status: 500 }
     );
   }
