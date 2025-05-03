@@ -1,10 +1,14 @@
 "use client"
 import React, { useState, useEffect, useRef } from 'react';
 import PanoramaViewer from './Image360';
+
+
 interface ColorToFolderMap {
   [key: string]: string;
 }
+
 const CarViewerPage: React.FC = () => {
+  // State for controlling the 360 viewer
   const [currentColor, setCurrentColor] = useState<string>('yellow');
   const [currentIndex, setCurrentIndex] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
@@ -12,26 +16,111 @@ const CarViewerPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const totalImages = 36; // Total number of images
   const carColors = ['red', 'blue', 'pink', 'white', 'silver', 'yellow'];
+  
   const colorToFolder: ColorToFolderMap = {
+    red: 'red',
+    blue: 'blue',
+    pink: 'pink',
+    white: 'white',
+    silver: 'silver',
+    yellow: 'yellow',
   };
 
   useEffect(() => {
+    setIsLoading(true);
+    setImagesLoaded(0);
+    setError(null);
 
-  }, );
+    const folder = colorToFolder[currentColor] || currentColor;
+
+    const preloadImages = () => {
+      let loadedCount = 0;
+      let hasError = false;
+
+      for (let i = 1; i <= totalImages; i++) {
+        const img = new Image();
+        img.onload = () => {
+          loadedCount++;
+          setImagesLoaded(loadedCount);
+          if (loadedCount === totalImages) setIsLoading(false);
+        };
+        img.onerror = () => {
+          if (!hasError) {
+            hasError = true;
+            setError(`Failed to load image: ${folder}/${i}.png`);
+            console.error(`Failed to load image: ${folder}/${i}.png`);
+          }
+          loadedCount++;
+          setImagesLoaded(loadedCount);
+          if (loadedCount === totalImages) setIsLoading(false);
+        };
+        img.src = `/images/vinfast/${folder}/${i}.png`;
+      }
+    };
+
+    preloadImages();
+  }, [currentColor]);
 
   // Handle drag to rotate image
   const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
-
+    e.preventDefault();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    setIsDragging(true);
+    setStartX(clientX);
   };
 
   const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const deltaX = clientX - startX;
 
+    if (Math.abs(deltaX) > 5) { // Reduce rotation sensitivity
+      const sensitivity = 0.005; // Sensitivity (number of images to move)
+      const moveSteps = Math.max(1, Math.floor(Math.abs(deltaX) * sensitivity));
+
+      setCurrentIndex((prevIndex) => {
+        let newIndex = prevIndex + (deltaX > 0 ? -moveSteps : moveSteps);
+
+        if (newIndex < 1) newIndex = totalImages + newIndex;
+        if (newIndex > totalImages) newIndex = newIndex - totalImages;
+
+        return newIndex;
+      });
+
+      setStartX(clientX);
+    }
   };
 
   const handleMouseUp = () => setIsDragging(false);
+
+  useEffect(() => {
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchend', handleMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchend', handleMouseUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        setCurrentIndex((prev) => (prev === 1 ? totalImages : prev - 1));
+      } else if (e.key === 'ArrowRight') {
+        setCurrentIndex((prev) => (prev === totalImages ? 1 : prev + 1));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [totalImages]);
 
   const getCurrentImageSrc = () => {
     const folder = colorToFolder[currentColor] || currentColor;
@@ -41,10 +130,10 @@ const CarViewerPage: React.FC = () => {
   return (
     <div className="flex mt-14 px-20 flex-col min-h-screen">
       <div className='w-full h-full '>
-        <p className='font-bold text-3xl'>VinFast VF 3 - Unleash Your Creativity, Shine Your Unique Style!</p>
-        <p>
-With a diverse and unique exterior color range, featuring seven trendy and youthful color options, the VF 3 is the perfect choice to 
-freely express your individuality and personality. No matter who you are, choose the color and features of the VF 3 that suit your preferences, and let VinFast turn your dreams into reality</p>
+        <p className='font-bold text-3xl text-center'>VinFast VF 3 - Thỏa sức sáng tạo, tỏa sáng phong cách riêng!</p>
+        <p className='px-32'>
+        Với bảng màu ngoại thất đa dạng và độc đáo, có bảy tùy chọn màu sắc trẻ trung và hợp thời trang, VF 3 là sự lựa chọn hoàn hảo để 
+        tự do thể hiện cá tính và tính cách của bạn. Dù bạn là ai, hãy chọn màu sắc và tính năng của VF 3 phù hợp với sở thích của bạn và để VinFast biến ước mơ của bạn thành hiện thực</p>
       </div>
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -124,17 +213,7 @@ freely express your individuality and personality. No matter who you are, choose
             </div>
             
             <div className="mb-6 flex">
-              <div>
-              <h3 className="text-lg font-semibold mb-2">Thông số kỹ thuật</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li>Động cơ: 2.0L Turbo</li>
-                <li>Công suất: 245 mã lực</li>
-                <li>Mô-men xoắn: 350 Nm</li>
-                <li>Hộp số: Tự động 8 cấp</li>
-                <li>Dẫn động: AWD</li>
-              </ul>
-              </div>
-              <div className='flex-1 justify-items-end'>
+            <div className='flex-1 justify-items-start'>
             <PanoramaViewer />
             </div>
             </div>
