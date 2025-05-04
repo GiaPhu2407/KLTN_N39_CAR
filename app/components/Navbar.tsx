@@ -7,7 +7,6 @@ import { useAuth } from "../components/AuthContext";
 import SearchModal from "./SearchModal";
 import NotificationComponent from "./Notification";
 
-
 interface LoaiXe {
   idLoaiXe: number;
   TenLoai: string;
@@ -100,10 +99,11 @@ export default function Navbar() {
 
             <div
               onMouseLeave={() => setIsMenuOpen(false)}
-              className={`absolute z-99 top-16 border-t-2 border-blue-200 left-0 w-full bg-white flex flex-col justify-center items-center gap-10 text-lg border-b-4 shadow-2xl transform transition-all duration-75 ease-in-out ${isMenuOpen
+              className={`absolute z-99 top-16 border-t-2 border-blue-200 left-0 w-full bg-white flex flex-col justify-center items-center gap-10 text-lg border-b-4 shadow-2xl transform transition-all duration-75 ease-in-out ${
+                isMenuOpen
                   ? "opacity-100 transform translate-y-0 transition-all duration-1000"
                   : "opacity-0 transform -translate-y-10 pointer-events-none transition-all duration-1000"
-                }`}
+              }`}
             >
               <div className="flex flex-col h-5">
                 <span className="text-xl font-serif font-bold mt-5 text-blue-600">
@@ -111,25 +111,29 @@ export default function Navbar() {
                 </span>
               </div>
               <div className="flex flex-grow">
-    <ul className="flex gap-20 justify-center z-[1] w-full p-2 h-40">
-      {loaiXe.map((loai) => (
-        <li key={loai.idLoaiXe} className="mt-10">
-          <Link href={`Cartype?id=${loai.idLoaiXe}`}>
-            <div className="image-container">
-              <img
-                src={loai.HinhAnh && loai.HinhAnh.trim() !== "" ? loai.HinhAnh : "/default-image.png"}
-                className="transition-all duration-300"
-                alt={loai.TenLoai}
-              />
-            </div>
-            <div className="text-center mt-3 font-medium">
-              {loai.TenLoai}
-            </div>
-          </Link>
-        </li>
-      ))}
-    </ul>
-  </div>
+                <ul className="flex gap-20 justify-center z-[1] w-full p-2 h-40">
+                  {loaiXe.map((loai) => (
+                    <li key={loai.idLoaiXe} className="mt-10">
+                      <Link href={`Cartype?id=${loai.idLoaiXe}`}>
+                        <div className="image-container">
+                          <img
+                            src={
+                              loai.HinhAnh && loai.HinhAnh.trim() !== ""
+                                ? loai.HinhAnh
+                                : "/default-image.png"
+                            }
+                            className="transition-all duration-300"
+                            alt={loai.TenLoai}
+                          />
+                        </div>
+                        <div className="text-center mt-3 font-medium">
+                          {loai.TenLoai}
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             <button className="font-semibold font-serif py-2 transition-all duration-500 text-blue-500 hover:text-red-500 bg-white">
@@ -217,7 +221,7 @@ export default function Navbar() {
                     <a href="/Calender">Calender</a>
                   </li>
                   <li>
-                    <a href="/Danhgia">Revivew Car</a>
+                    <a href="/Review">Revivew Car</a>
                   </li>
                   <li>
                     <a href="/ChangePassword">Change Password</a>
@@ -243,26 +247,30 @@ export default function Navbar() {
           >
             <div className="w-6 h-6 relative">
               <span
-                className={`block absolute h-0.5 w-6 bg-blue-600 transform transition-all duration-300 ease-in-out ${isMenuOpen ? "rotate-45 top-3" : "top-1"
-                  }`}
+                className={`block absolute h-0.5 w-6 bg-blue-600 transform transition-all duration-300 ease-in-out ${
+                  isMenuOpen ? "rotate-45 top-3" : "top-1"
+                }`}
               ></span>
               <span
-                className={`block absolute h-0.5 w-6 bg-blue-600 top-3 transition-all duration-300 ease-in-out ${isMenuOpen ? "opacity-0" : "opacity-100"
-                  }`}
+                className={`block absolute h-0.5 w-6 bg-blue-600 top-3 transition-all duration-300 ease-in-out ${
+                  isMenuOpen ? "opacity-0" : "opacity-100"
+                }`}
               ></span>
               <span
-                className={`block absolute h-0.5 w-6 bg-blue-600 transform transition-all duration-300 ease-in-out ${isMenuOpen ? "-rotate-45 top-3" : "top-5"
-                  }`}
+                className={`block absolute h-0.5 w-6 bg-blue-600 transform transition-all duration-300 ease-in-out ${
+                  isMenuOpen ? "-rotate-45 top-3" : "top-5"
+                }`}
               ></span>
             </div>
           </button>
         </div>
 
         <div
-          className={`fixed xl:hidden top-[4rem] left-0 w-full overflow-y-auto bg-white transform transition-all duration-300 ease-in-out ${isMenuOpen
+          className={`fixed xl:hidden top-[4rem] left-0 w-full overflow-y-auto bg-white transform transition-all duration-300 ease-in-out ${
+            isMenuOpen
               ? "translate-x-0 opacity-100 shadow-lg"
               : "translate-x-full opacity-0"
-            }`}
+          }`}
           style={{ height: "calc(100vh - 4rem)" }}
         >
           <div className="flex flex-col h-full">
@@ -354,13 +362,13 @@ export default function Navbar() {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         {/* {loai.HinhAnh && loai.HinhAnh !== "" && ( */}
-                          <Image
-                            src={loai.HinhAnh}
-                            alt={loai.TenLoai}
-                            width={40}
-                            height={40}
-                            className="rounded-md"
-                          />
+                        <Image
+                          src={loai.HinhAnh}
+                          alt={loai.TenLoai}
+                          width={40}
+                          height={40}
+                          className="rounded-md"
+                        />
                         {/* )} */}
                         <span className="font-medium text-gray-700">
                           {loai.TenLoai}
