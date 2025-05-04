@@ -56,27 +56,8 @@ const CarDepositPage = () => {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  const [car, setCar] = useState<Car | null>({
-    idXe: 1,
-    TenXe: "Toyota Camry 2023",
-    GiaXe: 100000000,
-    khachHang: {
-      Hoten: "Nguyễn Văn A",
-      Sdt: "0912345678",
-      Diachi: "123 Đường Lê Lợi, TP.HCM",
-    },
-  });
-
-  const [user, setUser] = useState<UserAuth | null>({
-    idUsers: "user-123",
-    email: "user@example.com",
-    name: "Nguyễn Văn A",
-  });
-
-
   const [car, setCar] = useState<Car | null>(null);
   const [user, setUser] = useState<UserAuth | null>(null);
->>>>>>> 2fe474128755954fd714dc2ec4beac6981a42fd1
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pickupSchedule, setPickupSchedule] = useState<PickupScheduleData>({
@@ -276,8 +257,14 @@ const CarDepositPage = () => {
     e.preventDefault();
     if (!validateForm()) return;
     // Validate form
-    if (!formData.fullName || !formData.phoneNumber || !formData.email ||
-      !pickupSchedule.NgayLayXe || !pickupSchedule.GioHenLayXe || !pickupSchedule.DiaDiem) {
+    if (
+      !formData.fullName ||
+      !formData.phoneNumber ||
+      !formData.email ||
+      !pickupSchedule.NgayLayXe ||
+      !pickupSchedule.GioHenLayXe ||
+      !pickupSchedule.DiaDiem
+    ) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
@@ -409,11 +396,17 @@ const CarDepositPage = () => {
     return true;
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br  from-slate-100 to-slate-200 flex flex-col" data-theme="light">
+    <div
+      className="min-h-screen bg-gradient-to-br  from-slate-100 to-slate-200 flex flex-col"
+      data-theme="light"
+    >
       <Toaster position="top-right" />
 
-      <div className="flex-1 flex justify-center items-center py-24 px-4" >
-        <div className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex" data-theme="light">
+      <div className="flex-1 flex justify-center items-center py-24 px-4">
+        <div
+          className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex"
+          data-theme="light"
+        >
           {/* Car Image Section */}
           <div className="w-1/2 relative">
             {car?.HinhAnh && car.HinhAnh.length > 0 && (
@@ -503,7 +496,8 @@ const CarDepositPage = () => {
                 >
                   {DEPOSIT_PERCENTAGES.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label} - {new Intl.NumberFormat("vi-VN", {
+                      {option.label} -{" "}
+                      {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
                         currency: "VND",
                       }).format(calculateDepositAmount(option.value))}
@@ -514,8 +508,18 @@ const CarDepositPage = () => {
 
               <div className="alert bg-blue-100 text-black">
                 <div className="flex-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    className="w-6 h-6 mx-2 stroke-current"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
                   </svg>
                   <label>
                     Số tiền đặt cọc:{" "}
@@ -591,8 +595,8 @@ const CarDepositPage = () => {
                       type="radio"
                       name="paymentMethod"
                       className="radio radio-primary"
-                      checked={paymentMethod === 'CASH'}
-                      onChange={() => handlePaymentMethodChange('CASH')}
+                      checked={paymentMethod === "CASH"}
+                      onChange={() => handlePaymentMethodChange("CASH")}
                     />
                     <span>Tiền mặt tại showroom</span>
                   </label>
@@ -601,8 +605,8 @@ const CarDepositPage = () => {
                       type="radio"
                       name="paymentMethod"
                       className="radio radio-primary"
-                      checked={paymentMethod === 'STRIPE'}
-                      onChange={() => handlePaymentMethodChange('STRIPE')}
+                      checked={paymentMethod === "STRIPE"}
+                      onChange={() => handlePaymentMethodChange("STRIPE")}
                     />
                     <span>Thanh toán thẻ</span>
                   </label>
@@ -627,20 +631,24 @@ const CarDepositPage = () => {
       </div>
 
       {/* Stripe Payment Modal */}
-      {showStripePayment && stripePaymentData && stripePaymentData.clientSecret && (
-        <Elements stripe={stripePromise} options={{ clientSecret: stripePaymentData.clientSecret }}>
-          <CheckoutForm
-            amount={stripePaymentData.depositAmount}
-            onSuccess={handleStripeSuccess}
-            onCancel={handleStripeCancel}
-          />
-        </Elements>
-      )}
+      {showStripePayment &&
+        stripePaymentData &&
+        stripePaymentData.clientSecret && (
+          <Elements
+            stripe={stripePromise}
+            options={{ clientSecret: stripePaymentData.clientSecret }}
+          >
+            <CheckoutForm
+              amount={stripePaymentData.depositAmount}
+              onSuccess={handleStripeSuccess}
+              onCancel={handleStripeCancel}
+            />
+          </Elements>
+        )}
 
       <Footer />
     </div>
   );
 };
-
 
 export default CarDepositPage;
