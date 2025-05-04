@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import ReactStars from "react-rating-stars-component";
+
 interface DanhGiaTraiNghiem {
   idDanhGia: number;
   idLichHen: number;
@@ -29,6 +30,79 @@ type RatingStats = {
   5: number;
 };
 
+// Mock data for testing
+const MOCK_REVIEWS: DanhGiaTraiNghiem[] = [
+  {
+    idDanhGia: 1,
+    idLichHen: 101,
+    idUser: 201,
+    idXe: 1,
+    SoSao: 5,
+    NoiDung:
+      "Xe chạy rất êm, tiết kiệm nhiên liệu. Tôi rất hài lòng với trải nghiệm lái thử.",
+    NgayDanhGia: "2025-04-28T08:30:00",
+    user: {
+      Hoten: "Nguyễn Văn An",
+      Avatar: "https://i.pravatar.cc/150?img=1",
+    },
+  },
+  {
+    idDanhGia: 2,
+    idLichHen: 102,
+    idUser: 202,
+    idXe: 1,
+    SoSao: 4,
+    NoiDung:
+      "Xe có thiết kế bắt mắt, không gian nội thất rộng rãi. Chỉ tiếc là hệ thống giải trí hơi phức tạp.",
+    NgayDanhGia: "2025-04-25T14:15:00",
+    user: {
+      Hoten: "Trần Thị Bình",
+      Avatar: "https://i.pravatar.cc/150?img=5",
+    },
+  },
+  {
+    idDanhGia: 3,
+    idLichHen: 103,
+    idUser: 203,
+    idXe: 1,
+    SoSao: 5,
+    NoiDung: "Tuyệt vời! Xe vận hành mạnh mẽ và cảm giác lái rất thoải mái.",
+    NgayDanhGia: "2025-04-20T10:45:00",
+    user: {
+      Hoten: "Lê Quang Cường",
+      Avatar: "",
+    },
+  },
+  {
+    idDanhGia: 4,
+    idLichHen: 104,
+    idUser: 204,
+    idXe: 1,
+    SoSao: 3,
+    NoiDung:
+      "Xe chạy ổn nhưng tiếng ồn hơi lớn khi tăng tốc. Hệ thống phanh khá nhạy.",
+    NgayDanhGia: "2025-04-15T16:20:00",
+    user: {
+      Hoten: "Phạm Thị Dung",
+      Avatar: "https://i.pravatar.cc/150?img=10",
+    },
+  },
+  {
+    idDanhGia: 5,
+    idLichHen: 105,
+    idUser: 205,
+    idXe: 1,
+    SoSao: 2,
+    NoiDung:
+      "Không hài lòng với dịch vụ tư vấn và xe có một số vấn đề kỹ thuật.",
+    NgayDanhGia: "2025-04-10T09:30:00",
+    user: {
+      Hoten: "Hoàng Văn Em",
+      Avatar: "https://i.pravatar.cc/150?img=15",
+    },
+  },
+];
+
 const CarReviews = ({ idXe }: CarReviewsProps) => {
   const [reviews, setReviews] = useState<DanhGiaTraiNghiem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,46 +117,48 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
   });
 
   useEffect(() => {
-    fetchReviews();
-  }, [idXe]);
-
-  const fetchReviews = async () => {
-    try {
+    // Simulate API call with setTimeout
+    const fetchMockReviews = () => {
       setLoading(true);
-      const response = await fetch(`/api/danhgia/${idXe}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setReviews(data);
+      setTimeout(() => {
+        try {
+          // Filter reviews by idXe to simulate API behavior
+          const filteredReviews = MOCK_REVIEWS.filter(
+            (review) => review.idXe === idXe
+          );
+          setReviews(filteredReviews);
 
-      // Calculate average rating and stats
-      if (data.length > 0) {
-        const totalStars = data.reduce(
-          (sum: number, review: DanhGiaTraiNghiem) => sum + review.SoSao,
-          0
-        );
-        const avg = totalStars / data.length;
-        setAverageRating(parseFloat(avg.toFixed(1)));
+          // Calculate average rating and stats
+          if (filteredReviews.length > 0) {
+            const totalStars = filteredReviews.reduce(
+              (sum: number, review: DanhGiaTraiNghiem) => sum + review.SoSao,
+              0
+            );
+            const avg = totalStars / filteredReviews.length;
+            setAverageRating(parseFloat(avg.toFixed(1)));
 
-        // Count reviews by star rating
-        const stats: RatingStats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-        data.forEach((review: DanhGiaTraiNghiem) => {
-          const rating = review.SoSao;
-          // Make sure we only count valid ratings from 1-5
-          if (rating >= 1 && rating <= 5) {
-            stats[rating as 1 | 2 | 3 | 4 | 5]++;
+            // Count reviews by star rating
+            const stats: RatingStats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+            filteredReviews.forEach((review: DanhGiaTraiNghiem) => {
+              const rating = review.SoSao;
+              // Make sure we only count valid ratings from 1-5
+              if (rating >= 1 && rating <= 5) {
+                stats[rating as 1 | 2 | 3 | 4 | 5]++;
+              }
+            });
+            setReviewStats(stats);
           }
-        });
-        setReviewStats(stats);
-      }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-      setError("Không thể tải đánh giá");
-    } finally {
-      setLoading(false);
-    }
-  };
+          setLoading(false);
+        } catch (error) {
+          console.error("Error processing mock reviews:", error);
+          setError("Không thể tải đánh giá");
+          setLoading(false);
+        }
+      }, 800); // Simulate network delay
+    };
+
+    fetchMockReviews();
+  }, [idXe]);
 
   const formatDate = (dateString: string) => {
     try {

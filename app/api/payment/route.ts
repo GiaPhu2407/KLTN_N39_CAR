@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client';
 import { createNotification } from '@/lib/create-notification';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-03-31.basil',
+  apiVersion: '2025-04-30.basil',
 });
 
 const ALLOWED_DEPOSIT_PERCENTAGES = [0.1, 0.2, 0.3, 0.4, 0.5, 1.0]; // 10%, 20%, 30%, 40%, 50%, 100%
