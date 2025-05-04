@@ -15,11 +15,9 @@ interface DanhGiaTraiNghiem {
     Avatar: string;
   };
 }
-
 interface CarReviewsProps {
   idXe: number;
 }
-
 // Using a more specific type with index signature
 type RatingStats = {
   [key: number]: number;
@@ -29,80 +27,6 @@ type RatingStats = {
   4: number;
   5: number;
 };
-
-// Mock data for testing
-const MOCK_REVIEWS: DanhGiaTraiNghiem[] = [
-  {
-    idDanhGia: 1,
-    idLichHen: 101,
-    idUser: 201,
-    idXe: 1,
-    SoSao: 5,
-    NoiDung:
-      "Xe chạy rất êm, tiết kiệm nhiên liệu. Tôi rất hài lòng với trải nghiệm lái thử.",
-    NgayDanhGia: "2025-04-28T08:30:00",
-    user: {
-      Hoten: "Nguyễn Văn An",
-      Avatar: "https://i.pravatar.cc/150?img=1",
-    },
-  },
-  {
-    idDanhGia: 2,
-    idLichHen: 102,
-    idUser: 202,
-    idXe: 1,
-    SoSao: 4,
-    NoiDung:
-      "Xe có thiết kế bắt mắt, không gian nội thất rộng rãi. Chỉ tiếc là hệ thống giải trí hơi phức tạp.",
-    NgayDanhGia: "2025-04-25T14:15:00",
-    user: {
-      Hoten: "Trần Thị Bình",
-      Avatar: "https://i.pravatar.cc/150?img=5",
-    },
-  },
-  {
-    idDanhGia: 3,
-    idLichHen: 103,
-    idUser: 203,
-    idXe: 1,
-    SoSao: 5,
-    NoiDung: "Tuyệt vời! Xe vận hành mạnh mẽ và cảm giác lái rất thoải mái.",
-    NgayDanhGia: "2025-04-20T10:45:00",
-    user: {
-      Hoten: "Lê Quang Cường",
-      Avatar: "",
-    },
-  },
-  {
-    idDanhGia: 4,
-    idLichHen: 104,
-    idUser: 204,
-    idXe: 1,
-    SoSao: 3,
-    NoiDung:
-      "Xe chạy ổn nhưng tiếng ồn hơi lớn khi tăng tốc. Hệ thống phanh khá nhạy.",
-    NgayDanhGia: "2025-04-15T16:20:00",
-    user: {
-      Hoten: "Phạm Thị Dung",
-      Avatar: "https://i.pravatar.cc/150?img=10",
-    },
-  },
-  {
-    idDanhGia: 5,
-    idLichHen: 105,
-    idUser: 205,
-    idXe: 1,
-    SoSao: 2,
-    NoiDung:
-      "Không hài lòng với dịch vụ tư vấn và xe có một số vấn đề kỹ thuật.",
-    NgayDanhGia: "2025-04-10T09:30:00",
-    user: {
-      Hoten: "Hoàng Văn Em",
-      Avatar: "https://i.pravatar.cc/150?img=15",
-    },
-  },
-];
-
 const CarReviews = ({ idXe }: CarReviewsProps) => {
   const [reviews, setReviews] = useState<DanhGiaTraiNghiem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,64 +39,6 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
     4: 0,
     5: 0,
   });
-
-  useEffect(() => {
-    // Simulate API call with setTimeout
-    const fetchMockReviews = () => {
-      setLoading(true);
-      setTimeout(() => {
-        try {
-          // Filter reviews by idXe to simulate API behavior
-          const filteredReviews = MOCK_REVIEWS.filter(
-            (review) => review.idXe === idXe
-          );
-          setReviews(filteredReviews);
-
-          // Calculate average rating and stats
-          if (filteredReviews.length > 0) {
-            const totalStars = filteredReviews.reduce(
-              (sum: number, review: DanhGiaTraiNghiem) => sum + review.SoSao,
-              0
-            );
-            const avg = totalStars / filteredReviews.length;
-            setAverageRating(parseFloat(avg.toFixed(1)));
-
-            // Count reviews by star rating
-            const stats: RatingStats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-            filteredReviews.forEach((review: DanhGiaTraiNghiem) => {
-              const rating = review.SoSao;
-              // Make sure we only count valid ratings from 1-5
-              if (rating >= 1 && rating <= 5) {
-                stats[rating as 1 | 2 | 3 | 4 | 5]++;
-              }
-            });
-            setReviewStats(stats);
-          }
-          setLoading(false);
-        } catch (error) {
-          console.error("Error processing mock reviews:", error);
-          setError("Không thể tải đánh giá");
-          setLoading(false);
-        }
-      }, 800); // Simulate network delay
-    };
-
-    fetchMockReviews();
-  }, [idXe]);
-
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    } catch (error) {
-      return dateString;
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -180,11 +46,9 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
       </div>
     );
   }
-
   if (error) {
     return <div className="text-red-500 py-4">{error}</div>;
   }
-
   return (
     <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
       <h2 className="text-2xl font-bold mb-6">Đánh giá từ người dùng</h2>
@@ -259,30 +123,28 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
               >
                 <div className="flex items-center mb-2">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3">
-                    {review.user?.Avatar && review.user.Avatar.length > 0 ? (
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                        <img
-                          src={review.user?.Avatar}
-                          alt="Profile Avatar"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                        <span className="text-white text-sm">
-                          {review.user?.Hoten
-                            ? review.user?.Hoten.charAt(0).toUpperCase()
-                            : "?"}
-                        </span>
-                      </div>
-                    )}
+                  {review.user?.Avatar && review.user.Avatar.length > 0 ? (
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                    <img 
+                      src={review.user?.Avatar} 
+                      alt="Profile Avatar" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                    <span className="text-white text-sm">
+                      {review.user?.Hoten ? review.user?.Hoten.charAt(0).toUpperCase() : '?'}
+                    </span>
+                  </div>
+                )}
                   </div>
                   <div>
                     <div className="font-medium">
                       {review.user?.Hoten || "Người dùng ẩn danh"}
                     </div>
                     <div className="text-gray-500 text-sm">
-                      {formatDate(review.NgayDanhGia)}
+                      {/* {formatDate(review.NgayDanhGia)} */}
                     </div>
                   </div>
                 </div>
