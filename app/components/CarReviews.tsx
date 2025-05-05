@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import ReactStars from "react-rating-stars-component";
-
+// import ReactStars from "react-rating-stars-component";
+import StarRatings from "react-star-ratings";
 interface DanhGiaTraiNghiem {
   idDanhGia: number;
   idLichHen: number;
@@ -15,9 +15,11 @@ interface DanhGiaTraiNghiem {
     Avatar: string;
   };
 }
+
 interface CarReviewsProps {
   idXe: number;
 }
+
 // Using a more specific type with index signature
 type RatingStats = {
   [key: number]: number;
@@ -27,6 +29,7 @@ type RatingStats = {
   4: number;
   5: number;
 };
+
 const CarReviews = ({ idXe }: CarReviewsProps) => {
   const [reviews, setReviews] = useState<DanhGiaTraiNghiem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +42,64 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
     4: 0,
     5: 0,
   });
+
+  useEffect(() => {
+    fetchReviews();
+  }, [idXe]);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/review/${idXe}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setReviews(data);
+      console.log("Dữ liệu đánh giá:", data);
+      // Calculate average rating and stats
+      if (data.length > 0) {
+        const totalStars = data.reduce(
+          (sum: number, review: DanhGiaTraiNghiem) => sum + review.SoSao,
+          0
+        );
+        const avg = totalStars / data.length;
+        setAverageRating(parseFloat(avg.toFixed(1)));
+
+        // Count reviews by star rating
+        const stats: RatingStats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        data.forEach((review: DanhGiaTraiNghiem) => {
+          const rating = review.SoSao;
+          // Make sure we only count valid ratings from 1-5
+          if (rating >= 1 && rating <= 5) {
+            stats[rating as 1 | 2 | 3 | 4 | 5]++;
+          }
+        });
+        setReviewStats(stats);
+        console.log("Average Rating:", avg);
+        console.log("Review Stats:", stats);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      setError("Không thể tải đánh giá");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -46,6 +107,7 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
       </div>
     );
   }
+
   if (error) {
     return <div className="text-red-500 py-4">{error}</div>;
   }
@@ -66,13 +128,13 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
                 {averageRating}
               </div>
               <div className="mt-2">
-                <ReactStars
-                  count={5}
-                  value={averageRating}
-                  size={24}
-                  activeColor="#ffd700"
-                  edit={false}
-                  isHalf={true}
+              <StarRatings
+                  rating={averageRating} // Sử dụng rating từ state
+                  starDimension="24px"
+                  starSpacing="2px"
+                  starRatedColor="#ffd700"
+                  numberOfStars={5}
+                  name="rating"
                 />
               </div>
               <div className="text-gray-500 mt-1">
@@ -149,14 +211,15 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
                   </div>
                 </div>
 
-                <div className="ml-13 pl-13">
+                <div className="ml-5 pl-5">
                   <div className="mb-2">
-                    <ReactStars
-                      count={5}
-                      value={review.SoSao}
-                      size={18}
-                      activeColor="#ffd700"
-                      edit={false}
+                  <StarRatings
+                      rating={review.SoSao}
+                      starDimension="18px"
+                      starSpacing="2px"
+                      starRatedColor="#ffd700"
+                      numberOfStars={5}
+                      name="rating"
                     />
                   </div>
                   <p className="text-gray-700">{review.NoiDung}</p>
