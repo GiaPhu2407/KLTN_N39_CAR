@@ -40,12 +40,12 @@ export default function Page() {
   const [showToast, setShowToast] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
-  
+
 
   const refreshData = () => {
     setReloadKey((prevKey) => prevKey + 1);
   };
- 
+
   useEffect(() => {
     fetch("api/role")
       .then((response) => {
@@ -69,20 +69,20 @@ export default function Page() {
   const handleDelete = async (id: number) => {
     toast((t) => (
       <div className="flex flex-col gap-2">
-        <span className="font-medium">Bạn có chắc muốn xóa nhà cung cấp này?</span>
+        <span className="font-medium">Bạn có chắc muốn xóa tài khoản này?</span>
         <div className="flex gap-2">
           <button
             onClick={async () => {
               toast.dismiss(t.id);
               try {
-                const response = await fetch(`api/users/${id}`, {
+                const response = await fetch(`/api/users/${id}`, {
                   method: "DELETE",
                 });
-  
+
                 if (!response.ok) {
                   throw new Error("Failed to delete supplier");
                 }
-  
+
                 const data = await response.json();
                 toast.success(data.message);
                 refreshData();
@@ -142,18 +142,22 @@ export default function Page() {
     }
   };
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     const url = isEditing ? `api/users/${editingId}` : 'api/users';
     const method = isEditing ? 'PUT' : 'POST';
-
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com)$/;
+    if (!emailPattern.test(formData.Email)) {
+      toast.error("Email không hợp lệ, vui lòng nhập email có phần mở rộng .com");
+      return;
+    }
     try {
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({...formData }),
+        body: JSON.stringify({ ...formData }),
       });
 
       if (!response.ok) {
@@ -190,7 +194,7 @@ export default function Page() {
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center h-screen" data-theme = "light">
+    <div className="flex justify-center items-center h-screen" data-theme="light">
       <span className="loading loading-spinner text-blue-600 loading-lg"></span>
     </div>
   );
@@ -294,6 +298,8 @@ export default function Page() {
                   onChange={handleChange}
                   className="w-full px-3 py-2 border text-black bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
+                  pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com)$"
+                  title="Vui lòng nhập email hợp lệ với phần mở rộng .com."
                 />
               </div>
 
