@@ -57,6 +57,7 @@
     "@types/react": "^19",
     "@types/react-big-calendar": "^1.16.1",
     "@types/react-dom": "^19",
+    "@types/react-star-ratings": "^2.3.3",
     "@types/stripe": "^8.0.416",
     "daisyui": "^5.0.9",
     "eslint": "^9",
