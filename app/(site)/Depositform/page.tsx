@@ -147,7 +147,6 @@ const DepositOrderPage = () => {
 
   return (
     <div data-theme="light">
-      <Toaster position="top-center" />
       <div className="container mx-auto px-4 md:px-20 py-16 md:py-28">
         <h1 className="text-2xl font-bold mb-6">Đơn Đặt Cọc</h1>
 
