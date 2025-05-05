@@ -24,77 +24,30 @@ interface ChiTietDatCoc {
   };
 }
 
-// Dữ liệu giả
-const mockDatCocs: ChiTietDatCoc[] = [
-  {
-    idDatCoc: 1001,
-    NgayDat: "2025-04-28",
-    SotienDat: 50000000,
-    TrangThaiDat: "Chờ xác nhận",
-    LichHenLayXe: [
-      {
-        idLichHenLayXe: 101,
-        NgayLayXe: "2025-05-10",
-        GioHenLayXe: "10:00",
-        DiaDiem: "Đại lý Honda Quận 1, TP HCM",
-      },
-    ],
-    xe: {
-      TenXe: "Honda Civic RS",
-      HinhAnh: ["/api/placeholder/400/320"],
-      GiaXe: 830000000,
-      MauSac: "Xanh đậm",
-    },
-  },
-  {
-    idDatCoc: 1002,
-    NgayDat: "2025-04-15",
-    SotienDat: 100000000,
-    TrangThaiDat: "Đã xác nhận",
-    LichHenLayXe: [
-      {
-        idLichHenLayXe: 102,
-        NgayLayXe: "2025-05-20",
-        GioHenLayXe: "14:30",
-        DiaDiem: "Đại lý Honda Tân Bình, TP HCM",
-      },
-    ],
-    xe: {
-      TenXe: "Honda CR-V G",
-      HinhAnh: ["/api/placeholder/400/320"],
-      GiaXe: 1150000000,
-      MauSac: "Đen",
-    },
-  },
-  {
-    idDatCoc: 1003,
-    NgayDat: "2025-04-02",
-    SotienDat: 30000000,
-    TrangThaiDat: "Đã hủy",
-    LichHenLayXe: [],
-    xe: {
-      TenXe: "Honda City RS",
-      HinhAnh: ["/api/placeholder/400/320"],
-      GiaXe: 559000000,
-      MauSac: "Đỏ",
-    },
-  },
-];
-
 const DepositOrderPage = () => {
   const [datCocs, setDatCocs] = useState<ChiTietDatCoc[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Giả lập thời gian tải dữ liệu từ API
-    const timeoutId = setTimeout(() => {
-      setDatCocs(mockDatCocs);
-      setLoading(false);
-    }, 800);
-
-    return () => clearTimeout(timeoutId);
+    fetchDatCoc();
   }, []);
+
+  const fetchDatCoc = async () => {
+    try {
+      const response = await fetch("/api/deposit");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setDatCocs(data);
+    } catch (error: any) {
+      console.error("Có lỗi khi fetch danh sách đặt cọc", error);
+      setError("Không load được danh sách đặt cọc");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCancelDeposit = async (id: number) => {
     const confirmed = await new Promise((resolve) => {
@@ -136,10 +89,14 @@ const DepositOrderPage = () => {
 
     if (confirmed) {
       try {
-        // Giả lập gọi API xóa đơn đặt cọc
-        // Trong thực tế, bạn sẽ gọi API thực ở đây
+        const response = await fetch(`/api/deposit/${id}`, {
+          method: "DELETE",
+        });
 
-        // Cập nhật trạng thái local
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         setDatCocs((prevDatCocs) =>
           prevDatCocs.map((datCoc) =>
             datCoc.idDatCoc === id
