@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
 
       const whereClause = searchText ? {
         OR: [
+          { Tentaikhoan: { contains: searchText} },
           { Hoten: { contains: searchText } },
           { Sdt: { contains: searchText } },
           { Diachi: { contains: searchText } },
