@@ -231,7 +231,6 @@ const TestDriveReviewPage = () => {
     return (
       <div
         className="flex justify-center items-center h-screen"
-        data-theme="light"
       >
         <span className="loading loading-spinner text-blue-600 loading-lg"></span>
       </div>
@@ -245,10 +244,9 @@ const TestDriveReviewPage = () => {
       </div>
     );
   }
-
+ //asdasdasd
   return (
     <div className="bg-white text-black" style={{backgroundColor: 'white', color: 'black'}}>
-      <Toaster position="top-center" />
 
       {/* Rating Modal - Được tùy chỉnh không dùng DaisyUI */}
       {ratingModal.isOpen && (
