@@ -409,9 +409,8 @@ export default function Page() {
   return (
     <div
       className="p-2 flex-col justify-center text-center w-full h-[630px]"
-      data-theme="light"
     >
-      <div className="flex pb-4 w-full justify-between" data-theme="light">
+      <div className="flex pb-4 w-full justify-between">
         <h1 className="text-2xl font-bold text-black ml-10">
           Quản Lý Sản Phẩm
         </h1>
