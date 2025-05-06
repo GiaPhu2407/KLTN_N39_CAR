@@ -41,11 +41,6 @@ const SidebarDashboard: React.FC<SidebarDashboardProps> = ({ isOpen }) => {
       label: "Nhà Cung Cấp",
     },
     {
-      icon: <GiCarDoor />,
-      href: "/Dashboard/EvaluationManager",
-      label: "Đánh Giá",
-    },
-    {
       icon: <FaUser />,
       href: "/Dashboard/ManagerUser",
       label: "Tài Khoản Người Dùng",
@@ -59,6 +54,11 @@ const SidebarDashboard: React.FC<SidebarDashboardProps> = ({ isOpen }) => {
       icon: <AiOutlineSchedule />,
       href: "/Dashboard/ManagerSchedule",
       label: "Lịch Hẹn Trải Nghiệm Xe",
+    },
+    {
+      icon: <GiCarDoor />,
+      href: "/Dashboard/EvaluationManager",
+      label: "Đánh Giá",
     },
   ];
 

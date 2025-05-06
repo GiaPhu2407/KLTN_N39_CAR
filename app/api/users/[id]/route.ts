@@ -58,4 +58,30 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       { status: 500 }
     );
   }
+}export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const id = parseInt(params.id);
+    
+    const user = await prisma.users.findUnique({
+      where: {
+        idUsers: id
+      }
+    });
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: "Không tìm thấy người dùng" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(user, { status: 200 });
+  } catch (error: any) {
+    console.error('Error fetching user:', error);
+    
+    return NextResponse.json(
+      { error: "Lỗi khi lấy thông tin người dùng" },
+      { status: 500 }
+    );
+  }
 }
