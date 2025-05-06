@@ -556,14 +556,32 @@ const CarDepositPage = () => {
                   <label className="label">
                     <span>Giờ hẹn lấy xe</span>
                   </label>
-                  <input
-                    type="time"
-                    name="GioHenLayXe"
-                    value={pickupSchedule.GioHenLayXe}
-                    onChange={handlePickupScheduleChange}
-                    className="input input-bordered  w-full"
-                    required
-                  />
+                  
+                  <select
+                      name="GioHenLayXe"
+                      value={pickupSchedule.GioHenLayXe}
+                      onChange={handlePickupScheduleChange}
+                      className="input input-bordered  w-full"
+                      required
+                    >
+                      <option value="">Chọn giờ hẹn</option>
+                      <option value="08:30">08:30 AM</option>
+                      <option value="09:00">09:00 AM</option>
+                      <option value="09:30">09:30 AM</option>
+                      <option value="10:00">10:00 AM</option>
+                      <option value="10:30">10:30 AM</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="11:30">11:30 AM</option>
+                      <option value="13:30">1:30 PM</option>
+                      <option value="14:00">2:00 PM</option>
+                      <option value="14:30">2:30 PM</option>
+                      <option value="15:00">3:00 PM</option>
+                      <option value="15:30">3:30 PM</option>
+                      <option value="16:00">4:00 PM</option>
+                      <option value="16:30">4:30 PM</option>
+                      <option value="17:00">5:00 PM</option>
+                      <option value="17:30">5:30 PM</option>
+                    </select>
                 </div>
               </div>
 
@@ -579,9 +597,12 @@ const CarDepositPage = () => {
                   required
                 >
                   <option value="">Chọn địa điểm</option>
-                  <option value="showroom">Showroom</option>
-                  <option value="home">Tại nhà</option>
-                  <option value="other">Địa điểm khác</option>
+                      <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">
+                        03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng
+                      </option>
+                      <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">
+                        115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng
+                      </option>
                 </select>
               </div>
 

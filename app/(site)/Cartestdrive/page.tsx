@@ -5,10 +5,9 @@ import React, { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-  
+
 import Image from "next/image";
 import Footer from "@/app/components/Footer";
-
 
 interface Car {
   idXe: number;
@@ -153,9 +152,9 @@ const CartTestDrivePage = () => {
     try {
       // Format the time to 12-hour format for API
       const formattedTime = testDriveSchedule.GioHen;
-      const hour = parseInt(formattedTime.split(':')[0]);
-      const minute = formattedTime.split(':')[1];
-      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const hour = parseInt(formattedTime.split(":")[0]);
+      const minute = formattedTime.split(":")[1];
+      const ampm = hour >= 12 ? "PM" : "AM";
       const formattedHour = hour % 12 || 12;
       const time12h = `${formattedHour}:${minute} ${ampm}`;
 
@@ -220,20 +219,23 @@ const CartTestDrivePage = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col w-full">
       <div className="flex-1 flex justify-center items-center pt-24 pb-12 px-4 w-full">
-        <div className="w-full md:w-[900px] lg:w-[1200px]  shadow-xl rounded-lg p-8" data-theme="light">
+        <div
+          className="w-full md:w-[900px] lg:w-[1200px]  shadow-xl rounded-lg p-8"
+          data-theme="light"
+        >
           <h1 className="text-3xl font-bold text-center mb-8">
             Đặt Lịch Trải Nghiệm Xe {car.TenXe}
           </h1>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 flex justify-center items-center">
-            <Image
-    src={car.HinhAnh[0]} 
-    alt="Ảnh xe"
-    width={500}
-    height={500}
-    priority
-    className="w-full h-full max-w-[500px] rounded-md"
-  />
+              <Image
+                src={car.HinhAnh[0]}
+                alt="Ảnh xe"
+                width={500}
+                height={500}
+                priority
+                className="w-full h-full max-w-[500px] rounded-md"
+              />
             </div>
             <div className="flex-1">
               <form className="space-y-6" onSubmit={handleAppointmentSubmit}>
@@ -306,7 +308,6 @@ const CartTestDrivePage = () => {
                   <div>
                     <label className="block text-lg font-medium">Giờ hẹn</label>
                     <select
-                      
                       name="GioHen"
                       value={testDriveSchedule.GioHen}
                       onChange={handleTestDriveScheduleChange}
@@ -314,24 +315,23 @@ const CartTestDrivePage = () => {
                       required
                     >
                       <option value="">Chọn giờ hẹn</option>
-    <option value="08:30">08:30 AM</option>
-    <option value="09:00">09:00 AM</option>
-    <option value="09:30">09:30 AM</option>
-    <option value="10:00">10:00 AM</option>
-    <option value="10:30">10:30 AM</option>
-    <option value="11:00">11:00 AM</option>
-    <option value="11:30">11:30 AM</option>
-    <option value="13:30">1:30 PM</option>
-    <option value="14:00">2:00 PM</option>
-    <option value="14:30">2:30 PM</option>
-    <option value="15:00">3:00 PM</option>
-    <option value="15:30">3:30 PM</option>
-    <option value="16:00">4:00 PM</option>
-    <option value="16:30">4:30 PM</option>
-    <option value="17:00">5:00 PM</option>
-    <option value="17:30">5:30 PM</option>
-  </select>
-                    
+                      <option value="08:30">08:30 AM</option>
+                      <option value="09:00">09:00 AM</option>
+                      <option value="09:30">09:30 AM</option>
+                      <option value="10:00">10:00 AM</option>
+                      <option value="10:30">10:30 AM</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="11:30">11:30 AM</option>
+                      <option value="13:30">1:30 PM</option>
+                      <option value="14:00">2:00 PM</option>
+                      <option value="14:30">2:30 PM</option>
+                      <option value="15:00">3:00 PM</option>
+                      <option value="15:30">3:30 PM</option>
+                      <option value="16:00">4:00 PM</option>
+                      <option value="16:30">4:30 PM</option>
+                      <option value="17:00">5:00 PM</option>
+                      <option value="17:30">5:30 PM</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-lg font-medium">
@@ -345,8 +345,12 @@ const CartTestDrivePage = () => {
                       required
                     >
                       <option value="">Chọn địa điểm</option>
-                      <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng</option>
-                      <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng</option>
+                      <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">
+                        03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng
+                      </option>
+                      <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">
+                        115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng
+                      </option>
                     </select>
                   </div>
                 </div>
