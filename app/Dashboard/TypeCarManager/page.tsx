@@ -190,7 +190,6 @@ export default function Page() {
   return (
     <div
       className="p-2 flex-col justify-center text-center w-full h-[600px] "
-      data-theme="light"
     >
       <div className="flex justify-between pb-4 w-full">
         <h1 className="text-2xl font-bold ml-10 text-black">Quản Lý Loại Xe</h1>

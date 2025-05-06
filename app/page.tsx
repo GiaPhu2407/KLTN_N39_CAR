@@ -9,7 +9,7 @@ import TechnicalSpecs from "./components/Technical";
 import Videobg from "./components/Video";
 export default function Home() {
   return (
-    <div data-theme="light">
+    <div>
       <BackgroundSlider></BackgroundSlider>
       <Product></Product>
       <CarViewerPage/>

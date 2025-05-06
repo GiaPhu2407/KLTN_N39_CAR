@@ -3,7 +3,7 @@ import { FaCheckCircle, FaChargingStation, FaHeadset } from "react-icons/fa";
 
 const Videobg = () => {
   return (
-    <div className='w-full  ' data-theme="light" >
+    <div className='w-full' >
         <div className='xl:mx-36  md:mx-26 mx-10 mb-14 animate-appeartop [animation-timeline:view()] animation-range-entry text-center '>
         <span className='font-semibold text-center xl:text-3xl md:text-2xl text-xl w-full font-serif '>Khám phá & sự thoải mái của Gia đình</span>
         <br />
