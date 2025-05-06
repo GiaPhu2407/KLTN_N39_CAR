@@ -207,32 +207,30 @@ export default function Navbar() {
                 >
                   <li>
                     <a href="/Profile" className="justify-between">
-                      Profile
-                      <span className="badge">New</span>
+                      Hồ Sơ
+                      <span className="badge">Mới</span>
                     </a>
                   </li>
                   <li>
-                    <a href="/Depositform">Depositform</a>
+                    <a href="/Depositform">Đặt cọc</a>
+                  </li>
+
+                  <li>
+                    <a href="/Calender">Lịch Hẹn</a>
                   </li>
                   <li>
-                    <a href="/Orders">Orders</a>
+                    <a href="/Review">Đánh giá trải nghiệm xe</a>
                   </li>
                   <li>
-                    <a href="/Calender">Calender</a>
-                  </li>
-                  <li>
-                    <a href="/Review">Revivew Car</a>
-                  </li>
-                  <li>
-                    <a href="/ChangePassword">Change Password</a>
+                    <a href="/ChangePassword">Thay đổi mật khẩu</a>
                   </li>
                   {user.role?.TenNguoiDung === "Admin" && (
                     <li>
-                      <a href="/Dashboard">Dashboard</a>
+                      <a href="/Dashboard">Quản Lý</a>
                     </li>
                   )}
                   <li className="text-red-500">
-                    <a onClick={handleLogout}>Logout</a>
+                    <a onClick={handleLogout}>Đăng xuất</a>
                   </li>
                 </ul>
               </div>
