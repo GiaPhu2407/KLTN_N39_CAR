@@ -11,7 +11,7 @@ interface DatCoc {
     Hoten: string;
     Email: string;
     Sdt: string;
-  },
+  };
   xe?: {
     TenXe: string;
     HinhAnh: string;
@@ -21,9 +21,8 @@ interface DatCoc {
     NgayLayXe: string;
     GioHenLayXe: string;
     DiaDiem: string;
-  }>
+  }>;
 }
-
 
 interface TableDepositProps {
   onEdit: (deposit: DatCoc) => void;
@@ -47,13 +46,17 @@ const TableDeposit: React.FC<TableDepositProps> = ({
   const [deposits, setDeposits] = useState<DatCoc[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     setLoading(true);
-    fetch(`api/pagination/deposit?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`)
+    fetch(
+      `api/pagination/deposit?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
+    )
       .then((response) => {
         if (!response.ok) throw new Error("Failed to fetch data");
         return response.json();
@@ -73,20 +76,22 @@ const TableDeposit: React.FC<TableDepositProps> = ({
     setCurrentPage(page);
   };
 
-  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handlePageSizeChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
     setCurrentPage(1);
   };
 
   const formatDateTime = (dateString?: string | null) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("vi-VN", {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
       });
     } catch (error) {
       return dateString;
@@ -94,12 +99,12 @@ const TableDeposit: React.FC<TableDepositProps> = ({
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND' 
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(amount);
   };
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Chờ xác nhận":
@@ -145,7 +150,7 @@ const TableDeposit: React.FC<TableDepositProps> = ({
               <option value="50">50</option>
             </select>
           </div>
-          
+
           <div className="flex items-center mr-4 md:mr-20">
             <input
               type="text"
@@ -157,7 +162,7 @@ const TableDeposit: React.FC<TableDepositProps> = ({
           </div>
         </div>
         <div className="w-full overflow-x-auto  md:px-10">
-          <table className="table text-center table-auto w-full min-w-[640px]">
+          <table className="table text-center table-auto w-full min-w-[740px]">
             <thead className="text-center">
               <tr>
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
@@ -176,8 +181,8 @@ const TableDeposit: React.FC<TableDepositProps> = ({
                   Giá Xe
                 </th>
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-36">
-  Trạng Thái
-</th>
+                  Trạng Thái
+                </th>
 
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Số Tiền Đặt
@@ -229,12 +234,12 @@ const TableDeposit: React.FC<TableDepositProps> = ({
                       {formatCurrency(deposit.xe?.GiaXe || 0)}
                     </td>
                     <td className="px-4 py-3">
-  <span
-    className={`px-3 w-full text-center py-1 rounded-full ${getStatusColor(deposit.TrangThaiDat)} whitespace-nowrap`}
-  >
-    {deposit.TrangThaiDat}
-  </span>
-</td>
+                      <span
+                        className={`px-3 w-full text-center py-1 rounded-full ${getStatusColor(deposit.TrangThaiDat)} whitespace-nowrap`}
+                      >
+                        {deposit.TrangThaiDat}
+                      </span>
+                    </td>
 
                     <td className="px-3 py-3">
                       {formatCurrency(deposit.SotienDat)}
