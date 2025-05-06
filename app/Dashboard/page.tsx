@@ -22,9 +22,7 @@ import {
   ArrowUpRight,
   Loader2,
 } from "lucide-react";
-// import Globe from "../Globe/Globe";
 
-// Types
 interface DashboardData {
   totalDeposits: number;
   pendingDeposits: number;
@@ -165,25 +163,7 @@ const SalesDashboard: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-10">
-          <div className="w-72">
-            <StatsCard
-              title="Tổng Đơn Hàng"
-              value={dashboardData?.totalOrders || 0}
-              icon={<ShoppingCart size={24} className="text-white" />}
-              isLoading={isLoading}
-            />
-          </div>
-          <div className="w-72">
-            <StatsCard
-              title="Đơn Hàng Chờ Xử Lý"
-              value={dashboardData?.pendingOrders || 0}
-              icon={<ShoppingCart size={24} className="text-white" />}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
-        <div className="flex gap-10">
-          <div className="w-72">
+        <div className="w-72">
             <StatsCard
               title="Tổng Khách Hàng"
               value={dashboardData?.totalCustomers || 0}
@@ -191,6 +171,16 @@ const SalesDashboard: React.FC = () => {
               isLoading={isLoading}
             />
           </div>
+          <div className="w-72">
+            <StatsCard
+              title="Đơn đặt cọc đã xác nhận"
+              value={dashboardData?.pendingOrders || 0}
+              icon={<ShoppingCart size={24} className="text-white" />}
+              isLoading={isLoading}
+            />
+          </div>
+        </div>
+        <div className="flex gap-10">
           <div className="w-72">
             <StatsCard
               title="Tổng Lịch Hẹn"
