@@ -345,8 +345,8 @@ const CartTestDrivePage = () => {
                       required
                     >
                       <option value="">Chọn địa điểm</option>
-                      <option value="showroom">03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng</option>
-                      <option value="home">115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng</option>
+                      <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng</option>
+                      <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng</option>
                     </select>
                   </div>
                 </div>

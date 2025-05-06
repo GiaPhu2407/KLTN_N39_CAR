@@ -367,11 +367,11 @@ const TestDriveReviewPage = () => {
     )}
 
     <div className="container mx-auto px-14 py-28">
-      <h1 className="text-2xl font-bold mb-6">Lịch sử lái thử xe</h1>
+      <h1 className="text-2xl font-bold mb-6">Đánh giá trải nghiệm xe</h1>
 
       {lichHens.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          Bạn chưa đặt lịch lái thử xe nào
+          Bạn chưa có đánh giá nào
         </div>
       ) : (
         <div>
@@ -383,7 +383,7 @@ const TestDriveReviewPage = () => {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-gray-600">Mã lịch hẹn: </span>
+                    <span className="text-gray-600">Mã đánh giá: </span>
                     <span className="font-semibold">
                       #{lichHen.idLichHen}
                     </span>
