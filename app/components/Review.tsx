@@ -71,19 +71,24 @@ const TestDriveReviewPage = () => {
     SoSao: 0,
     NoiDung: "",
   });
-  const [displayedLichHens, setDisplayedLichHens] = useState<LichHenTraiNghiem[]>([]);
+  const [displayedLichHens, setDisplayedLichHens] = useState<
+    LichHenTraiNghiem[]
+  >([]);
   const lichHensPerPage = 2;
 
   // Ngăn cuộn trang khi modal mở
   useEffect(() => {
-    if (ratingModal.isOpen || (viewRatingModal.isOpen && viewRatingModal.rating)) {
-      document.body.style.overflow = 'hidden';
+    if (
+      ratingModal.isOpen ||
+      (viewRatingModal.isOpen && viewRatingModal.rating)
+    ) {
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     }
-    
+
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     };
   }, [ratingModal.isOpen, viewRatingModal.isOpen]);
 
@@ -229,9 +234,7 @@ const TestDriveReviewPage = () => {
 
   if (loading) {
     return (
-      <div
-        className="flex justify-center items-center h-screen"
-      >
+      <div className="flex justify-center items-center h-screen">
         <span className="loading loading-spinner text-blue-600 loading-lg"></span>
       </div>
     );
@@ -244,27 +247,38 @@ const TestDriveReviewPage = () => {
       </div>
     );
   }
- //asdasdasd
+  //asdasdasd
   return (
-    <div className="bg-white text-black" style={{backgroundColor: 'white', color: 'black'}}>
-
+    <div
+      className="bg-white text-black"
+      style={{ backgroundColor: "white", color: "black" }}
+    >
       {/* Rating Modal - Được tùy chỉnh không dùng DaisyUI */}
       {ratingModal.isOpen && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50"
-          style={{backgroundColor: 'rgba(0,0,0,0.5)'}}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
-          <div 
-            className="bg-white rounded-lg p-6 w-full max-w-md m-4" 
-            style={{backgroundColor: 'white', boxShadow: '0 0 10px rgba(0,0,0,0.3)'}}
+          <div
+            className="bg-white rounded-lg p-6 w-full max-w-md m-4"
+            style={{
+              backgroundColor: "white",
+              boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-4 text-black" style={{color: 'black'}}>
+            <h3
+              className="text-xl font-bold mb-4 text-black"
+              style={{ color: "black" }}
+            >
               Đánh giá trải nghiệm lái thử: {ratingModal.carName}
             </h3>
 
             <div className="flex flex-col items-center mb-4">
-              <p className="text-lg font-medium mb-2 text-black" style={{color: 'black'}}>
+              <p
+                className="text-lg font-medium mb-2 text-black"
+                style={{ color: "black" }}
+              >
                 Mức độ hài lòng của bạn
               </p>
               <div className="flex justify-center gap-2">
@@ -300,7 +314,7 @@ const TestDriveReviewPage = () => {
 
             <textarea
               className="w-full p-3 border rounded-md mb-4 min-h-[100px] text-black"
-              style={{color: 'black', backgroundColor: 'white'}}
+              style={{ color: "black", backgroundColor: "white" }}
               placeholder="Chia sẻ cảm nhận của bạn về trải nghiệm lái thử xe..."
               value={rating.NoiDung}
               onChange={handleInputChange}
@@ -326,16 +340,22 @@ const TestDriveReviewPage = () => {
 
       {/* View Rating Modal */}
       {viewRatingModal.isOpen && viewRatingModal.rating && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50"
-          style={{backgroundColor: 'rgba(0,0,0,0.5)'}}
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
-          <div 
-            className="bg-white rounded-lg p-6 w-full max-w-md m-4" 
-            style={{backgroundColor: 'white', boxShadow: '0 0 10px rgba(0,0,0,0.3)'}}
+          <div
+            className="bg-white rounded-lg p-6 w-full max-w-md m-4"
+            style={{
+              backgroundColor: "white",
+              boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-4 text-black" style={{color: 'black'}}>
+            <h3
+              className="text-xl font-bold mb-4 text-black"
+              style={{ color: "black" }}
+            >
               Đánh giá của bạn
             </h3>
 
@@ -362,7 +382,10 @@ const TestDriveReviewPage = () => {
               </div>
             </div>
 
-            <div className="p-3 border rounded-md mb-4 min-h-[100px] bg-gray-50 text-black" style={{color: 'black'}}>
+            <div
+              className="p-3 border rounded-md mb-4 min-h-[100px] bg-gray-50 text-black"
+              style={{ color: "black" }}
+            >
               {viewRatingModal.rating.NoiDung}
             </div>
 
