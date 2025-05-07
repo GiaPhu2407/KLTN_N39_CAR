@@ -5,6 +5,7 @@ import Footer from "@/app/components/Footer";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import CarReviews from "@/app/components/CarReviews";
+import CozeChat from "@/app/components/CozeAi";
 
 interface Car {
   idXe: number;
@@ -238,6 +239,7 @@ const Category = () => {
         <CarReviews idXe={car.idXe} />
       </div>
       <Footer />
+      <CozeChat/>
     </div>
   );
 };

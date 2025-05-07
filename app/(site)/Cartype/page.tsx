@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Footer from "@/app/components/Footer";
+import CozeChat from "@/app/components/CozeAi";
 
 interface Xe {
   idXe: number;
@@ -156,7 +157,7 @@ const LoaiXe = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col" data-theme="light">
+    <div className="w-full h-full flex flex-col">
       <div className="px-4 sm:px-10 md:px-20 xl:px-28 mt-24">
         <div className="pb-4">
           <button
@@ -217,6 +218,7 @@ const LoaiXe = () => {
       </div>
 
       <Footer />
+      <CozeChat/>
     </div>
   );
 };
