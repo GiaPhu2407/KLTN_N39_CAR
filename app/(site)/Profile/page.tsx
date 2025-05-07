@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { UserAuth } from "@/app/types/auth";
 import Footer from "@/app/components/Footer";
 import { Fileupload } from "@/app/components/Fileupload";
+import CozeChat from "@/app/components/CozeAi";
 
 const ProfilePage = () => {
   const [user, setUser] = useState<UserAuth | null>(null);
@@ -388,6 +389,7 @@ const ProfilePage = () => {
         </div>
       </div>
       <Footer />
+      <CozeChat/>
     </div>
   );
 };
