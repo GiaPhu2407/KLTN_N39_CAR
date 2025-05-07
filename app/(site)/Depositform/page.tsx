@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import Footer from "@/app/components/Footer";
+import CozeChat from "@/app/components/CozeAi";
 
 interface LichHenLayXe {
   idLichHenLayXe: number;
@@ -146,7 +147,7 @@ const DepositOrderPage = () => {
   }
 
   return (
-    <div data-theme="light">
+    <div>
       <div className="container mx-auto px-4 md:px-20 py-16 md:py-28">
         <h1 className="text-2xl font-bold mb-6">Đơn Đặt Cọc</h1>
 
@@ -307,6 +308,7 @@ const DepositOrderPage = () => {
         )}
       </div>
       <Footer />
+      <CozeChat/>
     </div>
   );
 };
