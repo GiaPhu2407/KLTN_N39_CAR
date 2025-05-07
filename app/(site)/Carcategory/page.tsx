@@ -103,7 +103,7 @@ const Category = () => {
   const isCarAvailable = car.TrangThai === "Còn Hàng";
   const isCarReserved = car.TrangThai === "Đã Đặt Cọc";
   return (
-    <div className="w-full h-full pt-24" data-theme="light">
+    <div className="w-full h-full pt-24">
       <div className="px-24 pb-24 w-full h-full flex flex-col">
         <h1 className="text-3xl font-bold mb-8">Chi tiết sản phẩm</h1>
         <div className="bg-white shadow-xl rounded-lg overflow-hidden">
@@ -178,7 +178,7 @@ const Category = () => {
                     </span>
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        car.TrangThai === "Còn hàng"
+                        car.TrangThai === "Còn Hàng"
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }`}
@@ -197,7 +197,7 @@ const Category = () => {
                       currency: "VND",
                     }).format(car.GiaXe)}
                   </p>
-                  <div className="flex mt-4">
+                  <div className="flex mt-4 mb-4">
                     {isCarAvailable ? (
                       <button className="w-48 bg-indigo-600 text-white py-2 mx-4 rounded-md hover:bg-indigo-700 transition duration-300">
                         <Link href={`/Deposit?id=${car.idXe}`}>Đặt Cọc</Link>

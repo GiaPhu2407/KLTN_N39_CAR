@@ -22,7 +22,7 @@ export default function SuccessPage() {
       }
 
       try {
-        const response = await fetch('/api/thanhtoan', {
+        const response = await fetch('/api/payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
