@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import Globe from "../Globe/Globe";
 import {
   BarChart,
   Bar,
@@ -29,6 +30,7 @@ interface DashboardData {
   totalLichhen: number;
   totalCustomers: number;
   monthlyData: MonthlyData[];
+  recentTransactions: Transaction[];
   recentDatCoc: ChiTietDatCoc[];
 }
 
@@ -38,7 +40,15 @@ interface MonthlyData {
     SotienDat: number;
   };
 }
-
+interface Transaction {
+  idDonHang: number;
+  TongTien: number;
+  TrangThaiDonHang: string;
+  NgayDatHang: string;
+  khachHang: {
+    Hoten: string;
+  };
+}
 interface ChiTietDatCoc {
   idDatCoc: number;
   NgayDat: string;
@@ -183,7 +193,7 @@ const SalesDashboard: React.FC = () => {
         </div>
       </div>
       <div className="flex-1">
-        {/* Có thể thêm widget khác tại đây nếu muốn */}
+        <Globe/>
       </div>
     </div>
   );
@@ -246,7 +256,6 @@ const SalesDashboard: React.FC = () => {
       </Card>
     </div>
   );
-
   const renderDatCoc = () => (
     <Card>
       <CardHeader>
