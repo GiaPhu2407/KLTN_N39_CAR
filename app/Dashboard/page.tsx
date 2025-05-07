@@ -3,54 +3,42 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import {
   DollarSign,
-  ShoppingCart,
   Users,
-  TrendingUp,
   ArrowUpRight,
   Loader2,
 } from "lucide-react";
 
+// Types
 interface DashboardData {
   totalDeposits: number;
   pendingDeposits: number;
-  totalOrders: number;
   totalLichhen: number;
-  pendingOrders: number;
   totalCustomers: number;
   monthlyData: MonthlyData[];
-  recentTransactions: Transaction[];
   recentDatCoc: ChiTietDatCoc[];
 }
 
 interface MonthlyData {
-  NgayDatHang: string;
+  NgayDat: string;
   _sum: {
-    TongTien: number;
+    SotienDat: number;
   };
 }
 
-interface Transaction {
-  idDonHang: number;
-  TongTien: number;
-  TrangThaiDonHang: string;
-  NgayDatHang: string;
-  khachHang: {
-    Hoten: string;
-  };
-}
 interface ChiTietDatCoc {
   idDatCoc: number;
   NgayDat: string;
@@ -106,23 +94,21 @@ const StatsCard: React.FC<StatsCardProps> = ({
 );
 
 const SalesDashboard: React.FC = () => {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null
-  );
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch("/api/thongke");
+        const response = await fetch('/api/overviews');
         if (!response.ok) {
-          throw new Error("Failed to fetch dashboard data");
+          throw new Error('Failed to fetch dashboard data');
         }
         const data = await response.json();
         setDashboardData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -132,14 +118,29 @@ const SalesDashboard: React.FC = () => {
   }, []);
 
   const formatMonthlyData = (data: MonthlyData[]) => {
-    return data.map((item) => ({
-      name: new Date(item.NgayDatHang).toLocaleDateString("en-US", {
-        month: "short",
-      }),
-      revenue: item._sum.TongTien,
-      profit: item._sum.TongTien * 0.3, // Assuming 30% profit margin
+    return data.map(item => ({
+      name: new Date(item.NgayDat).toLocaleDateString('en-US', { month: 'short' }),
+      revenue: item._sum.SotienDat,
+      profit: item._sum.SotienDat * 0.3
     }));
   };
+
+  const preparePieChartData = () => {
+    if (!dashboardData) return [];
+
+    const totalRevenue = dashboardData.monthlyData.reduce(
+      (sum, item) => sum + item._sum.SotienDat, 0
+    );
+    const totalProfit = totalRevenue * 0.3;
+    const totalCost = totalRevenue - totalProfit;
+
+    return [
+      { name: "Lợi Nhuận", value: totalProfit },
+      { name: "Chi Phí", value: totalCost }
+    ];
+  };
+
+  const COLORS = ['#7928ca', '#ff0080'];
 
   const renderStatsCards = () => (
     <div className="flex h-[500px]">
@@ -163,7 +164,7 @@ const SalesDashboard: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-10">
-        <div className="w-72">
+          <div className="w-72">
             <StatsCard
               title="Tổng Khách Hàng"
               value={dashboardData?.totalCustomers || 0}
@@ -171,16 +172,6 @@ const SalesDashboard: React.FC = () => {
               isLoading={isLoading}
             />
           </div>
-          <div className="w-72">
-            <StatsCard
-              title="Đơn đặt cọc đã xác nhận"
-              value={dashboardData?.pendingOrders || 0}
-              icon={<ShoppingCart size={24} className="text-white" />}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
-        <div className="flex gap-10">
           <div className="w-72">
             <StatsCard
               title="Tổng Lịch Hẹn"
@@ -191,7 +182,9 @@ const SalesDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="flex-1">{/* <Globe /> */}</div>
+      <div className="flex-1">
+        {/* Có thể thêm widget khác tại đây nếu muốn */}
+      </div>
     </div>
   );
 
@@ -199,36 +192,23 @@ const SalesDashboard: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
       <Card>
         <CardHeader>
-          <CardTitle>Thống Kê Doanh Thu</CardTitle>
+          <CardTitle>Thống Kê Doanh Thu Trong Tháng</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={
-                  dashboardData
-                    ? formatMonthlyData(dashboardData.monthlyData)
-                    : []
-                }
-              >
+              <BarChart data={dashboardData ? formatMonthlyData(dashboardData.monthlyData) : []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
+                <YAxis 
+                  tickFormatter={(value) => value.toLocaleString('vi-VN', { maximumFractionDigits: 0 })}
+                  width={120}
+                />
+                <Tooltip formatter={(value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(value))} />
                 <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  name="Doanh Thu"
-                  stroke="#8884d8"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="profit"
-                  name="Lợi Nhuận"
-                  stroke="#82ca9d"
-                />
-              </LineChart>
+                <Bar dataKey="revenue" name="Doanh Thu" fill="#8884d8" />
+                <Bar dataKey="profit" name="Lợi Nhuận" fill="#82ca9d" />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
@@ -241,95 +221,30 @@ const SalesDashboard: React.FC = () => {
         <CardContent>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={
-                  dashboardData
-                    ? formatMonthlyData(dashboardData.monthlyData)
-                    : []
-                }
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
+              <PieChart>
+                <Pie
+                  data={preparePieChartData()}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={true}
+                  outerRadius={150}
+                  fill="#8884d8"
+                  dataKey="value"
+                  nameKey="name"
+                  label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {preparePieChartData().map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(value))} />
                 <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  name="Doanh Thu"
-                  stackId="1"
-                  stroke="#ff0080"
-                  fill="#ff0080"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="profit"
-                  name="Lợi Nhuận"
-                  stackId="1"
-                  stroke="#7928ca"
-                  fill="#7928ca"
-                />
-              </AreaChart>
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
     </div>
-  );
-
-  const renderTransactions = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Đơn Hàng Gần Đây</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left bg-gray-50">
-                <th className="p-4 font-medium">Mã Đơn Hàng</th>
-                <th className="p-4 font-medium">Khách Hàng</th>
-                <th className="p-4 font-medium">Tổng Tiền</th>
-                <th className="p-4 font-medium">Trạng Thái</th>
-                <th className="p-4 font-medium">Ngày Đặt</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dashboardData?.recentTransactions.map((transaction) => (
-                <tr key={transaction.idDonHang} className="border-t">
-                  <td className="p-4">#{transaction.idDonHang}</td>
-                  <td className="p-4">{transaction.khachHang.Hoten}</td>
-                  <td className="p-4">
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(transaction.TongTien)}
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        transaction.TrangThaiDonHang === "Đã giao"
-                          ? "bg-green-100 text-green-800"
-                          : transaction.TrangThaiDonHang === "Chờ xác nhận"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {transaction.TrangThaiDonHang}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    {new Date(transaction.NgayDatHang).toLocaleDateString(
-                      "vi-VN"
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
   );
 
   const renderDatCoc = () => (
@@ -346,7 +261,6 @@ const SalesDashboard: React.FC = () => {
                 <th className="p-4 font-medium">Khách Hàng</th>
                 <th className="p-4 font-medium">Tổng Tiền Đặt</th>
                 <th className="p-4 font-medium">Trạng Thái</th>
-                <th className="p-4 font-medium">Địa Điểm</th>
                 <th className="p-4 font-medium">Ngày Đặt</th>
               </tr>
             </thead>
@@ -355,29 +269,21 @@ const SalesDashboard: React.FC = () => {
                 <tr key={transaction.idDatCoc} className="border-t">
                   <td className="p-4">#{transaction.idDatCoc}</td>
                   <td className="p-4">{transaction.khachHang.Hoten}</td>
-                  <td className="p-4">
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(transaction.SotienDat)}
-                  </td>
+                  <td className="p-4">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(transaction.SotienDat)}</td>
                   <td className="p-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
                         transaction.TrangThaiDat === "Đã giao"
                           ? "bg-green-100 text-green-800"
                           : transaction.TrangThaiDat === "Chờ xác nhận"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {transaction.TrangThaiDat}
                     </span>
                   </td>
-                  {/* <td className="p-4">{transaction.LichHenLayXe?.[0]?.DiaDiem}</td> */}
-                  <td className="p-4">
-                    {new Date(transaction.NgayDat).toLocaleDateString("vi-VN")}
-                  </td>
+                  <td className="p-4">{new Date(transaction.NgayDat).toLocaleDateString('vi-VN')}</td>
                 </tr>
               ))}
             </tbody>
@@ -407,7 +313,6 @@ const SalesDashboard: React.FC = () => {
           </div>
           {renderStatsCards()}
           {renderCharts()}
-          {renderTransactions()}
           {renderDatCoc()}
         </div>
       </div>

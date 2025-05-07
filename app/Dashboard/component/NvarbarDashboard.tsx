@@ -88,7 +88,7 @@ const Navbardashboard: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           </button>
         </div>
         <div className="flex-1">
-          <Link href="/dashboard" className="btn btn-ghost text-black text-xl">
+          <Link href="/Dashboard" className="btn btn-ghost text-black text-xl">
             Dashboard
           </Link>
         </div>
