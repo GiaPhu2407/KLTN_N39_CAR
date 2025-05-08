@@ -1,5 +1,4 @@
-
-
+// import type { Config } from "tailwindcss";
 import { withUt } from "uploadthing/tw";
 
 
@@ -278,13 +277,10 @@ module.exports = withUt({
   	}
   },
   daisyui: {
-    themes: ["light"],
+    themes: ["light", "dark"],
     
   },
   
   plugins: [require('daisyui'), require("tailwindcss-animate")],
 });
-
-// import type { Config } from "tailwindcss";
-
 

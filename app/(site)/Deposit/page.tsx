@@ -339,7 +339,6 @@ const CarDepositPage = () => {
     return (
       <div
         className="flex justify-center items-center h-screen"
-        data-theme="light"
       >
         <span className="loading loading-spinner text-blue-600 loading-lg"></span>
       </div>
@@ -354,11 +353,11 @@ const CarDepositPage = () => {
 
   if (!car)
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-2xl font-bold text-gray-800">
-          Không tìm thấy thông tin xe
-        </div>
-      </div>
+      <div
+      className="flex justify-center items-center h-screen"
+    >
+      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+    </div>
     );
 
   return (
@@ -368,7 +367,7 @@ const CarDepositPage = () => {
       <Toaster position="top-right" />
       
       <div className="flex-1 flex justify-center items-center py-24 px-4" >
-        <div className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex" data-theme="light">
+        <div className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex" data-theme= "light">
           {/* Car Image Section */}
           <div className="w-1/2 relative">
           {car?.HinhAnh && car.HinhAnh.length > 0 && (
