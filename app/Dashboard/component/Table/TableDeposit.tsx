@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import ReportDatCocComponent from "../Reportdeposit";
+import { Check } from "lucide-react";
 
 interface DatCoc {
   idDatCoc: number;
@@ -51,6 +53,9 @@ const TableDeposit: React.FC<TableDepositProps> = ({
   );
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
+  // Add state for checkbox selection
+  const [selectedDeposits, setSelectedDeposits] = useState<number[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -71,6 +76,42 @@ const TableDeposit: React.FC<TableDepositProps> = ({
         setLoading(false);
       });
   }, [currentPage, pageSize, reloadKey, searchText]);
+
+  // Handle individual checkbox selection
+  const handleCheckboxChange = (depositId: number) => {
+    setSelectedDeposits(prev => {
+      if (prev.includes(depositId)) {
+        return prev.filter(id => id !== depositId);
+      }
+      return [...prev, depositId];
+    });
+  };
+
+  // Handle "Select All" functionality
+  const handleSelectAll = () => {
+    const newSelectAll = !selectAll;
+    setSelectAll(newSelectAll);
+    
+    if (newSelectAll) {
+      // If select all is true, select all deposits in the current page
+      const allDepositIds = deposits.map(deposit => deposit.idDatCoc);
+      setSelectedDeposits(allDepositIds);
+    } else {
+      // If select all is false, clear all selections
+      setSelectedDeposits([]);
+    }
+  };
+
+  // Effect to update selectAll state when selectedDeposits changes
+  useEffect(() => {
+    // Check if all deposits on current page are selected
+    if (deposits.length > 0) {
+      const allSelected = deposits.every(deposit => 
+        selectedDeposits.includes(deposit.idDatCoc)
+      );
+      setSelectAll(allSelected);
+    }
+  }, [selectedDeposits, deposits]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -161,10 +202,26 @@ const TableDeposit: React.FC<TableDepositProps> = ({
             />
           </div>
         </div>
-        <div className="w-full overflow-x-auto  md:px-10">
+        
+        <div className="flex w-full justify-end px-4 md:px-10 pb-3">
+          <ReportDatCocComponent selectedDeposits={selectedDeposits} />
+        </div>
+        
+        <div className="w-full overflow-x-auto md:px-10">
           <table className="table text-center table-auto w-full min-w-[740px]">
             <thead className="text-center">
               <tr>
+                <th className="py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <div className="flex items-center justify-center">
+                    <input 
+                      type="checkbox" 
+                      className="checkbox checkbox-sm bg-white"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                    />
+                    <span className="pl-1">All</span>
+                  </div>
+                </th>
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   ID
                 </th>
@@ -183,7 +240,6 @@ const TableDeposit: React.FC<TableDepositProps> = ({
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-36">
                   Trạng Thái
                 </th>
-
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Số Tiền Đặt
                 </th>
@@ -220,6 +276,14 @@ const TableDeposit: React.FC<TableDepositProps> = ({
                     key={deposit.idDatCoc}
                     className={`text-black text-center ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                   >
+                    <td className="px-2 py-3">
+                      <input 
+                        type="checkbox"
+                        checked={selectedDeposits.includes(deposit.idDatCoc)}
+                        onChange={() => handleCheckboxChange(deposit.idDatCoc)}
+                        className="checkbox checkbox-sm"
+                      />
+                    </td>
                     <td className="px-3 py-3">{deposit.idDatCoc}</td>
                     <td className="px-3 py-3">
                       {deposit.khachHang?.Hoten || "Chưa xác định"}
@@ -240,7 +304,6 @@ const TableDeposit: React.FC<TableDepositProps> = ({
                         {deposit.TrangThaiDat}
                       </span>
                     </td>
-
                     <td className="px-3 py-3">
                       {formatCurrency(deposit.SotienDat)}
                     </td>

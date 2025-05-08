@@ -31,7 +31,7 @@ const CarItem = ({ car }: CarItemProps) => {
   return (
     <li>
       <div
-        className={`card bg-base-100 w-full sm:w-[90%] md:w-72 xl:w-72 h-auto md:h-80 xl:h-80 mx-auto md:ml-6 mb-5 shadow-sm relative ${
+        className={`card bg-white w-full sm:w-[90%] md:w-72 xl:w-72 h-auto md:h-80 xl:h-80 mx-auto md:ml-6 mb-5 shadow-sm relative ${
           isHovered ? "animate-borderrun" : ""
         }`}
         onMouseEnter={() => setIsHovered(true)}
@@ -43,7 +43,7 @@ const CarItem = ({ car }: CarItemProps) => {
           }`}
         ></div>
         <div className="w-full sm:w-[303px] h-auto sm:h-[303px] p-4 sm:p-0">
-          <figure className="px-4 sm:px-10 w-full">
+          <figure className="px-4 sm:px-10 w-full bg-white">
             <Image
               src={
                 Array.isArray(car.HinhAnh)
@@ -77,12 +77,12 @@ const CarItem = ({ car }: CarItemProps) => {
               </span>
             </p>
             <div className="card-actions flex flex-col sm:flex-row gap-2 sm:gap-4 w-full mt-2">
-              <button className="btn bg-[#1464F4] w-full sm:w-24 text-white text-sm">
-                <Link href={`Datcoc?id=${car.idXe}`}>Đặt Cọc</Link>
+            <button className="btn bg-[#1464F4] border-1  w-full sm:w-24 text-white text-sm">
+                <Link href={`Deposit?id=${car.idXe}`}>Đặt Cọc</Link>
               </button>
               <Link
                 href={`Carcategory?id=${car.idXe}`}
-                className="btn btn-outline w-full sm:w-auto text-sm"
+                className="btn btn-outline border-1 w-full sm:w-auto text-sm"
               >
                 Xem Chi Tiết
               </Link>
@@ -127,7 +127,6 @@ const SearchResults = () => {
     return (
       <div
         className="flex justify-center items-center h-screen"
-        data-theme="light"
       >
         <div className="loading loading-spinner text-blue-600 loading-lg"></div>
       </div>
@@ -138,7 +137,6 @@ const SearchResults = () => {
     return (
       <div
         className="flex justify-center items-center h-screen"
-        data-theme="light"
       >
         <div className="text-2xl font-bold text-red-600">{error}</div>
         <Link href="/" className="btn btn-primary ml-4">
@@ -159,10 +157,9 @@ const SearchResults = () => {
   };
 
   return (
-    <div data-theme="light">
+    <div >
       <div
-        className="px-4 sm:px-10 md:px-16 lg:px-24 py-8 md:py-16 lg:py-24"
-        data-theme="light"
+        className="px-4 sm:px-10 md:px-16 lg:px-24 py-8 md:py-16 lg:py-24" 
       >
         <h1 className="text-2xl font-bold mb-6">Kết quả tìm kiếm</h1>
 
