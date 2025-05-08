@@ -139,8 +139,7 @@ const Navbardashboard: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           >
             <li>
               <a href="/" className="justify-between">
-                Home
-                <span className="badge">New</span>
+                Trang chủ
               </a>
             </li>
             <li>
@@ -148,12 +147,12 @@ const Navbardashboard: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 href="/dashboard/Changepasswordpage"
                 className="justify-between"
               >
-                Change Password
+                Đổi mật khẩu
               </a>
             </li>
             <li>
               <a href="/Profile" className="justify-between">
-                Profile
+                Thông tin cá nhân
               </a>
             </li>
             <li>

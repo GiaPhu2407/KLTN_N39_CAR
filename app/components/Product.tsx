@@ -134,7 +134,7 @@ const Product = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen" data-theme="light">
+      <div className="flex justify-center items-center h-screen">
         <div className="loading loading-spinner text-blue-600 loading-lg"></div>
       </div>
     );
@@ -142,7 +142,7 @@ const Product = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen" data-theme="light">
+      <div className="flex justify-center items-center h-screen">
         <div className="text-2xl font-bold text-red-600">{error}</div>
       </div>
     );

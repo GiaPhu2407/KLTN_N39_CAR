@@ -185,14 +185,14 @@ export default function Page() {
     return (
       <div
         className="flex justify-center items-center h-screen"
-        data-theme="light"
+
       >
         <span className="loading loading-spinner text-blue-600 loading-lg"></span>
       </div>
     );
 
   return (
-    <div className="p-2 w-full h-[630px]" data-theme="light">
+    <div className="p-2 w-full h-[630px]">
       <div className="flex w-full">
         <h1 className="text-2xl font-bold mb-6 mt-1 ml-20 w-56 text-black whitespace-nowrap">
           Quản Lý Đặt Cọc
