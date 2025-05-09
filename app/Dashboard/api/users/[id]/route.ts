@@ -39,6 +39,7 @@ export async function PUT(
       Hoten: data.Hoten,
       Sdt: data.Sdt,
       Diachi: data.Diachi,
+      Avartar: data.Avartar,
     };
 
     // Add idRole to updateData if it exists in the request
