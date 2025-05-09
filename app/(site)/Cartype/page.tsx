@@ -33,7 +33,7 @@ const CarItem = ({ car }: CarItemProps) => {
   return (
     <li>
       <div
-        className={`card bg-base-100 w-full sm:w-[90%] md:w-72 xl:w-72 h-auto md:h-80 xl:h-80 mx-auto md:ml-6 mb-5 shadow-sm relative ${
+        className={`card white w-full sm:w-[90%] md:w-72 xl:w-72 h-auto md:h-80 xl:h-80 mx-auto md:ml-6 mb-5 shadow-sm relative ${
           isHovered ? "animate-borderrun" : ""
         }`}
         onMouseEnter={() => setIsHovered(true)}
@@ -75,12 +75,12 @@ const CarItem = ({ car }: CarItemProps) => {
               </span>
             </p>
             <div className="card-actions flex flex-col sm:flex-row gap-2 sm:gap-4 w-full mt-2">
-              <button className="btn bg-[#1464F4] w-full sm:w-24 text-white text-sm">
+            <button className="btn bg-[#1464F4] border-1  w-full sm:w-24 text-white text-sm">
                 <Link href={`Deposit?id=${car.idXe}`}>Đặt Cọc</Link>
               </button>
               <Link
                 href={`Carcategory?id=${car.idXe}`}
-                className="btn btn-outline w-full sm:w-auto text-sm"
+                className="btn btn-outline border-1 w-full sm:w-auto text-sm"
               >
                 Xem Chi Tiết
               </Link>
@@ -138,7 +138,7 @@ const LoaiXe = () => {
 
   if (error)
     return (
-      <div className="flex justify-center items-center h-screen" data-theme="light">
+      <div className="flex justify-center items-center h-screen" >
         <div className="text-2xl font-bold text-red-600">{error}</div>
         <Link href="/" className="btn btn-primary ml-4">
           Quay về trang chủ
