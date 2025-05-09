@@ -12,7 +12,9 @@ import CheckoutForm from "@/app/components/Stripecomponents";
 import Image from "next/image";
 
 // Initialize Stripe (replace with your actual publishable key)
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 interface Car {
   idXe: number;
@@ -70,20 +72,21 @@ const CarDepositPage = () => {
     depositAmount: 0,
     depositPercentage: 20, // Default to 20%
   });
-  
+
   // Stripe payment states
   const [showStripePayment, setShowStripePayment] = useState(false);
-  const [stripePaymentData, setStripePaymentData] = useState<StripePaymentData | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'CASH'>('CASH');
+  const [stripePaymentData, setStripePaymentData] =
+    useState<StripePaymentData | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "CASH">("CASH");
 
   // Deposit percentage options
   const DEPOSIT_PERCENTAGES = [
-    { value: 10, label: '10% Trả góp' },
-    { value: 20, label: '20% Trả góp' },
-    { value: 30, label: '30% Trả góp' },
-    { value: 40, label: '40% Trả góp' },
-    { value: 50, label: '50% Trả góp' },
-    { value: 100, label: 'Thanh toán toàn bộ' }
+    { value: 10, label: "10% Trả góp" },
+    { value: 20, label: "20% Trả góp" },
+    { value: 30, label: "30% Trả góp" },
+    { value: 40, label: "40% Trả góp" },
+    { value: 50, label: "50% Trả góp" },
+    { value: 100, label: "Thanh toán toàn bộ" },
   ];
 
   // Fetch user information
@@ -170,15 +173,17 @@ const CarDepositPage = () => {
     return Math.round(car.GiaXe * (percentage / 100));
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    
-    if (name === 'depositPercentage') {
+
+    if (name === "depositPercentage") {
       const percentage = Number(value);
       setFormData((prev) => ({
         ...prev,
         [name]: percentage,
-        depositAmount: calculateDepositAmount(percentage)
+        depositAmount: calculateDepositAmount(percentage),
       }));
     } else {
       setFormData((prev) => ({
@@ -198,7 +203,7 @@ const CarDepositPage = () => {
     }));
   };
 
-  const handlePaymentMethodChange = (method: 'STRIPE' | 'CASH') => {
+  const handlePaymentMethodChange = (method: "STRIPE" | "CASH") => {
     setPaymentMethod(method);
   };
 
@@ -207,10 +212,10 @@ const CarDepositPage = () => {
       toast.error("Thông tin không đầy đủ");
       return;
     }
-  
+
     try {
       setLoading(true);
-      
+
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
@@ -229,15 +234,15 @@ const CarDepositPage = () => {
             NgayLayXe: pickupSchedule.NgayLayXe?.toISOString(),
             GioHenLayXe: pickupSchedule.GioHenLayXe,
             DiaDiem: pickupSchedule.DiaDiem,
-          }
+          },
         }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Không thể khởi tạo thanh toán");
       }
-  
+
       const data = await response.json();
       setStripePaymentData(data);
       setShowStripePayment(true);
@@ -251,24 +256,30 @@ const CarDepositPage = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
-    if (!formData.fullName || !formData.phoneNumber || !formData.email || 
-        !pickupSchedule.NgayLayXe || !pickupSchedule.GioHenLayXe || !pickupSchedule.DiaDiem) {
+    if (
+      !formData.fullName ||
+      !formData.phoneNumber ||
+      !formData.email ||
+      !pickupSchedule.NgayLayXe ||
+      !pickupSchedule.GioHenLayXe ||
+      !pickupSchedule.DiaDiem
+    ) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
-    if (paymentMethod === 'STRIPE') {
+    if (paymentMethod === "STRIPE") {
       initiateStripePayment();
     } else {
       handleCashDeposit();
     }
   };
-  
+
   const handleCashDeposit = async () => {
     if (!car || !user) return;
-    
+
     try {
       // Submit deposit request
       const depositResponse = await fetch("/api/deposit", {
@@ -289,13 +300,13 @@ const CarDepositPage = () => {
           },
         }),
       });
-  
+
       if (!depositResponse.ok) {
         throw new Error("Không thể tạo đơn đặt cọc");
       }
-  
+
       const depositData = await depositResponse.json();
-  
+
       // Create pickup schedule with user-entered data
       const pickupResponse = await fetch("/api/appointment", {
         method: "POST",
@@ -311,11 +322,11 @@ const CarDepositPage = () => {
           DiaDiem: pickupSchedule.DiaDiem,
         }),
       });
-  
+
       if (!pickupResponse.ok) {
         throw new Error("Không thể tạo lịch hẹn lấy xe");
       }
-  
+
       // Show success toast and redirect
       toast.success("Đặt cọc và lịch hẹn thành công!");
       router.push("/");
@@ -337,9 +348,7 @@ const CarDepositPage = () => {
 
   if (loading)
     return (
-      <div
-        className="flex justify-center items-center h-screen"
-      >
+      <div className="flex justify-center items-center h-screen">
         <span className="loading loading-spinner text-blue-600 loading-lg"></span>
       </div>
     );
@@ -353,32 +362,31 @@ const CarDepositPage = () => {
 
   if (!car)
     return (
-      <div
-      className="flex justify-center items-center h-screen"
-    >
-      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
-    </div>
+      <div className="flex justify-center items-center h-screen">
+        <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+      </div>
     );
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br  from-slate-100 to-slate-200 flex flex-col"
-    >
+    <div className="min-h-screen bg-gradient-to-br  from-slate-100 to-slate-200 flex flex-col">
       <Toaster position="top-right" />
-      
-      <div className="flex-1 flex justify-center items-center py-24 px-4" >
-        <div className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex" data-theme= "light">
+
+      <div className="flex-1 flex justify-center items-center py-24 px-4">
+        <div
+          className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex"
+          data-theme="light"
+        >
           {/* Car Image Section */}
           <div className="w-1/2 relative">
-          {car?.HinhAnh && car.HinhAnh.length > 0 && (
-  <Image 
-    src={car.HinhAnh[0]} 
-    alt={car.TenXe || "Car Image"} 
-    layout="fill" 
-    objectFit="cover" 
-    className="absolute inset-0"
-  />
-)}
+            {car?.HinhAnh && car.HinhAnh.length > 0 && (
+              <Image
+                src={car.HinhAnh[0]}
+                alt={car.TenXe || "Car Image"}
+                layout="fill"
+                objectFit="cover"
+                className="absolute inset-0"
+              />
+            )}
             <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-4">
               <h2 className="text-2xl font-bold text-white">{car?.TenXe}</h2>
               <p className="text-slate-200">
@@ -457,7 +465,8 @@ const CarDepositPage = () => {
                 >
                   {DEPOSIT_PERCENTAGES.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label} - {new Intl.NumberFormat("vi-VN", {
+                      {option.label} -{" "}
+                      {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
                         currency: "VND",
                       }).format(calculateDepositAmount(option.value))}
@@ -468,8 +477,18 @@ const CarDepositPage = () => {
 
               <div className="alert bg-blue-100 text-black">
                 <div className="flex-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    className="w-6 h-6 mx-2 stroke-current"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
                   </svg>
                   <label>
                     Số tiền đặt cọc:{" "}
@@ -501,37 +520,37 @@ const CarDepositPage = () => {
                     required
                   />
                 </div>
-                
+
                 <div className="form-control flex-1">
                   <label className="label">
                     <span>Giờ hẹn lấy xe</span>
                   </label>
-                  
+
                   <select
-                      name="GioHenLayXe"
-                      value={pickupSchedule.GioHenLayXe}
-                      onChange={handlePickupScheduleChange}
-                      className="input input-bordered  w-full"
-                      required
-                    >
-                      <option value="">Chọn giờ hẹn</option>
-                      <option value="08:30">08:30 AM</option>
-                      <option value="09:00">09:00 AM</option>
-                      <option value="09:30">09:30 AM</option>
-                      <option value="10:00">10:00 AM</option>
-                      <option value="10:30">10:30 AM</option>
-                      <option value="11:00">11:00 AM</option>
-                      <option value="11:30">11:30 AM</option>
-                      <option value="13:30">1:30 PM</option>
-                      <option value="14:00">2:00 PM</option>
-                      <option value="14:30">2:30 PM</option>
-                      <option value="15:00">3:00 PM</option>
-                      <option value="15:30">3:30 PM</option>
-                      <option value="16:00">4:00 PM</option>
-                      <option value="16:30">4:30 PM</option>
-                      <option value="17:00">5:00 PM</option>
-                      <option value="17:30">5:30 PM</option>
-                    </select>
+                    name="GioHenLayXe"
+                    value={pickupSchedule.GioHenLayXe}
+                    onChange={handlePickupScheduleChange}
+                    className="input input-bordered  w-full"
+                    required
+                  >
+                    <option value="">Chọn giờ hẹn</option>
+                    <option value="08:30">08:30 AM</option>
+                    <option value="09:00">09:00 AM</option>
+                    <option value="09:30">09:30 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="10:30">10:30 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="11:30">11:30 AM</option>
+                    <option value="13:30">1:30 PM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="14:30">2:30 PM</option>
+                    <option value="15:00">3:00 PM</option>
+                    <option value="15:30">3:30 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                    <option value="16:30">4:30 PM</option>
+                    <option value="17:00">5:00 PM</option>
+                    <option value="17:30">5:30 PM</option>
+                  </select>
                 </div>
               </div>
 
@@ -547,15 +566,15 @@ const CarDepositPage = () => {
                   required
                 >
                   <option value="">Chọn địa điểm</option>
-                      <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">
-                        03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng
-                      </option>
-                      <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">
-                        115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng
-                      </option>
+                  <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">
+                    03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng
+                  </option>
+                  <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">
+                    115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng
+                  </option>
                 </select>
               </div>
-              
+
               <div className="form-control">
                 <label className="label">
                   <span>Hình thức thanh toán</span>
@@ -566,8 +585,8 @@ const CarDepositPage = () => {
                       type="radio"
                       name="paymentMethod"
                       className="radio radio-primary"
-                      checked={paymentMethod === 'CASH'}
-                      onChange={() => handlePaymentMethodChange('CASH')}
+                      checked={paymentMethod === "CASH"}
+                      onChange={() => handlePaymentMethodChange("CASH")}
                     />
                     <span>Tiền mặt tại showroom</span>
                   </label>
@@ -576,8 +595,8 @@ const CarDepositPage = () => {
                       type="radio"
                       name="paymentMethod"
                       className="radio radio-primary"
-                      checked={paymentMethod === 'STRIPE'}
-                      onChange={() => handlePaymentMethodChange('STRIPE')}
+                      checked={paymentMethod === "STRIPE"}
+                      onChange={() => handlePaymentMethodChange("STRIPE")}
                     />
                     <span>Thanh toán thẻ</span>
                   </label>
@@ -602,15 +621,20 @@ const CarDepositPage = () => {
       </div>
 
       {/* Stripe Payment Modal */}
-      {showStripePayment && stripePaymentData && stripePaymentData.clientSecret && (
-        <Elements stripe={stripePromise} options={{ clientSecret: stripePaymentData.clientSecret }}>
-          <CheckoutForm 
-            amount={stripePaymentData.depositAmount} 
-            onSuccess={handleStripeSuccess} 
-            onCancel={handleStripeCancel} 
-          />
-        </Elements>
-      )}
+      {showStripePayment &&
+        stripePaymentData &&
+        stripePaymentData.clientSecret && (
+          <Elements
+            stripe={stripePromise}
+            options={{ clientSecret: stripePaymentData.clientSecret }}
+          >
+            <CheckoutForm
+              amount={stripePaymentData.depositAmount}
+              onSuccess={handleStripeSuccess}
+              onCancel={handleStripeCancel}
+            />
+          </Elements>
+        )}
 
       <Footer />
     </div>
