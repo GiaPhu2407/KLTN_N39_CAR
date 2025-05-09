@@ -67,7 +67,7 @@ const SearchModal = () => {
     <div className="w-full">
       <div className="gap- 2" onClick={handleShowModal}>
         <Search className="h-6 w-6 text-4xl md:absolute"></Search>
-        <div className="hidden md:block md:pl-7">Search xe</div>
+        <div className="hidden md:block md:pl-7">Tìm kiếm xe</div>
       </div>
 
       <dialog id="search_modal" className="modal">

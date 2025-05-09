@@ -2,24 +2,21 @@
 
 import React, { useEffect, useState } from "react";
 
-import toast, {Toaster} from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import TableDeposit from "../component/Table/TableDeposit";
-
 
 interface ChiTietDonHang {
   idChiTietDonHang: number;
   idKhacHang: string;
 }
 
-interface FormData { 
+interface FormData {
   TrangThaiDat: string;
- 
 }
 
 export default function Page() {
   const initialFormData: FormData = {
-  TrangThaiDat: "",
- 
+    TrangThaiDat: "",
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -54,57 +51,65 @@ export default function Page() {
   }, []);
 
   const handleDelete = async (id: number) => {
-  toast((t)=>(
-    <div className="flex flex-col gap-2">
-        <span className="font-medium">Bạn có chắc muốn xóa loại xe này?</span>
-        <div className="flex gap-2">
-    <button
-    onClick={async () =>{
-      toast.dismiss(t.id);
-      try {
-        const response = await fetch(`api/deposit/${id}`, {
-          method: "DELETE",
-        });
-  
-        if (!response.ok) {
-          throw new Error("Failed to delete product");
-        }
-  
-        const data = await response.json();
-        toast.success(data.message);
-        refreshData();
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Error deleting product");
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">Bạn có chắc muốn xóa loại xe này?</span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  const response = await fetch(`api/deposit/${id}`, {
+                    method: "DELETE",
+                  });
+
+                  if (!response.ok) {
+                    throw new Error("Failed to delete product");
+                  }
+
+                  const data = await response.json();
+                  toast.success(data.message);
+                  refreshData();
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error
+                      ? err.message
+                      : "Error deleting product"
+                  );
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
       }
-    }}
-    className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
-    >
-     Xóa
-    </button>
-    <button
-            onClick={() => toast.dismiss(t.id)}
-            className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
-          >
-            Hủy
-          </button>
-    </div>
-  </div>
-  ), {
-    duration: Infinity,
-    position: 'top-center',
-    style: {
-      background: '#fff',
-      color: '#000',
-      padding: '16px',
-      borderRadius: '8px',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    },
-  })
+    );
   };
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -123,23 +128,26 @@ export default function Page() {
     }
   };
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    const url = isEditing ? `api/deposit/${editingId}` : 'api/datcoc';
-    const method = isEditing ? 'PUT' : 'POST';
+    const url = isEditing ? `api/deposit/${editingId}` : "api/datcoc";
+    const method = isEditing ? "PUT" : "POST";
 
     try {
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} product`);
+        throw new Error(
+          errorData.message ||
+            `Failed to ${isEditing ? "update" : "create"} product`
+        );
       }
 
       const data = await response.json();
@@ -148,17 +156,18 @@ export default function Page() {
       setIsEditing(false);
       setEditingId(null);
       refreshData();
-     
 
       // Close the dialog after successful submission
       const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
       if (dialog) {
         dialog.close();
       }
-
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : `Error ${isEditing ? 'updating' : 'creating'} product`);
-      
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : `Error ${isEditing ? "updating" : "creating"} product`
+      );
     }
   };
 
@@ -172,23 +181,24 @@ export default function Page() {
     }
   };
 
-  if (loading) return (
-    <div className="flex justify-center items-center h-screen" data-theme = "light">
-      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
-    </div>
-  );
-  
-  
+  if (loading)
+    return (
+      <div
+        className="flex justify-center items-center h-screen"
+
+      >
+        <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+      </div>
+    );
 
   return (
-    <div className="p-2 w-full h-[630px]" data-theme="light">
+    <div className="p-2 w-full h-[630px]">
       <div className="flex w-full">
         <h1 className="text-2xl font-bold mb-6 mt-1 ml-20 w-56 text-black whitespace-nowrap">
           Quản Lý Đặt Cọc
         </h1>
-        
       </div>
-  
+
       <dialog id="my_modal_3" className="modal">
         <div className="modal-box w-11/12 max-w-5xl">
           <form method="dialog">
@@ -205,11 +215,8 @@ export default function Page() {
           <div className="flex w-full">
             <div className="pt-6 w-[20000px]">
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Rest of the form content remains the same */}
-                {/* Form fields... */}
                 <div className="flex justify-center w-full flex-wrap gap-4">
                   <div className="flex w-full gap-4">
-
                     <div className="flex-1">
                       <label
                         htmlFor="TrangThaiDat"
@@ -218,7 +225,6 @@ export default function Page() {
                         Trạng Thái
                       </label>
                       <select
-                        
                         name="TrangThaiDat"
                         value={formData.TrangThaiDat}
                         onChange={handleChange}
@@ -227,11 +233,10 @@ export default function Page() {
                       >
                         <option value="">Chọn Trạng Thái</option>
                         <option value="Chờ xác nhận">Chờ xác nhận</option>
-                    <option value="Đã xác nhận">Đã xác nhận</option>
-                    <option value="Đang giao">Đang giao</option>
-                    <option value="Đã giao">Đã giao</option>
-                    <option value="Đã hủy">Đã hủy</option>
-                    
+                        <option value="Đã xác nhận">Đã xác nhận</option>
+                        <option value="Đang giao">Đang giao</option>
+                        <option value="Đã giao">Đã giao</option>
+                        <option value="Đã hủy">Đã hủy</option>
                       </select>
                     </div>
                   </div>
@@ -244,14 +249,13 @@ export default function Page() {
                   >
                     {isEditing ? "Cập Nhật" : "Thêm Mới"}
                   </button>
-                
                 </div>
               </form>
             </div>
           </div>
         </div>
       </dialog>
-      <div className="flex ml-20 w-[1170px] justify-center">
+      <div className="flex ml-20 w-auto justify-center">
         <TableDeposit
           onEdit={handleEdit}
           onDelete={handleDelete}

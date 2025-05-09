@@ -18,7 +18,7 @@ const PanoramaViewer = () => {
 
   return (
    <div>
-<button className="btn bg-blue-500 text-white" onClick={()=>document.getElementById('my_modal_3').showModal()}>Xem Nội Thất Xe</button>
+<button className="btn bg-blue-500 border-1 text-white" onClick={()=>document.getElementById('my_modal_3').showModal()}>Xem Nội Thất Xe</button>
 <dialog id="my_modal_3" className="modal">
   <div className="modal-box bg-white w-10/12 h-max w- max-h-full max-w-full">
     <form method="dialog">

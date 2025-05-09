@@ -122,6 +122,7 @@ export async function GET() {
             LichHenLayXe: {
                 select:{
                     NgayLayXe: true,
+                    GioHenLayXe:true,
                     DiaDiem: true,
                 },
             }

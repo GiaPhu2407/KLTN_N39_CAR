@@ -164,7 +164,7 @@ CREATE TABLE `LichHenLayXe` (
     `idXe` INTEGER NULL,
     `idKhachHang` INTEGER NULL,
     `NgayLayXe` DATETIME(3) NULL,
-    `GioHenLayXe` DATETIME(3) NULL,
+    `GioHenLayXe` VARCHAR(191) NULL,
     `DiaDiem` VARCHAR(225) NULL,
 
     PRIMARY KEY (`idLichHenLayXe`)

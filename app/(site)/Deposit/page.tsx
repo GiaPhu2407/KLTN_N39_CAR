@@ -12,9 +12,7 @@ import CheckoutForm from "@/app/components/Stripecomponents";
 import Image from "next/image";
 
 // Initialize Stripe (replace with your actual publishable key)
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface Car {
   idXe: number;
@@ -72,21 +70,20 @@ const CarDepositPage = () => {
     depositAmount: 0,
     depositPercentage: 20, // Default to 20%
   });
-
+  
   // Stripe payment states
   const [showStripePayment, setShowStripePayment] = useState(false);
-  const [stripePaymentData, setStripePaymentData] =
-    useState<StripePaymentData | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "CASH">("CASH");
+  const [stripePaymentData, setStripePaymentData] = useState<StripePaymentData | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'CASH'>('CASH');
 
   // Deposit percentage options
   const DEPOSIT_PERCENTAGES = [
-    { value: 10, label: "10% Trả góp" },
-    { value: 20, label: "20% Trả góp" },
-    { value: 30, label: "30% Trả góp" },
-    { value: 40, label: "40% Trả góp" },
-    { value: 50, label: "50% Trả góp" },
-    { value: 100, label: "Thanh toán toàn bộ" },
+    { value: 10, label: '10% Trả góp' },
+    { value: 20, label: '20% Trả góp' },
+    { value: 30, label: '30% Trả góp' },
+    { value: 40, label: '40% Trả góp' },
+    { value: 50, label: '50% Trả góp' },
+    { value: 100, label: 'Thanh toán toàn bộ' }
   ];
 
   // Fetch user information
@@ -173,16 +170,15 @@ const CarDepositPage = () => {
     return Math.round(car.GiaXe * (percentage / 100));
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === "depositPercentage") {
+    
+    if (name === 'depositPercentage') {
       const percentage = Number(value);
       setFormData((prev) => ({
         ...prev,
         [name]: percentage,
-        depositAmount: calculateDepositAmount(percentage),
+        depositAmount: calculateDepositAmount(percentage)
       }));
     } else {
       setFormData((prev) => ({
@@ -202,7 +198,7 @@ const CarDepositPage = () => {
     }));
   };
 
-  const handlePaymentMethodChange = (method: "STRIPE" | "CASH") => {
+  const handlePaymentMethodChange = (method: 'STRIPE' | 'CASH') => {
     setPaymentMethod(method);
   };
 
@@ -211,10 +207,10 @@ const CarDepositPage = () => {
       toast.error("Thông tin không đầy đủ");
       return;
     }
-
+  
     try {
       setLoading(true);
-
+      
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
@@ -233,15 +229,15 @@ const CarDepositPage = () => {
             NgayLayXe: pickupSchedule.NgayLayXe?.toISOString(),
             GioHenLayXe: pickupSchedule.GioHenLayXe,
             DiaDiem: pickupSchedule.DiaDiem,
-          },
+          }
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Không thể khởi tạo thanh toán");
       }
-
+  
       const data = await response.json();
       setStripePaymentData(data);
       setShowStripePayment(true);
@@ -255,8 +251,9 @@ const CarDepositPage = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    
     // Validate form
+<<<<<<< HEAD
     if (
       !formData.fullName ||
       !formData.phoneNumber ||
@@ -265,20 +262,24 @@ const CarDepositPage = () => {
       !pickupSchedule.GioHenLayXe ||
       !pickupSchedule.DiaDiem
     ) {
+=======
+    if (!formData.fullName || !formData.phoneNumber || !formData.email || 
+        !pickupSchedule.NgayLayXe || !pickupSchedule.GioHenLayXe || !pickupSchedule.DiaDiem) {
+>>>>>>> 6325bbd58cc52f8d07ff322670bdd229ab341ff0
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
-    if (paymentMethod === "STRIPE") {
+    if (paymentMethod === 'STRIPE') {
       initiateStripePayment();
     } else {
       handleCashDeposit();
     }
   };
-
+  
   const handleCashDeposit = async () => {
     if (!car || !user) return;
-
+    
     try {
       // Submit deposit request
       const depositResponse = await fetch("/api/deposit", {
@@ -299,13 +300,13 @@ const CarDepositPage = () => {
           },
         }),
       });
-
+  
       if (!depositResponse.ok) {
         throw new Error("Không thể tạo đơn đặt cọc");
       }
-
+  
       const depositData = await depositResponse.json();
-
+  
       // Create pickup schedule with user-entered data
       const pickupResponse = await fetch("/api/appointment", {
         method: "POST",
@@ -321,11 +322,11 @@ const CarDepositPage = () => {
           DiaDiem: pickupSchedule.DiaDiem,
         }),
       });
-
+  
       if (!pickupResponse.ok) {
         throw new Error("Không thể tạo lịch hẹn lấy xe");
       }
-
+  
       // Show success toast and redirect
       toast.success("Đặt cọc và lịch hẹn thành công!");
       router.push("/");
@@ -349,7 +350,6 @@ const CarDepositPage = () => {
     return (
       <div
         className="flex justify-center items-center h-screen"
-        data-theme="light"
       >
         <span className="loading loading-spinner text-blue-600 loading-lg"></span>
       </div>
@@ -364,40 +364,17 @@ const CarDepositPage = () => {
 
   if (!car)
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-2xl font-bold text-gray-800">
-          Không tìm thấy thông tin xe
-        </div>
-      </div>
+      <div
+      className="flex justify-center items-center h-screen"
+    >
+      <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+    </div>
     );
-  const validateForm = () => {
-    // Kiểm tra số điện thoại
-    const phoneRegex = /^(0[1-9]{1}[0-9]{8,9})$/;
-    if (!formData.phoneNumber) {
-      toast.error("Vui lòng nhập số điện thoại");
-      return false;
-    }
-    if (!phoneRegex.test(formData.phoneNumber)) {
-      toast.error("Số điện thoại phải có 10-11 chữ số và bắt đầu bằng 0");
-      return false;
-    }
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    if (!formData.email) {
-      toast.error("Vui lòng nhập email");
-      return false;
-    }
-    if (!emailRegex.test(formData.email)) {
-      toast.error(
-        "Chỉ chấp nhận địa chỉ Gmail hợp lệ (ví dụ: example@gmail.com)"
-      );
-      return false;
-    }
 
-    return true;
-  };
   return (
     <div
       className="min-h-screen bg-gradient-to-br  from-slate-100 to-slate-200 flex flex-col"
+<<<<<<< HEAD
       data-theme="light"
     >
       <Toaster position="top-right" />
@@ -407,17 +384,24 @@ const CarDepositPage = () => {
           className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex"
           data-theme="light"
         >
+=======
+    >
+      <Toaster position="top-right" />
+      
+      <div className="flex-1 flex justify-center items-center py-24 px-4" >
+        <div className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex" data-theme= "light">
+>>>>>>> 6325bbd58cc52f8d07ff322670bdd229ab341ff0
           {/* Car Image Section */}
           <div className="w-1/2 relative">
-            {car?.HinhAnh && car.HinhAnh.length > 0 && (
-              <Image
-                src={car.HinhAnh[0]}
-                alt={car.TenXe || "Car Image"}
-                layout="fill"
-                objectFit="cover"
-                className="absolute inset-0"
-              />
-            )}
+          {car?.HinhAnh && car.HinhAnh.length > 0 && (
+  <Image 
+    src={car.HinhAnh[0]} 
+    alt={car.TenXe || "Car Image"} 
+    layout="fill" 
+    objectFit="cover" 
+    className="absolute inset-0"
+  />
+)}
             <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-4">
               <h2 className="text-2xl font-bold text-white">{car?.TenXe}</h2>
               <p className="text-slate-200">
@@ -532,7 +516,7 @@ const CarDepositPage = () => {
               </div>
 
               <div className="flex justify-between gap-4">
-                <div className="form-control flex-1 flex flex-col">
+                <div className="form-control flex-1">
                   <label className="label">
                     <span>Ngày lấy xe</span>
                   </label>
@@ -551,19 +535,37 @@ const CarDepositPage = () => {
                     required
                   />
                 </div>
-
+                
                 <div className="form-control flex-1">
                   <label className="label">
                     <span>Giờ hẹn lấy xe</span>
                   </label>
-                  <input
-                    type="time"
-                    name="GioHenLayXe"
-                    value={pickupSchedule.GioHenLayXe}
-                    onChange={handlePickupScheduleChange}
-                    className="input input-bordered  w-full"
-                    required
-                  />
+                  
+                  <select
+                      name="GioHenLayXe"
+                      value={pickupSchedule.GioHenLayXe}
+                      onChange={handlePickupScheduleChange}
+                      className="input input-bordered  w-full"
+                      required
+                    >
+                      <option value="">Chọn giờ hẹn</option>
+                      <option value="08:30">08:30 AM</option>
+                      <option value="09:00">09:00 AM</option>
+                      <option value="09:30">09:30 AM</option>
+                      <option value="10:00">10:00 AM</option>
+                      <option value="10:30">10:30 AM</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="11:30">11:30 AM</option>
+                      <option value="13:30">1:30 PM</option>
+                      <option value="14:00">2:00 PM</option>
+                      <option value="14:30">2:30 PM</option>
+                      <option value="15:00">3:00 PM</option>
+                      <option value="15:30">3:30 PM</option>
+                      <option value="16:00">4:00 PM</option>
+                      <option value="16:30">4:30 PM</option>
+                      <option value="17:00">5:00 PM</option>
+                      <option value="17:30">5:30 PM</option>
+                    </select>
                 </div>
               </div>
 
@@ -579,12 +581,15 @@ const CarDepositPage = () => {
                   required
                 >
                   <option value="">Chọn địa điểm</option>
-                  <option value="showroom">Showroom</option>
-                  <option value="home">Tại nhà</option>
-                  <option value="other">Địa điểm khác</option>
+                      <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">
+                        03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng
+                      </option>
+                      <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">
+                        115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng
+                      </option>
                 </select>
               </div>
-
+              
               <div className="form-control">
                 <label className="label">
                   <span>Hình thức thanh toán</span>
@@ -631,6 +636,7 @@ const CarDepositPage = () => {
       </div>
 
       {/* Stripe Payment Modal */}
+<<<<<<< HEAD
       {showStripePayment &&
         stripePaymentData &&
         stripePaymentData.clientSecret && (
@@ -645,10 +651,25 @@ const CarDepositPage = () => {
             />
           </Elements>
         )}
+=======
+      {showStripePayment && stripePaymentData && stripePaymentData.clientSecret && (
+        <Elements stripe={stripePromise} options={{ clientSecret: stripePaymentData.clientSecret }}>
+          <CheckoutForm 
+            amount={stripePaymentData.depositAmount} 
+            onSuccess={handleStripeSuccess} 
+            onCancel={handleStripeCancel} 
+          />
+        </Elements>
+      )}
+>>>>>>> 6325bbd58cc52f8d07ff322670bdd229ab341ff0
 
       <Footer />
     </div>
   );
 };
 
+<<<<<<< HEAD
 export default CarDepositPage;
+=======
+export default CarDepositPage;
+>>>>>>> 6325bbd58cc52f8d07ff322670bdd229ab341ff0
