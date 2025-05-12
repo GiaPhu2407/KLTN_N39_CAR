@@ -25,9 +25,9 @@ const PanoramaViewer = () => {
       {/* if there is a button in form, it will close the modal */}
       <button className="btn btn-sm btn-secondary btn-ghost absolute right-2 top-2">✕</button>
     </form>
-    <h3 className="font-bold text-lg">360 Car Interior Viewer </h3>
+    <h3 className="font-bold text-lg">Xem nội thất xe 360 </h3>
     <div ref={panoramaRef} style={{ width: "80vw", height: "80vh" }} />
-    <p className=" text-xl">Click and drag to look around | Scroll to zoom in and zoom out</p>
+    <p className=" text-xl">Nhấn giữ và kéo chuột để nhìn xung quanh | lăn chuột để phóng to thu nhỏ</p>
   </div>
 </dialog>
   </div>

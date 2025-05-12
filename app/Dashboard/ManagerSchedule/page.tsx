@@ -87,6 +87,11 @@ const getStatusBadge = (status?: string) => {
         color: "bg-green-100 text-green-800",
         text: "Đã duyệt",
       };
+    case "COMPLETED":
+      return {
+        color: "bg-pink-100 text-pink-800",
+        text: "Đã trãi nghiệm",
+      };
     case "REJECTED":
       return {
         color: "bg-red-100 text-red-800",
@@ -109,6 +114,7 @@ const eventStyleGetter = (event: Event) => {
   const styleMap: Record<string, React.CSSProperties> = {
     APPROVED: { backgroundColor: "#10b981", borderColor: "#047857" },
     REJECTED: { backgroundColor: "#ef4444", borderColor: "#b91c1c" },
+    COMPLETED: { backgroundColor: "#f6339a", borderColor: "#047857" },
     PENDING: { backgroundColor: "#f59e0b", borderColor: "#d97706" },
   };
 
@@ -386,6 +392,10 @@ const PickupScheduleCalendar: FC = () => {
           <div className="flex items-center">
             <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
             <span>Đã duyệt</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-pink-500 rounded-full mr-2"></div>
+            <span>Đã trãi nghiệm</span>
           </div>
           <div className="flex items-center">
             <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>

@@ -54,6 +54,7 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
   const [formData, setFormData] = useState<PickupScheduleForm>(initialData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
   const [loaiXeList, setLoaiXeList] = useState<LoaiXe[]>([]);
   const [xeList, setXeList] = useState<Xe[]>([]);
 
@@ -262,6 +263,59 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
     }
   };
 
+  // Handle completion of appointment
+  const handleComplete = async () => {
+    if (!initialData?.idLichHen) {
+      toast.error("Không thể cập nhật lịch hẹn chưa được lưu");
+      return;
+    }
+
+    setIsCompleting(true);
+
+    try {
+      const response = await fetch(
+        `api/testDriveAppointment/complete/${initialData.idLichHen}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Có lỗi xảy ra khi cập nhật trạng thái lịch hẹn"
+        );
+      }
+
+      const result = await response.json();
+
+      // Update local state
+      setFormData((prev) => ({
+        ...prev,
+        trangThai: "COMPLETED",
+      }));
+
+      toast.success("Cập nhật trạng thái đã trải nghiệm xe thành công");
+
+      // Call onSubmitSuccess if provided
+      if (onSubmitSuccess) {
+        onSubmitSuccess(result.data);
+      }
+    } catch (error) {
+      console.error("Error completing appointment:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Có lỗi xảy ra khi cập nhật trạng thái"
+      );
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -372,33 +426,50 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="GioHen" className="block mb-2">
-            Giờ Hẹn
-          </label>
-          <input
-            type="time"
-            id="GioHen"
-            name="GioHen"
-            value={formData.GioHen || ""}
-            onChange={handleChange}
-            className="input input-bordered w-full"
-            required
-          />
+       <div>
+        <label htmlFor="GioHen" className="block mb-2">Giờ Hẹn</label>
+  <select
+    id="GioHen"
+    name="GioHen"
+    value={formData.GioHen || ''}
+    onChange={handleChange}
+    className="select select-bordered w-full"
+    required
+  >
+    <option value="">Chọn giờ hẹn</option>
+    <option value="08:30">08:30 AM</option>
+    <option value="09:00">09:00 AM</option>
+    <option value="09:30">09:30 AM</option>
+    <option value="10:00">10:00 AM</option>
+    <option value="10:30">10:30 AM</option>
+    <option value="11:00">11:00 AM</option>
+    <option value="11:30">11:30 AM</option>
+    <option value="13:30">1:30 PM</option>
+    <option value="14:00">2:00 PM</option>
+    <option value="14:30">2:30 PM</option>
+    <option value="15:00">3:00 PM</option>
+    <option value="15:30">3:30 PM</option>
+    <option value="16:00">4:00 PM</option>
+    <option value="16:30">4:30 PM</option>
+    <option value="17:00">5:00 PM</option>
+    <option value="17:30">5:30 PM</option>
+  </select>
         </div>
         <div>
-          <label htmlFor="DiaDiem" className="block mb-2">
-            Địa Điểm
-          </label>
-          <input
-            type="text"
-            id="DiaDiem"
-            name="DiaDiem"
-            value={formData.DiaDiem}
-            onChange={handleChange}
-            className="input input-bordered w-full"
-            required
-          />
+          <label htmlFor="DiaDiem" className="block mb-2">Địa Điểm</label>
+          <select
+    id="DiaDiem"
+    name="DiaDiem"
+    value={formData.DiaDiem}
+    onChange={handleChange}
+    className="input input-bordered w-full"
+    required
+   
+  >
+    <option value="">Chọn địa điểm</option>
+    <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng</option>
+    <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng</option>
+  </select>
         </div>
       </div>
 
@@ -416,7 +487,7 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
         />
       </div>
 
-      <div className=" mt-4 flex justify-end gap-2">
+      <div className="mt-4 flex justify-end gap-2">
         <button
           type="submit"
           className="btn btn-primary"
@@ -429,8 +500,8 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
               : "Thêm Mới"}
         </button>
 
-        {/* Add approve button if user is admin and appointment exists and is not approved */}
-        {initialData?.idLichHen && formData.trangThai !== "APPROVED" && (
+        {/* Add approve button if appointment exists and is not approved */}
+        {initialData?.idLichHen && formData.trangThai === "PENDING" && (
           <button
             type="button"
             className="btn btn-success"
@@ -440,6 +511,19 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
             {isApproving ? "Đang Duyệt..." : "Duyệt Lịch Hẹn"}
           </button>
         )}
+
+        {/* Add complete button if appointment exists, is approved but not completed */}
+        {initialData?.idLichHen && formData.trangThai === "APPROVED" && (
+          <button
+            type="button"
+            className="btn btn-info"
+            onClick={handleComplete}
+            disabled={isCompleting}
+          >
+            {isCompleting ? "Đang Cập Nhật..." : "Đã Trải Nghiệm Xe"}
+          </button>
+        )}
+
       </div>
     </form>
   );

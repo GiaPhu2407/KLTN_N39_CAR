@@ -42,7 +42,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       console.log('pickupDateTime (combined):', pickupDate.toISOString());
   
       // Kiểm tra xem lịch hẹn có tồn tại không
-      const existingLichHen = await prisma.lichHen.findUnique({
+      const existingLichHen = await prisma.lichHenTraiNghiem.findUnique({
         where: { idLichHen: parseInt(id) }
       });
   
@@ -54,7 +54,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       }
   
       // Cập nhật vào cơ sở dữ liệu
-      const updatedLichHen = await prisma.lichHen.update({
+      const updatedLichHen = await prisma.lichHenTraiNghiem.update({
         where: { idLichHen: parseInt(id) },
         data: {
           TenKhachHang: TenKhachHang.trim(),
@@ -97,7 +97,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   export async function DELETE(req: NextRequest, {params}: {params: {id:string} }) {
     try {
       const id = parseInt(params.id);
-      const deletedLichHen = await prisma.lichHen.delete({ where: { idLichHen: id } });
+      const deletedLichHen = await prisma.lichHenTraiNghiem.delete({ where: { idLichHen: id } });
       return NextResponse.json({deletedLichHen, message: "Xóa lịch hẹn thành công"}, {status: 200});
     } catch (error: any) {
       return NextResponse.json(error.message);
