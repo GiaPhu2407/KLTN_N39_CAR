@@ -1,4 +1,3 @@
-// File: app/api/danh-gia/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/client";
 import { getSession } from "@/app/lib/auth";
@@ -21,7 +20,9 @@ export async function GET(request: NextRequest) {
 
     // Get all reviews with related data included
     const danhGias = await prisma.danhGiaTraiNghiem.findMany({
-      where: filter,
+      where: {
+        ...filter,
+      }, 
       include: {
         user: {
           select: {
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
             NgayHen: true,
             GioHen: true,
             DiaDiem: true,
+            trangThai: true,
           },
         },
       },
@@ -80,6 +82,7 @@ export async function POST(request: NextRequest) {
       },
       select: {
         idXe: true,
+        trangThai: true,
       },
     });
 
@@ -87,6 +90,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Appointment not found or no car associated" },
         { status: 404 }
+      );
+    }
+
+    // Check if the appointment status is "Đã trải nghiệm"
+    if (lichHen.trangThai !== "Đã trải nghiệm") {
+      return NextResponse.json(
+        { error: "Cannot review an appointment that hasn't been completed" },
+        { status: 400 }
       );
     }
 

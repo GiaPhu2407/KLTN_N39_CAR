@@ -12,6 +12,7 @@ interface LichHenTraiNghiem {
   NgayHen: string;
   DiaDiem: string;
   NoiDung: string;
+  trangThai: string; // Added status field
   xe: {
     idXe: number;
     TenXe: string;
@@ -104,8 +105,14 @@ const TestDriveReviewPage = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setLichHens(data);
-      setDisplayedLichHens(data.slice(0, lichHensPerPage));
+      
+      // Filter only COMPLETED appointments
+      const completedLichHens = data.filter((lichHen: LichHenTraiNghiem) => 
+        lichHen.trangThai === "COMPLETED"
+      );
+      
+      setLichHens(completedLichHens);
+      setDisplayedLichHens(completedLichHens.slice(0, lichHensPerPage));
     } catch (error) {
       console.error(
         "There has been a problem with your fetch operation:",
@@ -527,7 +534,7 @@ const TestDriveReviewPage = () => {
               {displayedLichHens.length < lichHens.length && (
                 <button
                   onClick={loadMore}
-                  className="btn bg-blue-500 text-white hover:bg-blue-600 w-full sm:w-auto"
+                  className="btn bg-blue-500 border-white border-0 text-white hover:bg-blue-600 w-full sm:w-auto"
                 >
                   Xem thêm
                 </button>
@@ -535,7 +542,7 @@ const TestDriveReviewPage = () => {
               {displayedLichHens.length > lichHensPerPage && (
                 <button
                   onClick={showLess}
-                  className="btn bg-blue-500 text-white hover:bg-blue-600 w-full sm:w-auto"
+                  className="btn bg-blue-500 border-white border-0 text-white hover:bg-blue-600 w-full sm:w-auto"
                 >
                   Thu gọn
                 </button>
