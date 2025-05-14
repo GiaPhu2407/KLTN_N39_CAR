@@ -4,23 +4,28 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
-# 📊 XDWBXTHC0748 - Xây dựng website bán xe tích hợp chatbot AI tư vấn & đặt lịch hẹn trải nghiệm 
+
+# 📊 XDWBXTHC0748 - Xây dựng website bán xe tích hợp chatbot AI tư vấn & đặt lịch hẹn trải nghiệm
 
 ## 🚀 Giới thiệu
+
 Xây dựng website bán xe tích hợp chatbot AI tư vấn & đặt lịch hẹn trải nghiệm, giúp người dùng:
+
 - Tìm kiếm và so sánh các mẫu xe
 - Nhận tư vấn từ chatbot AI về lựa chọn xe phù hợp
 - Đặt lịch hẹn trải nghiệm lái thử
 - Theo dõi lịch sử tương tác và hẹn lịch
 
 Dự án được thực hiện bởi nhóm 10, gồm các thành viên:
+
 - Cao Ngô Gia Phú (nhóm trưởng)
-- Trần Lê Huy 
+- Trần Lê Huy
 - Văn Bá Việt
 - Võ Tấn Trí
 - Nguyễn Đăng Quốc Thịnh.
 
 ## 🏗️ Cấu trúc dự án
+
 ```
 XDWBXTHC0748/
 ├── app/                # NextJS 15 App Router
@@ -36,6 +41,7 @@ XDWBXTHC0748/
 ```
 
 ## 🟦 Backend (NextJS API Routes)
+
 - Framework: NextJS 15 (API Routes)
 - Chức năng:
   - Quản lý người dùng và xác thực
@@ -44,6 +50,7 @@ XDWBXTHC0748/
   - Thông báo, nhật ký hoạt động
 
 ### ⚙️ Cài đặt:
+
 ```bash
 npm install
 cp .env.example .env.local
@@ -51,6 +58,7 @@ npm run dev
 ```
 
 ## 🟩 Frontend (React)
+
 - Framework: **ReactJS + Next.js + TailwindCSS**
 - Chức năng:
   - Hiển thị xe và tìm kiếm
@@ -59,14 +67,16 @@ npm run dev
   - Dashboard quản trị
 
 ## 🔐 Tính năng chính:
-| Chức năng | Mô tả |
-|-----------|-------|
-| Quản lý xe | Thêm, sửa, xóa thông tin xe |
-| Chatbot AI | Tư vấn và đề xuất xe phù hợp |
-| Đặt lịch | Lên lịch lái thử và theo dõi |
+
+| Chức năng          | Mô tả                          |
+| ------------------ | ------------------------------ |
+| Quản lý xe         | Thêm, sửa, xóa thông tin xe    |
+| Chatbot AI         | Tư vấn và đề xuất xe phù hợp   |
+| Đặt lịch           | Lên lịch lái thử và theo dõi   |
 | Quản lý người dùng | Đăng ký, đăng nhập, phân quyền |
 
 ## 🌐 Công nghệ sử dụng:
+
 - NextJS 15 - Full-stack framework
 - ReactJS - UI Components
 - TailwindCSS - Styling
@@ -74,15 +84,15 @@ npm run dev
 - OpenAI API - Chatbot AI
 
 ## 👨‍💻 Contributors
+
 - Cao Ngô Gia Phú (nhóm trưởng)
-- Trần Lê Huy 
+- Trần Lê Huy
 - Văn Bá Việt
 - Võ Tấn Trí
 - Nguyễn Đăng Quốc Thịnh
 
-## 📩 Liên hệ
-> Mọi ý kiến đóng góp xin gửi về email của nhóm: caongogiaphu2401072@gmail.com (nhóm trưởng).
->>>>>>> 3886cb2bb0f59a6e1b24eb6803ead457dbf41d04
-=======
+Link github up code của nhóm : https://github.com/GiaPhu2407/KLTN_N39_CAR
 
->>>>>>> b29955e1094942bf6d48a5085941b1dcd41a9657
+## 📩 Liên hệ
+
+> Mọi ý kiến đóng góp xin gửi về email của nhóm: caongogiaphu2401072@gmail.com (nhóm trưởng).
