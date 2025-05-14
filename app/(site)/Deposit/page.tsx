@@ -258,25 +258,8 @@ const CarDepositPage = () => {
     e.preventDefault();
 
     // Validate form
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 3ffe4d36f2402d24e197362c78f3dcf0e3e5cb00
-    if (
-      !formData.fullName ||
-      !formData.phoneNumber ||
-      !formData.email ||
-      !pickupSchedule.NgayLayXe ||
-      !pickupSchedule.GioHenLayXe ||
-      !pickupSchedule.DiaDiem
-    ) {
-<<<<<<< HEAD
-=======
-    if (!formData.fullName || !formData.phoneNumber || !formData.email || 
+    if (!formData.fullName || !formData.phoneNumber || !formData.email ||
         !pickupSchedule.NgayLayXe || !pickupSchedule.GioHenLayXe || !pickupSchedule.DiaDiem) {
->>>>>>> 6325bbd58cc52f8d07ff322670bdd229ab341ff0
-=======
->>>>>>> 3ffe4d36f2402d24e197362c78f3dcf0e3e5cb00
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
@@ -379,12 +362,7 @@ const CarDepositPage = () => {
     );
 
   return (
-<<<<<<< HEAD
-    <div
-      className="min-h-screen bg-gradient-to-br  from-slate-100 to-slate-200 flex flex-col"
-<<<<<<< HEAD
-      data-theme="light"
-    >
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col" data-theme="light">
       <Toaster position="top-right" />
 
       <div className="flex-1 flex justify-center items-center py-24 px-4">
@@ -392,23 +370,6 @@ const CarDepositPage = () => {
           className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex"
           data-theme="light"
         >
-=======
-    >
-      <Toaster position="top-right" />
-      
-      <div className="flex-1 flex justify-center items-center py-24 px-4" >
-        <div className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex" data-theme= "light">
->>>>>>> 6325bbd58cc52f8d07ff322670bdd229ab341ff0
-=======
-    <div className="min-h-screen bg-gradient-to-br  from-slate-100 to-slate-200 flex flex-col">
-      <Toaster position="top-right" />
-
-      <div className="flex-1 flex justify-center items-center py-24 px-4">
-        <div
-          className="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden flex"
-          data-theme="light"
-        >
->>>>>>> 3ffe4d36f2402d24e197362c78f3dcf0e3e5cb00
           {/* Car Image Section */}
           <div className="w-1/2 relative">
             {car?.HinhAnh && car.HinhAnh.length > 0 && (
@@ -652,52 +613,20 @@ const CarDepositPage = () => {
           </div>
         </div>
       </div>
-
       {/* Stripe Payment Modal */}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 3ffe4d36f2402d24e197362c78f3dcf0e3e5cb00
-      {showStripePayment &&
-        stripePaymentData &&
-        stripePaymentData.clientSecret && (
-          <Elements
-            stripe={stripePromise}
-            options={{ clientSecret: stripePaymentData.clientSecret }}
-          >
-            <CheckoutForm
-              amount={stripePaymentData.depositAmount}
-              onSuccess={handleStripeSuccess}
-              onCancel={handleStripeCancel}
-            />
-          </Elements>
-        )}
-<<<<<<< HEAD
-=======
       {showStripePayment && stripePaymentData && stripePaymentData.clientSecret && (
         <Elements stripe={stripePromise} options={{ clientSecret: stripePaymentData.clientSecret }}>
-          <CheckoutForm 
-            amount={stripePaymentData.depositAmount} 
-            onSuccess={handleStripeSuccess} 
-            onCancel={handleStripeCancel} 
+          <CheckoutForm
+            amount={stripePaymentData.depositAmount}
+            onSuccess={handleStripeSuccess}
+            onCancel={handleStripeCancel}
           />
         </Elements>
       )}
->>>>>>> 6325bbd58cc52f8d07ff322670bdd229ab341ff0
-=======
->>>>>>> 3ffe4d36f2402d24e197362c78f3dcf0e3e5cb00
 
       <Footer />
     </div>
   );
 };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 export default CarDepositPage;
-=======
-export default CarDepositPage;
->>>>>>> 6325bbd58cc52f8d07ff322670bdd229ab341ff0
-=======
-export default CarDepositPage;
->>>>>>> 3ffe4d36f2402d24e197362c78f3dcf0e3e5cb00
