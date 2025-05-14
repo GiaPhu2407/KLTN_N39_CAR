@@ -13,6 +13,7 @@ interface ReviewData {
   SoSao: number | null;
   NoiDung: string | null;
   NgayDanhGia: string;
+  AnHien: boolean;
   lichHenTraiNghiem: {
     TenKhachHang: string | null;
     Sdt: string | null;
@@ -90,6 +91,32 @@ export default function Page() {
     );
   };
 
+  const handleToggleVisibility = async (id: number, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`api/evaluate/visibility/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          AnHien: !currentStatus 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update review visibility");
+      }
+
+      const data = await response.json();
+      toast.success(data.message);
+      refreshData();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Lỗi khi cập nhật trạng thái đánh giá"
+      );
+    }
+  };
+
   const handleView = (review: ReviewData) => {
     setReviewData(review);
 
@@ -153,108 +180,129 @@ export default function Page() {
 
   return (
     <div
-  className="p-2 flex-col justify-center text-center w-full h-[630px]"
->
-  <div className="flex justify-between pb-4 w-full">
-    <h1 className="text-2xl font-bold flex-grow text-black text-center">
-      Quản Lý Đánh Giá Trải Nghiệm
-    </h1>
-  </div>
+      className="p-2 flex-col justify-center text-center w-full h-[630px]"
+    >
+      <div className="flex justify-between pb-4 w-full">
+        <h1 className="text-2xl font-bold flex-grow text-black text-center">
+          Quản Lý Đánh Giá Trải Nghiệm
+        </h1>
+      </div>
 
-  <dialog id="review_modal" className="modal">
-    <div className="modal-box w-11/12 max-w-5xl">
-      <form method="dialog">
-        <button
-          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-          onClick={handleModalClose}
-        >
-          ✕
-        </button>
-      </form>
-      <h3 className="font-bold text-lg mb-4 text-center">Chi Tiết Đánh Giá</h3>
-      {reviewData && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-medium text-gray-700 mb-1 text-center">
-                Khách Hàng
-              </label>
-              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
-                {reviewData.lichHenTraiNghiem?.TenKhachHang || "N/A"}
-              </p>
-            </div>
-            <div>
-              <label className="block font-medium text-gray-700 mb-1 text-center">
-                Số Điện Thoại
-              </label>
-              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
-                {reviewData.lichHenTraiNghiem?.Sdt || "N/A"}
-              </p>
-            </div>
-            <div>
-              <label className="block font-medium text-gray-700 mb-1 text-center">
-                Email
-              </label>
-              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
-                {reviewData.lichHenTraiNghiem?.Email || "N/A"}
-              </p>
-            </div>
-            <div>
-              <label className="block font-medium text-gray-700 mb-1 text-center">
-                Xe
-              </label>
-              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
-                {reviewData.xe?.TenXe || "N/A"}
-              </p>
-            </div>
-            <div>
-              <label className="block font-medium text-gray-700 mb-1 text-center">
-                Ngày Đánh Giá
-              </label>
-              <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
-                {formatDate(reviewData.NgayDanhGia)}
-              </p>
-            </div>
-            <div>
-              <label className="block font-medium text-gray-700 mb-1 text-center">
-                Đánh Giá Sao
-              </label>
-              <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 flex justify-center">
-                {renderStarRating(reviewData.SoSao)}
+      <dialog id="review_modal" className="modal">
+        <div className="modal-box w-11/12 max-w-5xl">
+          <form method="dialog">
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={handleModalClose}
+            >
+              ✕
+            </button>
+          </form>
+          <h3 className="font-bold text-lg mb-4 text-center">Chi Tiết Đánh Giá</h3>
+          {reviewData && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-medium text-gray-700 mb-1 text-center">
+                    Khách Hàng
+                  </label>
+                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                    {reviewData.lichHenTraiNghiem?.TenKhachHang || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <label className="block font-medium text-gray-700 mb-1 text-center">
+                    Số Điện Thoại
+                  </label>
+                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                    {reviewData.lichHenTraiNghiem?.Sdt || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <label className="block font-medium text-gray-700 mb-1 text-center">
+                    Email
+                  </label>
+                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                    {reviewData.lichHenTraiNghiem?.Email || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <label className="block font-medium text-gray-700 mb-1 text-center">
+                    Xe
+                  </label>
+                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                    {reviewData.xe?.TenXe || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <label className="block font-medium text-gray-700 mb-1 text-center">
+                    Ngày Đánh Giá
+                  </label>
+                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                    {formatDate(reviewData.NgayDanhGia)}
+                  </p>
+                </div>
+                <div>
+                  <label className="block font-medium text-gray-700 mb-1 text-center">
+                    Đánh Giá Sao
+                  </label>
+                  <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 flex justify-center">
+                    {renderStarRating(reviewData.SoSao)}
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-medium text-gray-700 mb-1 text-center">
+                    Trạng Thái
+                  </label>
+                  <p className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center">
+                    {reviewData.AnHien ? "Đã ẩn" : "Hiện thị"}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-medium text-gray-700 mb-1 text-center">
+                  Nội Dung Đánh Giá
+                </label>
+                <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center min-h-32">
+                  {reviewData.NoiDung || "Không có nội dung"}
+                </div>
+              </div>
+
+              <div className="flex justify-center gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (reviewData) {
+                      handleToggleVisibility(reviewData.idDanhGia, reviewData.AnHien);
+                      handleModalClose();
+                    }
+                  }}
+                  className={`px-6 py-2 ${reviewData.AnHien ? "bg-green-600" : "bg-yellow-600"} text-white rounded-md hover:${reviewData.AnHien ? "bg-green-700" : "bg-yellow-700"}`}
+                >
+                  {reviewData.AnHien ? "Hiện Đánh Giá" : "Ẩn Đánh Giá"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleModalClose}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                >
+                  Đóng
+                </button>
               </div>
             </div>
-          </div>
-
-          <div>
-            <label className="block font-medium text-gray-700 mb-1 text-center">
-              Nội Dung Đánh Giá
-            </label>
-            <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-center min-h-32">
-              {reviewData.NoiDung || "Không có nội dung"}
-            </div>
-          </div>
-
-          <div className="flex justify-center mt-6">
-            <button
-              type="button"
-              onClick={handleModalClose}
-              className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-            >
-              Đóng
-            </button>
-          </div>
+          )}
         </div>
-      )}
-    </div>
-  </dialog>
+      </dialog>
 
-  <div className="w-full">
-    <TableDanhGiaTraiNghiem
-      onEdit={handleView}
-      onDelete={handleDelete}
-      reloadKey={reloadKey}
-    />
-  </div>
-</div>
+      <div className="w-full">
+        <TableDanhGiaTraiNghiem
+          onEdit={handleView}
+          onDelete={handleDelete}
+          onToggleVisibility={handleToggleVisibility}
+          reloadKey={reloadKey}
+        />
+      </div>
+    </div>
   );
 }
