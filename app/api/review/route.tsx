@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the appointment status is "Đã trải nghiệm"
-    if (lichHen.trangThai !== "Đã trải nghiệm") {
+    if (lichHen.trangThai !== "COMPLETED") {
       return NextResponse.json(
         { error: "Cannot review an appointment that hasn't been completed" },
         { status: 400 }
