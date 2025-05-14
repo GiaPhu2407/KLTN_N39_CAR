@@ -10,6 +10,7 @@ interface DanhGiaTraiNghiem {
   SoSao: number;
   NoiDung: string;
   NgayDanhGia: string;
+  AnHien: boolean; // Added AnHien field
   user?: {
     Hoten: string;
     Avatar: string;
@@ -55,20 +56,25 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setReviews(data);
-      console.log("Dữ liệu đánh giá:", data);
-      // Calculate average rating and stats
-      if (data.length > 0) {
-        const totalStars = data.reduce(
+      
+      // Filter out hidden reviews (AnHien = true or 1)
+      const visibleReviews = data.filter((review: DanhGiaTraiNghiem) => !review.AnHien);
+      
+      setReviews(visibleReviews);
+      console.log("Dữ liệu đánh giá (hiển thị):", visibleReviews);
+      
+      // Calculate average rating and stats only with visible reviews
+      if (visibleReviews.length > 0) {
+        const totalStars = visibleReviews.reduce(
           (sum: number, review: DanhGiaTraiNghiem) => sum + review.SoSao,
           0
         );
-        const avg = totalStars / data.length;
+        const avg = totalStars / visibleReviews.length;
         setAverageRating(parseFloat(avg.toFixed(1)));
 
         // Count reviews by star rating
         const stats: RatingStats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-        data.forEach((review: DanhGiaTraiNghiem) => {
+        visibleReviews.forEach((review: DanhGiaTraiNghiem) => {
           const rating = review.SoSao;
           // Make sure we only count valid ratings from 1-5
           if (rating >= 1 && rating <= 5) {
@@ -78,6 +84,10 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
         setReviewStats(stats);
         console.log("Average Rating:", avg);
         console.log("Review Stats:", stats);
+      } else {
+        // Reset values if no visible reviews
+        setAverageRating(0);
+        setReviewStats({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
@@ -206,7 +216,7 @@ const CarReviews = ({ idXe }: CarReviewsProps) => {
                       {review.user?.Hoten || "Người dùng ẩn danh"}
                     </div>
                     <div className="text-gray-500 text-sm">
-                      {/* {formatDate(review.NgayDanhGia)} */}
+                      {formatDate(review.NgayDanhGia)}
                     </div>
                   </div>
                 </div>
