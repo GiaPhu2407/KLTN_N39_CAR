@@ -87,7 +87,7 @@ const getStatusBadge = (status?: string) => {
         color: "bg-green-100 text-green-800",
         text: "Đã duyệt",
       };
-     case "COMPLETED":
+    case "COMPLETED":
       return {
         color: "bg-pink-100 text-pink-800",
         text: "Đã trãi nghiệm",
@@ -443,14 +443,15 @@ const PickupScheduleCalendar: FC = () => {
 
             {selectedSchedule && (
               <div className="flex justify-end items-center">
-                {selectedSchedule.trangThai !== "APPROVED" && selectedSchedule.trangThai !== "COMPLETED" && (
-                  <button
-                    className="bg-red-500 rounded-md w-28 h-8 text-sm text-white"
-                    onClick={() => handleDelete(selectedSchedule.idLichHen)}
-                  >
-                    Xóa Lịch Hẹn
-                  </button>
-                )}
+                {selectedSchedule.trangThai !== "APPROVED" &&
+                  selectedSchedule.trangThai !== "COMPLETED" && (
+                    <button
+                      className="bg-red-500 rounded-md w-28 h-8 text-sm text-white"
+                      onClick={() => handleDelete(selectedSchedule.idLichHen)}
+                    >
+                      Xóa Lịch Hẹn
+                    </button>
+                  )}
               </div>
             )}
 

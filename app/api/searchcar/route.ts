@@ -1,4 +1,5 @@
 import prisma from "@/prisma/client";
+import { equal } from "assert";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    if (gia !== undefined) {
+    if (typeof gia === "number" && !isNaN(gia)) {
       whereClause.GiaXe = {
         lte: gia,
       };
