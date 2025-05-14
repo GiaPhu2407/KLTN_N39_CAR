@@ -105,7 +105,7 @@ const Category = () => {
   return (
     <div className="w-full h-full pt-24">
       <div className="px-24 pb-24 w-full h-full flex flex-col">
-        <h1 className="text-3xl font-bold mb-8">Chi tiết sản phẩm</h1>
+        <h1 className="text-3xl font-bold mb-8">Chi tiết xe</h1>
         <div className="bg-white shadow-xl rounded-lg overflow-hidden">
           <div className="md:flex">
             <div className="md:flex-shrink-0 xl:w-[600px] xl:h-[500px] relative">

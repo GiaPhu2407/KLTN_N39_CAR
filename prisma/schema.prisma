@@ -45,6 +45,7 @@ model DanhGiaTraiNghiem {
   SoSao        Int?      // Rating (e.g., 1-5 stars)
   NoiDung      String?   @db.LongText
   NgayDanhGia  DateTime  @default(now())
+  AnHien       Boolean   @default(false) // false = visible, true = hidden
 
   lichHenTraiNghiem      LichHenTraiNghiem   @relation(fields: [idLichHen], references: [idLichHen])
   user         Users     @relation(fields: [idUser], references: [idUsers])

@@ -154,8 +154,6 @@ const SearchModal = () => {
                 }
               />
             </div>
-
-            
           </div>
 
           <div className="mt-6">

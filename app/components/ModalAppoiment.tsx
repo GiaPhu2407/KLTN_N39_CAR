@@ -56,7 +56,8 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
   const [phoneError, setPhoneError] = useState<string | null>(null);
   
   // Check if form should be disabled (when status is APPROVED)
-  const isFormDisabled = initialData?.trangThai === 'APPROVED';
+  const isFormDisabled = initialData?.trangThai === 'APPROVED' || 
+  initialData?.trangThai === 'COMPLETED';
  
   // Fetch Loai Xe and Xe lists
   useEffect(() => {
@@ -386,8 +387,8 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
     disabled={isFormDisabled}
   >
     <option value="">Chọn địa điểm</option>
-    <option value="showroom">03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng</option>
-    <option value="home">115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng</option>
+    <option value="03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng">03 Phạm Hùng, Hoà Châu, Cẩm Lệ, Đà Nẵng</option>
+    <option value="115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng">115 Đ. Nguyễn Văn Linh, Nam Dương, Hải Châu, Đà Nẵng</option>
   </select>
         </div>
       </div>
@@ -408,21 +409,23 @@ export const PickupScheduleForm: React.FC<PickupScheduleFormComponentProps> = ({
       
       </div>
 
-      <div className="form-control mt-4">
+      <div className="form-control mt-4 flex justify-end">
         {!isFormDisabled && (
           <button 
             type="submit" 
-            className="btn btn-primary"
+            className="btn btn-primary "
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Đang Lưu...' : (initialData?.idLichHen !== undefined ? 'Cập Nhật' : 'Thêm Mới')}
           </button>
         )}
-        {isFormDisabled && (
-          <div className="p-3 bg-gray-100 text-center rounded-md">
-            Lịch hẹn đã được duyệt không thể chỉnh sửa
-          </div>
-        )}
+       {isFormDisabled && (
+  <div className="p-3 bg-gray-100 text-center rounded-md">
+    {initialData?.trangThai === 'APPROVED' 
+      ? 'Lịch hẹn đã được duyệt không thể chỉnh sửa' 
+      : 'Lịch hẹn đã hoàn thành không thể chỉnh sửa'}
+  </div>
+)}
       </div>
     </form>
   );

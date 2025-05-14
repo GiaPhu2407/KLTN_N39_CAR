@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     pickupDate.setHours(hours, minutes, 0, 0);
 
     // Lưu vào cơ sở dữ liệu
-    const lichHenLay = await prisma.lichHen.create({
+    const lichHenLay = await prisma.lichHenTraiNghiem.create({
       data: {
         idUser: session.idUsers,
         TenKhachHang: TenKhachHang?.trim() || '',
@@ -86,7 +86,7 @@ export async function GET() {
     const session = await getSession();
     const pickupSchedules = await prisma.lichHenTraiNghiem.findMany({
       where: {
-        idUser: session.idUsers , // Assuming you want to fetch schedules for a specific user
+        idUser: session.idUsers ,// Assuming you want to fetch schedules for a specific user
       },
       include: {
         xe: true,
