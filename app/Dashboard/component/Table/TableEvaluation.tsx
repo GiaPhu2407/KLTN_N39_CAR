@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { IoEyeSharp } from "react-icons/io5";
 
 interface DanhGiaTraiNghiem {
   idDanhGia: number;
@@ -221,8 +222,8 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
                 </tr>
               ) : (
                 danhGiaList.map((danhGia, index) => (
-                  <tr 
-                    key={danhGia.idDanhGia} 
+                  <tr
+                    key={danhGia.idDanhGia}
                     className={`text-black text-center ${
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
                     } ${danhGia.AnHien ? "opacity-60" : ""}`}
@@ -243,11 +244,17 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
                     <td className="px-2 py-3 max-w-xs truncate">
                       {danhGia.NoiDung || "Không có nội dung"}
                     </td>
-                    <td className="px-2 py-3">{formatDate(danhGia.NgayDanhGia)}</td>
                     <td className="px-2 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        danhGia.AnHien ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                      }`}>
+                      {formatDate(danhGia.NgayDanhGia)}
+                    </td>
+                    <td className="px-2 py-3">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          danhGia.AnHien
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {danhGia.AnHien ? "Đã ẩn" : "Hiển thị"}
                       </span>
                     </td>
@@ -256,18 +263,27 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
                         <button
                           type="button"
                           onClick={() => onEdit(danhGia)}
-                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                          className="px-3 py-1  rounded transition-colors cursor-pointer font-medium text-xs"
                           title="Xem chi tiết"
                         >
-                          👁️
+                          <IoEyeSharp />
                         </button>
                         <button
                           type="button"
-                          onClick={() => onToggleVisibility(danhGia.idDanhGia, danhGia.AnHien)}
+                          onClick={() =>
+                            onToggleVisibility(
+                              danhGia.idDanhGia,
+                              danhGia.AnHien
+                            )
+                          }
                           className={`px-3 py-1 rounded transition-colors cursor-pointer font-medium text-xs ${
-                            danhGia.AnHien ? "text-green-600" : "text-yellow-600"
+                            danhGia.AnHien
+                              ? "text-green-600"
+                              : "text-yellow-600"
                           }`}
-                          title={danhGia.AnHien ? "Hiện đánh giá" : "Ẩn đánh giá"}
+                          title={
+                            danhGia.AnHien ? "Hiện đánh giá" : "Ẩn đánh giá"
+                          }
                         >
                           {danhGia.AnHien ? "🔍" : "🔒"}
                         </button>
