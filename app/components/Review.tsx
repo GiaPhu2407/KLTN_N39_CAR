@@ -12,7 +12,7 @@ interface LichHenTraiNghiem {
   NgayHen: string;
   DiaDiem: string;
   NoiDung: string;
-  trangThai: string; // Added status field
+  trangThai: string;
   xe: {
     idXe: number;
     TenXe: string;
@@ -67,8 +67,31 @@ const TestDriveReviewPage = () => {
     isOpen: false,
     rating: null,
   });
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    ratingId: number | null;
+  }>({
+    isOpen: false,
+    ratingId: null,
+  });
+  const [updateModal, setUpdateModal] = useState<{
+    isOpen: boolean;
+    rating: DanhGiaTraiNghiem | null;
+  }>({
+    isOpen: false,
+    rating: null,
+  });
   const [rating, setRating] = useState<DanhGia>({
     idLichHen: 0,
+    SoSao: 0,
+    NoiDung: "",
+  });
+  const [updateRating, setUpdateRating] = useState<{
+    idDanhGia: number;
+    SoSao: number;
+    NoiDung: string;
+  }>({
+    idDanhGia: 0,
     SoSao: 0,
     NoiDung: "",
   });
@@ -77,11 +100,13 @@ const TestDriveReviewPage = () => {
   >([]);
   const lichHensPerPage = 2;
 
-  // Ngăn cuộn trang khi modal mở
+  // Prevent page scrolling when modals are open
   useEffect(() => {
     if (
       ratingModal.isOpen ||
-      (viewRatingModal.isOpen && viewRatingModal.rating)
+      viewRatingModal.isOpen ||
+      deleteModal.isOpen ||
+      updateModal.isOpen
     ) {
       document.body.style.overflow = "hidden";
     } else {
@@ -91,7 +116,7 @@ const TestDriveReviewPage = () => {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [ratingModal.isOpen, viewRatingModal.isOpen]);
+  }, [ratingModal.isOpen, viewRatingModal.isOpen, deleteModal.isOpen, updateModal.isOpen]);
 
   useEffect(() => {
     fetchLichHens();
@@ -147,8 +172,16 @@ const TestDriveReviewPage = () => {
     setRating({ ...rating, SoSao: newRating });
   };
 
+  const handleUpdateRatingChange = (newRating: number) => {
+    setUpdateRating({ ...updateRating, SoSao: newRating });
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setRating({ ...rating, NoiDung: e.target.value });
+  };
+
+  const handleUpdateInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setUpdateRating({ ...updateRating, NoiDung: e.target.value });
   };
 
   const openRatingModal = (lichHenId: number, carName: string) => {
@@ -186,6 +219,41 @@ const TestDriveReviewPage = () => {
     });
   };
 
+  const openDeleteModal = (ratingId: number) => {
+    setDeleteModal({
+      isOpen: true,
+      ratingId,
+    });
+    closeViewRatingModal();
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      ratingId: null,
+    });
+  };
+
+  const openUpdateModal = (rating: DanhGiaTraiNghiem) => {
+    setUpdateModal({
+      isOpen: true,
+      rating,
+    });
+    setUpdateRating({
+      idDanhGia: rating.idDanhGia,
+      SoSao: rating.SoSao,
+      NoiDung: rating.NoiDung || "",
+    });
+    closeViewRatingModal();
+  };
+
+  const closeUpdateModal = () => {
+    setUpdateModal({
+      isOpen: false,
+      rating: null,
+    });
+  };
+
   const submitRating = async () => {
     if (rating.SoSao === 0) {
       toast.error("Vui lòng chọn số sao đánh giá");
@@ -211,6 +279,60 @@ const TestDriveReviewPage = () => {
     } catch (error) {
       console.error("Error submitting rating:", error);
       toast.error("Không thể gửi đánh giá");
+    }
+  };
+
+  const deleteRating = async () => {
+    if (!deleteModal.ratingId) return;
+    
+    try {
+      const response = await fetch(`/api/review/${deleteModal.ratingId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      toast.success("Đã xóa đánh giá thành công");
+      closeDeleteModal();
+      
+      // Update the local state
+      await fetchDanhGias();
+    } catch (error) {
+      console.error("Error deleting rating:", error);
+      toast.error("Không thể xóa đánh giá");
+    }
+  };
+
+  const updateRatingSubmit = async () => {
+    if (updateRating.SoSao === 0) {
+      toast.error("Vui lòng chọn số sao đánh giá");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/review/${updateRating.idDanhGia}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          SoSao: updateRating.SoSao,
+          NoiDung: updateRating.NoiDung,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      toast.success("Cập nhật đánh giá thành công");
+      closeUpdateModal();
+      await fetchDanhGias();
+    } catch (error) {
+      console.error("Error updating rating:", error);
+      toast.error("Không thể cập nhật đánh giá");
     }
   };
 
@@ -254,13 +376,14 @@ const TestDriveReviewPage = () => {
       </div>
     );
   }
-  //asdasdasd
+
   return (
     <div
       className="bg-white text-black"
       style={{ backgroundColor: "white", color: "black" }}
     >
-      {/* Rating Modal - Được tùy chỉnh không dùng DaisyUI */}
+
+      {/* Rating Modal - Custom styled */}
       {ratingModal.isOpen && (
         <div
           className="fixed inset-0 flex items-center justify-center z-50"
@@ -345,74 +468,117 @@ const TestDriveReviewPage = () => {
         </div>
       )}
 
-      {/* View Rating Modal */}
+      {/* View Rating Modal with DaisyUI */}
       {viewRatingModal.isOpen && viewRatingModal.rating && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div
-            className="bg-white rounded-lg p-6 w-full max-w-md m-4"
-            style={{
-              backgroundColor: "white",
-              boxShadow: "0 0 10px rgba(0,0,0,0.3)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3
-              className="text-xl font-bold mb-4 text-black"
-              style={{ color: "black" }}
-            >
-              Đánh giá của bạn
-            </h3>
-
+        <dialog open className="modal modal-bottom sm:modal-middle bg-white">
+          <div className="modal-box bg-white">
+            <h3 className="font-bold text-lg mb-4">Đánh giá của bạn</h3>
+            
             <div className="flex justify-center mb-4">
-              <div className="flex gap-1">
+              <div className="rating rating-lg">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <svg
+                  <input 
                     key={star}
-                    className="w-8 h-8"
-                    fill={
-                      viewRatingModal.rating &&
-                      viewRatingModal.rating.SoSao >= star
-                        ? "#FFD700"
-                        : "#D1D5DB"
-                    }
-                    stroke="#000000"
-                    strokeWidth="1"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                  </svg>
+                    type="radio" 
+                    name="rating-view" 
+                    className={`mask mask-star-2 ${viewRatingModal.rating && viewRatingModal.rating.SoSao >= star ? 'bg-yellow-400' : 'bg-gray-300'}`}
+                    checked={viewRatingModal.rating && viewRatingModal.rating.SoSao === star}
+                    readOnly
+                  />
                 ))}
               </div>
             </div>
 
-            <div
-              className="p-3 border rounded-md mb-4 min-h-[100px] bg-gray-50 text-black"
-              style={{ color: "black" }}
-            >
+            <div className="p-3 border rounded-md mb-4 min-h-[100px] bg-gray-50 text-black overflow-y-auto">
               {viewRatingModal.rating.NoiDung}
             </div>
 
             <p className="text-sm text-gray-500 mb-4">
               Đánh giá vào:{" "}
-              {new Date(viewRatingModal.rating.NgayDanhGia).toLocaleDateString(
-                "vi-VN"
-              )}
+              {new Date(viewRatingModal.rating.NgayDanhGia).toLocaleDateString("vi-VN")}
             </p>
 
-            <div className="flex justify-end gap-2">
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            <div className="modal-action">
+              <button 
+                className="btn btn-error"
+                onClick={() => openDeleteModal(viewRatingModal.rating!.idDanhGia)}
+              >
+                Xóa đánh giá
+              </button>
+              <button 
+                className="btn btn-warning"
+                onClick={() => openUpdateModal(viewRatingModal.rating!)}
+              >
+                Chỉnh sửa
+              </button>
+              <button 
+                className="btn btn-primary"
                 onClick={closeViewRatingModal}
               >
                 Đóng
               </button>
             </div>
           </div>
-        </div>
+        </dialog>
+      )}
+
+      {/* Delete Confirmation Modal with DaisyUI */}
+      {deleteModal.isOpen && (
+        <dialog open className="modal modal-bottom sm:modal-middle bg-white">
+          <div className="modal-box bg-white">
+            <h3 className="font-bold text-lg text-error">Xác nhận xóa đánh giá</h3>
+            <p className="py-4">Bạn có chắc chắn muốn xóa đánh giá này? Hành động này không thể hoàn tác.</p>
+            <div className="modal-action">
+              <button className="btn btn-outline" onClick={closeDeleteModal}>Hủy</button>
+              <button className="btn btn-error" onClick={deleteRating}>Xóa</button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* Update Rating Modal with DaisyUI */}
+      {updateModal.isOpen && updateModal.rating && (
+        <dialog open className="modal modal-bottom sm:modal-middle bg-white">
+          <div className="modal-box bg-white">
+            <h3 className="font-bold text-lg mb-4">Cập nhật đánh giá</h3>
+            
+            <div className="flex flex-col items-center mb-4">
+              <p className="font-medium mb-2">Mức độ hài lòng của bạn</p>
+              <div className="rating rating-lg">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <input 
+                    key={star}
+                    type="radio" 
+                    name="rating-update" 
+                    className="mask mask-star-2 bg-yellow-400"
+                    checked={updateRating.SoSao === star}
+                    onChange={() => handleUpdateRatingChange(star)}
+                  />
+                ))}
+              </div>
+              <div className="text-sm text-gray-500 mt-2 h-5">
+                {updateRating.SoSao === 0 && "Vui lòng chọn mức độ hài lòng"}
+                {updateRating.SoSao === 1 && "Rất không hài lòng"}
+                {updateRating.SoSao === 2 && "Không hài lòng"}
+                {updateRating.SoSao === 3 && "Bình thường"}
+                {updateRating.SoSao === 4 && "Hài lòng"}
+                {updateRating.SoSao === 5 && "Rất hài lòng"}
+              </div>
+            </div>
+
+            <textarea
+              className="textarea textarea-bordered w-full mb-4 min-h-[100px] bg-white"
+              placeholder="Chia sẻ cảm nhận của bạn về trải nghiệm lái thử xe..."
+              value={updateRating.NoiDung}
+              onChange={handleUpdateInputChange}
+            ></textarea>
+
+            <div className="modal-action">
+              <button className="btn btn-outline" onClick={closeUpdateModal}>Hủy</button>
+              <button className="btn btn-primary" onClick={updateRatingSubmit}>Cập nhật đánh giá</button>
+            </div>
+          </div>
+        </dialog>
       )}
 
       <div className="container mx-auto px-4 md:px-14 py-28">
@@ -510,7 +676,7 @@ const TestDriveReviewPage = () => {
                         onClick={() =>
                           openViewRatingModal(danhGias[lichHen.idLichHen])
                         }
-                        className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-200"
+                        className="btn btn-success"
                       >
                         Xem đánh giá
                       </button>
@@ -519,7 +685,7 @@ const TestDriveReviewPage = () => {
                         onClick={() =>
                           openRatingModal(lichHen.idLichHen, lichHen.xe.TenXe)
                         }
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200"
+                        className="btn btn-primary"
                       >
                         Đánh giá trải nghiệm
                       </button>
@@ -534,7 +700,7 @@ const TestDriveReviewPage = () => {
               {displayedLichHens.length < lichHens.length && (
                 <button
                   onClick={loadMore}
-                  className="btn bg-blue-500 border-white border-0 text-white hover:bg-blue-600 w-full sm:w-auto"
+                  className="btn btn-primary w-full sm:w-auto"
                 >
                   Xem thêm
                 </button>
@@ -542,7 +708,7 @@ const TestDriveReviewPage = () => {
               {displayedLichHens.length > lichHensPerPage && (
                 <button
                   onClick={showLess}
-                  className="btn bg-blue-500 border-white border-0 text-white hover:bg-blue-600 w-full sm:w-auto"
+                  className="btn btn-primary w-full sm:w-auto"
                 >
                   Thu gọn
                 </button>
