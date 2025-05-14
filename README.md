@@ -96,3 +96,7 @@ Link github up code của nhóm : https://github.com/GiaPhu2407/KLTN_N39_CAR
 ## 📩 Liên hệ
 
 > Mọi ý kiến đóng góp xin gửi về email của nhóm: caongogiaphu2401072@gmail.com (nhóm trưởng).
+<<<<<<< HEAD
+
+=======
+>>>>>>> d97ca1207b67dbec2b04c2a9d84bc5fdbae40441
