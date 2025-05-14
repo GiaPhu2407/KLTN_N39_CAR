@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/client";
 import { getSession } from "@/app/lib/auth";
 
-
 // GET all reviews or filter by specific parameters
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +21,7 @@ export async function GET(request: NextRequest) {
     const danhGias = await prisma.danhGiaTraiNghiem.findMany({
       where: {
         ...filter,
-      }, 
+      },
       include: {
         user: {
           select: {
@@ -66,14 +65,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    
-  
 
     const data = await request.json();
-    const { idLichHen, SoSao, NoiDung, } = data;
+    const { idLichHen, SoSao, NoiDung } = data;
 
     // Get user ID from session
-   
 
     // Get xe information from LichHen
     const lichHen = await prisma.lichHenTraiNghiem.findUnique({
@@ -127,7 +123,6 @@ export async function POST(request: NextRequest) {
         NgayDanhGia: new Date(),
       },
     });
-
 
     return NextResponse.json(newDanhGia, { status: 201 });
   } catch (error) {
