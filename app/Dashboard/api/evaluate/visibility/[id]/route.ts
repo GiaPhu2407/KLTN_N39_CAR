@@ -1,4 +1,3 @@
-
 // app/api/evaluate/visibility/[id]/route.ts
 import prisma from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -10,10 +9,7 @@ export async function PATCH(
   try {
     const id = parseInt(params.id);
     if (isNaN(id)) {
-      return NextResponse.json(
-        { message: "ID không hợp lệ" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "ID không hợp lệ" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -45,11 +41,11 @@ export async function PATCH(
     });
 
     return NextResponse.json(
-      { 
-        message: AnHien 
-          ? "Đã ẩn đánh giá thành công" 
-          : "Đã hiện đánh giá thành công", 
-        data: updatedReview 
+      {
+        message: AnHien
+          ? "Đã ẩn đánh giá thành công"
+          : "Đã hiện đánh giá thành công",
+        data: updatedReview,
       },
       { status: 200 }
     );

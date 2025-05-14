@@ -258,8 +258,14 @@ const CarDepositPage = () => {
     e.preventDefault();
 
     // Validate form
-    if (!formData.fullName || !formData.phoneNumber || !formData.email ||
-        !pickupSchedule.NgayLayXe || !pickupSchedule.GioHenLayXe || !pickupSchedule.DiaDiem) {
+    if (
+      !formData.fullName ||
+      !formData.phoneNumber ||
+      !formData.email ||
+      !pickupSchedule.NgayLayXe ||
+      !pickupSchedule.GioHenLayXe ||
+      !pickupSchedule.DiaDiem
+    ) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
@@ -362,7 +368,10 @@ const CarDepositPage = () => {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col" data-theme="light">
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex flex-col"
+      data-theme="light"
+    >
       <Toaster position="top-right" />
 
       <div className="flex-1 flex justify-center items-center py-24 px-4">
@@ -614,15 +623,20 @@ const CarDepositPage = () => {
         </div>
       </div>
       {/* Stripe Payment Modal */}
-      {showStripePayment && stripePaymentData && stripePaymentData.clientSecret && (
-        <Elements stripe={stripePromise} options={{ clientSecret: stripePaymentData.clientSecret }}>
-          <CheckoutForm
-            amount={stripePaymentData.depositAmount}
-            onSuccess={handleStripeSuccess}
-            onCancel={handleStripeCancel}
-          />
-        </Elements>
-      )}
+      {showStripePayment &&
+        stripePaymentData &&
+        stripePaymentData.clientSecret && (
+          <Elements
+            stripe={stripePromise}
+            options={{ clientSecret: stripePaymentData.clientSecret }}
+          >
+            <CheckoutForm
+              amount={stripePaymentData.depositAmount}
+              onSuccess={handleStripeSuccess}
+              onCancel={handleStripeCancel}
+            />
+          </Elements>
+        )}
 
       <Footer />
     </div>
