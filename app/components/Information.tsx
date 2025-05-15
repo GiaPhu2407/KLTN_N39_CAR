@@ -2,7 +2,7 @@ import React from 'react';
 
 const Information = () => {
   return (
-    <div className="w-full min-h-screen bg-white py-12" data-theme="light">
+    <div className="w-full min-h-screen bg-white py-9" data-theme="light">
       <div className="container mx-auto px-4 max-w-7xl">
         <h1 className="text-3xl md:text-4xl font-bold text-center mb-12">Pin & Trạm Sạc VinFast</h1>
         
@@ -51,7 +51,7 @@ const Information = () => {
         </div>
 
         {/* Mobile charging section */}
-        <div className="mt-12 lg:mt-24">
+        <div className="mt-10 lg:mt-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="order-2 lg:order-1">
               <h2 className="text-2xl md:text-3xl font-bold mb-4">Thiết bị sạc di động</h2>
@@ -85,13 +85,13 @@ const Information = () => {
                 </div>
               </div>
             </div>
-            <div className="order-1 lg:order-2 flex justify-center">
+            <div className="order-1 lg:order-2 flex justify-center ">
               <div className="relative w-full max-w-md">
                 <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg blur opacity-25"></div>
                 <img 
                   src="https://shop.vinfastauto.com/on/demandware.static/-/Sites-vinfast_vn_master/default/dw3060cd2a/images/Accessory/EEH20000204/1.png" 
                   alt="Thiết bị sạc di động"
-                  className="relative rounded-lg w-full h-auto shadow-lg"
+                  className="relative rounded-lg w-full h-72 shadow-lg"
                 />
               </div>
             </div>
