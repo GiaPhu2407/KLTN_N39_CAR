@@ -189,3 +189,7 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.fe {
+  @apply px-4 sm:px-6 xl:mx-20 md:mx-10 mt-16 sm:mt-24;
+}

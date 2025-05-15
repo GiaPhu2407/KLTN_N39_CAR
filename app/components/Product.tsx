@@ -171,7 +171,7 @@ const Product = () => {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="px-4 sm:px-6 xl:mx-20 md:mx-10 mt-16 sm:mt-24">
+      <div className="fe">
         <br />
         <div className="border-b-4 border-blue-500 mt-3 sm:mt-5"></div>
 
@@ -207,11 +207,11 @@ const Product = () => {
           ))}
         </ul>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-5 px-4 sm:px-0">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-5 px-4 pt-2 sm:px-0">
           {displayedCars.length < (selectedCategory ? cars.filter(car => car.idLoaiXe === selectedCategory).length : cars.length) && (
             <button
               onClick={loadMore}
-              className="btn bg-blue-500 text-white hover:bg-blue-600 w-full sm:w-auto"
+              className="btn bg-blue-500 text-white border-0 hover:bg-blue-600 w-full sm:w-auto"
             >
               Load more
             </button>
@@ -219,7 +219,7 @@ const Product = () => {
           {displayedCars.length > carsPerPage && (
             <button
               onClick={showLess}
-              className="btn bg-blue-500 text-white hover:bg-blue-600 w-full sm:w-auto"
+              className="btn bg-blue-500 text-white border-0 hover:bg-blue-600 w-full sm:w-auto"
             >
               Show less
             </button>
