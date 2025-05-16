@@ -13,16 +13,26 @@ interface LoaiXe {
   NhanHieu: string;
   HinhAnh: string;
 }
+
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loaiXe, setLoaiXe] = useState<LoaiXe[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   const { user, setUser } = useAuth();
   const router = useRouter();
+
+  // Set isMounted to true once component mounts on client
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const fetchLoaiXe = async () => {
       try {
-        const response = await fetch("api/typecar");
+        const response = await fetch("/api/typecar");
         if (!response.ok) throw new Error("Failed to fetch loai xe");
         const data = await response.json();
         setLoaiXe(data || []);
@@ -31,9 +41,13 @@ export default function Navbar() {
         setLoaiXe([]);
       }
     };
+
     fetchLoaiXe();
-  }, []);
+  }, [isMounted]);
+
   useEffect(() => {
+    if (!isMounted) return;
+
     // Create an interval to check session status
     const checkSession = async () => {
       try {
@@ -55,7 +69,7 @@ export default function Navbar() {
 
     // Clean up interval on unmount
     return () => clearInterval(interval);
-  }, [setUser]);
+  }, [isMounted, setUser]);
 
   // Handle logout
   const handleLogout = async () => {
@@ -67,6 +81,19 @@ export default function Navbar() {
       console.error("Logout failed:", error);
     }
   };
+
+  // If not yet mounted on client, render a minimal placeholder to prevent hydration errors
+  if (!isMounted) {
+    return (
+      <div className="navbar bg-base-100 shadow-sm fixed z-50">
+        <div className="flex px-4 w-full py-2">
+          <div className="ml-2 h-8 md:ml-6 md:text-2xl sm:text-2xl">
+            {/* Placeholder for logo */}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div data-theme="light">
@@ -88,14 +115,12 @@ export default function Navbar() {
                 Trang Chủ
               </button>
             </Link>
-            <ul
+            <button
               onMouseEnter={() => setIsMenuOpen(true)}
               className="bg-white py-2 font-semibold font-serif transition-all duration-500 text-blue-500 hover:text-red-500 cursor-pointer"
             >
-              <li>
-                <span>Sản Phẩm</span>
-              </li>
-            </ul>
+              Sản Phẩm
+            </button>
 
             <div
               onMouseLeave={() => setIsMenuOpen(false)}
@@ -116,12 +141,14 @@ export default function Navbar() {
                     <li key={loai.idLoaiXe} className="mt-10">
                       <Link href={`Cartype?id=${loai.idLoaiXe}`}>
                         <div className="image-container">
-                          <img
+                          <Image
                             src={
                               loai.HinhAnh && loai.HinhAnh.trim() !== ""
                                 ? loai.HinhAnh
                                 : "/default-image.png"
                             }
+                            width={100}
+                            height={100}
                             className="transition-all duration-300"
                             alt={loai.TenLoai}
                           />
@@ -169,7 +196,6 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex relative">
-              {/* <NotificationComponent /> */}
               <NotificationComponent />
 
               <div className="dropdown dropdown-end hidden xl:block">
@@ -184,9 +210,11 @@ export default function Navbar() {
                   >
                     {user.Avatar && user.Avatar.length > 0 ? (
                       <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                        <img
+                        <Image
                           src={user.Avatar}
                           alt="Profile Avatar"
+                          width={40}
+                          height={40}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -294,14 +322,14 @@ export default function Navbar() {
                     className="btn btn-outline btn-primary w-full"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Đăng nhập
+                    Login
                   </Link>
                   <Link
                     href="/Register"
                     className="btn btn-primary w-full"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Đăng ký
+                    Register{" "}
                   </Link>
                 </div>
               )}
@@ -355,19 +383,17 @@ export default function Navbar() {
                     {loaiXe.map((loai) => (
                       <Link
                         key={loai.idLoaiXe}
-                        href={`LoaiXe?id=${loai.idLoaiXe}`}
+                        href={`Cartype?id=${loai.idLoaiXe}`}
                         className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-100 transition-colors duration-200"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        {/* {loai.HinhAnh && loai.HinhAnh !== "" && ( */}
                         <Image
-                          src={loai.HinhAnh}
+                          src={loai.HinhAnh || "/default-image.png"}
                           alt={loai.TenLoai}
                           width={40}
                           height={40}
                           className="rounded-md"
                         />
-                        {/* )} */}
                         <span className="font-medium text-gray-700">
                           {loai.TenLoai}
                         </span>
@@ -423,16 +449,16 @@ export default function Navbar() {
             </div>
 
             {user && (
-              <div className="">
+              <div>
                 <ul className="menu menu-lg gap-2 mt-4 h-96 pt-4 font-semibold text-gray-700 text-base border-t">
                   <li>
                     <Link
-                      href="/Profiles"
+                      href="/Profile"
                       className="text-base"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Profile
-                      <span className="badge badge-primary badge-sm">New</span>
+                      Hồ sơ
+                      <span className="badge badge-primary badge-sm">Mới</span>
                     </Link>
                   </li>
                   <li>
@@ -441,16 +467,25 @@ export default function Navbar() {
                       className="text-base"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Depositform
+                      Đặt cọc
                     </Link>
                   </li>
                   <li>
                     <Link
-                      href="/Orders"
+                      href="/Calender"
                       className="text-base"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Orders
+                      Lịch Hẹn
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/Review"
+                      className="text-base"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Đánh giá
                     </Link>
                   </li>
                   {user.role?.TenNguoiDung === "Admin" && (
@@ -460,13 +495,13 @@ export default function Navbar() {
                         className="text-base"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        Dashboard
+                        Quản lý
                       </Link>
                     </li>
                   )}
                   <li>
                     <a
-                      className="text-base"
+                      className="text-base text-red-500"
                       onClick={() => {
                         handleLogout();
                         setIsMenuOpen(false);
