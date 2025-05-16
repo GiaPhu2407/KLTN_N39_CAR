@@ -36,20 +36,20 @@ const CarItem = ({ car, category }: CarItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   // Extract first image URL from the car's HinhAnh
-  const getFirstImageUrl = () => {
-    try {
-      if (!car.HinhAnh) return "/placeholder-car.jpg"; // Fallback image
+  // const getFirstImageUrl = () => {
+  //   try {
+  //     if (!car.HinhAnh) return "/placeholder-car.jpg"; // Fallback image
 
-      if (Array.isArray(car.HinhAnh)) {
-        return car.HinhAnh[0] || "/placeholder-car.jpg";
-      } else {
-        return car.HinhAnh.split("|")[0] || "/placeholder-car.jpg";
-      }
-    } catch (error) {
-      console.error("Error parsing image URL:", error);
-      return "/placeholder-car.jpg";
-    }
-  };
+  //     if (Array.isArray(car.HinhAnh)) {
+  //       return car.HinhAnh[0] || "/placeholder-car.jpg";
+  //     } else {
+  //       return car.HinhAnh.split("|")[0] || "/placeholder-car.jpg";
+  //     }
+  //   } catch (error) {
+  //     console.error("Error parsing image URL:", error);
+  //     return "/placeholder-car.jpg";
+  //   }
+  // };
 
   return (
     <li>
@@ -67,7 +67,7 @@ const CarItem = ({ car, category }: CarItemProps) => {
         ></div>
         <div className="w-full sm:w-[303px] h-auto sm:h-[303px] p-4 sm:p-0">
           <figure className="px-4 sm:px-10 w-full">
-            <img
+            <Image
               src={
                 Array.isArray(car.HinhAnh)
                   ? car.HinhAnh[0]
