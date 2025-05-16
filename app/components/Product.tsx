@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -65,12 +65,16 @@ const CarItem = ({ car, category }: CarItemProps) => {
           </figure>
           <div className="card-body items-center text-center p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row justify-between w-full gap-2">
-              <h2 className="card-title text-lg sm:text-xl w-full">{car.TenXe}</h2>
+              <h2 className="card-title text-lg sm:text-xl w-full">
+                {car.TenXe}
+              </h2>
               {category && (
-                <p className="text-gray-600 text-sm sm:text-base">{category.TenLoai}</p>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  {category.TenLoai}
+                </p>
               )}
             </div>
-            
+
             <p className="flex justify-start w-full mt-2">
               <span className="text-purple-600 text-xl sm:text-2xl font-semibold">
                 {new Intl.NumberFormat("vi-VN", {
@@ -104,21 +108,21 @@ const Product = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [displayedCars, setDisplayedCars] = useState<Car[]>([]);
+  const [visibleCount, setVisibleCount] = useState(4);
   const carsPerPage = 4;
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/car'),
-      fetch('/api/typecar')
-    ])
-      .then(([carsRes, categoriesRes]) => Promise.all([carsRes.json(), categoriesRes.json()]))
+    Promise.all([fetch("/api/car"), fetch("/api/typecar")])
+      .then(([carsRes, categoriesRes]) =>
+        Promise.all([carsRes.json(), categoriesRes.json()])
+      )
       .then(([carsData, categoriesData]) => {
         setCars(carsData);
         setCategories(categoriesData);
-        setDisplayedCars(carsData.slice(0, carsPerPage));
+        setDisplayedCars(carsData.slice(0, visibleCount));
         setLoading(false);
       })
-      .catch(e => {
+      .catch((e) => {
         console.error("Error loading data:", e);
         setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
         setLoading(false);
@@ -127,10 +131,10 @@ const Product = () => {
 
   useEffect(() => {
     const filteredCars = selectedCategory
-      ? cars.filter(car => car.idLoaiXe === selectedCategory)
+      ? cars.filter((car) => car.idLoaiXe === selectedCategory)
       : cars;
-    setDisplayedCars(filteredCars.slice(0, carsPerPage));
-  }, [selectedCategory, cars]);
+    setDisplayedCars(filteredCars.slice(0, visibleCount));
+  }, [selectedCategory, cars, visibleCount]);
 
   if (loading) {
     return (
@@ -149,25 +153,27 @@ const Product = () => {
   }
 
   const loadMore = () => {
-    const currentLength = displayedCars.length;
-    const filteredCars = selectedCategory
-      ? cars.filter(car => car.idLoaiXe === selectedCategory)
-      : cars;
-    const newCars = filteredCars.slice(currentLength, currentLength + carsPerPage);
-    setDisplayedCars(prevCars => [...prevCars, ...newCars]);
+    setVisibleCount((prevCount) => prevCount + carsPerPage);
   };
 
   const showLess = () => {
-    setDisplayedCars(displayedCars.slice(0, carsPerPage));
+    setVisibleCount(carsPerPage);
   };
 
   const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
+    setVisibleCount(carsPerPage); // Reset to initial count when changing category
   };
 
   const getCategoryById = (categoryId: number) => {
-    return categories.find(category => category.idLoaiXe === categoryId);
+    return categories.find((category) => category.idLoaiXe === categoryId);
   };
+
+  // Calculate remaining cars
+  const filteredCars = selectedCategory
+    ? cars.filter((car) => car.idLoaiXe === selectedCategory)
+    : cars;
+  const remainingCars = filteredCars.length - displayedCars.length;
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -179,7 +185,7 @@ const Product = () => {
           <div className="flex flex-nowrap sm:flex-wrap gap-4 text-2xl sm:text-3xl h-9 min-w-max sm:min-w-0 sm:justify-between pb-2">
             <button
               onClick={() => handleCategorySelect(null)}
-              className={`${!selectedCategory ? 'text-blue-500 border-b-2 border-blue-500' : 'text-slate-600'} 
+              className={`${!selectedCategory ? "text-blue-500 border-b-2 border-blue-500" : "text-slate-600"} 
                 whitespace-nowrap hover:border-b-2 border-blue-500 hover:text-blue-500 italic font-bold px-2`}
             >
               Tất cả
@@ -188,7 +194,7 @@ const Product = () => {
               <button
                 key={category.idLoaiXe}
                 onClick={() => handleCategorySelect(category.idLoaiXe)}
-                className={`${selectedCategory === category.idLoaiXe ? 'text-blue-500 border-b-2 border-blue-500' : 'text-slate-600'} 
+                className={`${selectedCategory === category.idLoaiXe ? "text-blue-500 border-b-2 border-blue-500" : "text-slate-600"} 
                   whitespace-nowrap hover:border-b-2 border-blue-500 hover:text-blue-500 italic font-bold px-2`}
               >
                 {category.TenLoai}
@@ -199,29 +205,29 @@ const Product = () => {
 
         <ul className="grid grid-cols-1 sm:flex sm:flex-wrap w-full mt-8 sm:mt-12 gap-4 sm:gap-4 xl:gap-1 min-[1920px]:gap-32 xl:animate-appear px-5 sm:px-2">
           {displayedCars.map((car) => (
-            <CarItem 
-              key={car.idXe} 
+            <CarItem
+              key={car.idXe}
               car={car}
               category={getCategoryById(car.idLoaiXe)}
             />
           ))}
         </ul>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-5 px-4 sm:px-0">
-          {displayedCars.length < (selectedCategory ? cars.filter(car => car.idLoaiXe === selectedCategory).length : cars.length) && (
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-5 px-4 sm:px-0 mb-10">
+          {remainingCars > 0 && (
             <button
               onClick={loadMore}
               className="btn bg-blue-500 text-white hover:bg-blue-600 w-full sm:w-auto"
             >
-              Load more
+              Hiển thị thêm ({remainingCars} sản phẩm)
             </button>
           )}
           {displayedCars.length > carsPerPage && (
             <button
               onClick={showLess}
-              className="btn bg-blue-500 text-white hover:bg-blue-600 w-full sm:w-auto"
+              className="btn bg-gray-500 text-white hover:bg-gray-600 w-full sm:w-auto"
             >
-              Show less
+              Ẩn bớt
             </button>
           )}
         </div>
