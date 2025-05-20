@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ReportDatCocComponent from "../Reportdeposit";
 import { Check } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface DatCoc {
   idDatCoc: number;
@@ -171,6 +172,182 @@ const TableDeposit: React.FC<TableDepositProps> = ({
     }
   };
 
+  // Handle delete single deposit with confirmation
+  const handleDeleteSingle = (idDatCoc: number) => {
+    const deposit = deposits.find(d => d.idDatCoc === idDatCoc);
+    const customerName = deposit?.khachHang?.Hoten || `ID ${idDatCoc}`;
+    
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = `delete-single-confirmation-${idDatCoc}`;
+    
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+    
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa đặt cọc của "{customerName}" không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+                
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading("Đang xóa đặt cọc...");
+                  
+                  // Call the backend API to delete the deposit
+                  // This is an example, replace with your actual API endpoint
+                  const response = await fetch(`api/deposit/${idDatCoc}`, {
+                    method: "DELETE",
+                  });
+                  
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+                  
+                  if (!response.ok) {
+                    throw new Error(`Failed to delete deposit with ID ${idDatCoc}`);
+                  }
+                  
+                  // Show success toast
+                  toast.success(`Đã xóa đặt cọc của "${customerName}" thành công`);
+                  
+                  // Call the parent component's onDelete callback
+                  onDelete(idDatCoc);
+                } catch (error) {
+                  console.error("Error deleting deposit:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa đặt cọc");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId, // Use our custom ID
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
+  // Handle delete all selected deposits
+  const handleDeleteSelected = () => {
+    if (selectedDeposits.length === 0) {
+      toast.error("Không có đặt cọc nào được chọn để xóa");
+      return;
+    }
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = "delete-confirmation-toast";
+    
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+    
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa {selectedDeposits.length} đặt cọc đã chọn không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+                
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading("Đang xóa đặt cọc...");
+                  
+                  // Create an array of promises for each delete request
+                  const deletePromises = selectedDeposits.map(idDatCoc => 
+                    fetch(`api/deposit/${idDatCoc}`, {
+                      method: "DELETE",
+                    }).then(res => {
+                      if (!res.ok) throw new Error(`Failed to delete deposit with ID ${idDatCoc}`);
+                      return res.json();
+                    })
+                  );
+                  
+                  // Wait for all delete operations to complete
+                  await Promise.all(deletePromises);
+                  
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+                  
+                  // Show the success toast
+                  toast.success(`Đã xóa ${selectedDeposits.length} đặt cọc thành công`);
+                  
+                  // Reset selections
+                  setSelectedDeposits([]);
+                  setSelectAll(false);
+                  
+                  // Refresh data by calling the API again
+                  setLoading(true);
+                  const refreshResponse = await fetch(
+                    `api/pagination/deposit?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
+                  );
+                  if (refreshResponse.ok) {
+                    const refreshData = await refreshResponse.json();
+                    setDeposits(refreshData.data);
+                    setPaginationMeta(refreshData.meta);
+                  }
+                  setLoading(false);
+                } catch (error) {
+                  console.error("Error deleting selected deposits:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa các đặt cọc đã chọn");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId, // Use our custom ID
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
   return (
     <div className="flex flex-col w-full">
       <div className="w-full">
@@ -203,7 +380,18 @@ const TableDeposit: React.FC<TableDepositProps> = ({
           </div>
         </div>
         
-        <div className="flex w-full justify-end px-4 md:px-10 pb-3">
+        <div className="flex w-full justify-end px-4 md:px-10 pb-3 gap-2">
+          {selectedDeposits.length > 0 && (
+            <button
+              onClick={handleDeleteSelected}
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 h-10 rounded text-sm font-medium transition-colors flex items-center"
+            >
+              <span className="mr-1">Xóa</span>
+              <span className="bg-white text-red-600 rounded-full px-2 py-0.5 text-xs font-bold">
+                {selectedDeposits.length}
+              </span>
+            </button>
+          )}
           <ReportDatCocComponent selectedDeposits={selectedDeposits} />
         </div>
         
@@ -274,7 +462,9 @@ const TableDeposit: React.FC<TableDepositProps> = ({
                 deposits.map((deposit, index) => (
                   <tr
                     key={deposit.idDatCoc}
-                    className={`text-black text-center ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                    className={`text-black text-center ${index % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
+                      selectedDeposits.includes(deposit.idDatCoc) ? "bg-indigo-50" : ""
+                    }`}
                   >
                     <td className="px-2 py-3">
                       <input 
@@ -325,7 +515,7 @@ const TableDeposit: React.FC<TableDepositProps> = ({
                           🖊️
                         </button>
                         <button
-                          onClick={() => onDelete(deposit.idDatCoc)}
+                          onClick={() => handleDeleteSingle(deposit.idDatCoc)}
                           className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           ❌

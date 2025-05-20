@@ -4,12 +4,14 @@ import { FaCheckCircle, FaChargingStation, FaHeadset } from "react-icons/fa";
 const Videobg = () => {
   return (
     <div className="w-full">
-      <div className="xl:mx-36  md:mx-26 mx-10 mb-12 animate-appeartop [animation-timeline:view()] animation-range-entry text-center ">
-        <span className="font-semibold text-center xl:text-3xl md:text-2xl text-xl w-full font-serif ">
+       <div className='xl:mx-36  md:mx-26 mt-7 mb-7 animate-appeartop [animation-timeline:view()] animation-range-entry '>
+        <div className='text-center w-full h-5'>
+      <span className='font-semibold text-center xl:text-3xl md:text-2xl text-xl w-full font-serif '>
           Khám phá & sự thoải mái của Gia đình
         </span>
+        </div>
         <br />
-        <span className="xl:text-xl md:text-lg sm:text-base text-xs">
+        <span className='xl:text-lg md:text-lg sm:text-base text-xs text-start'>
           VinFast Ngôn ngữ thiết kế của VinFast kết hợp những đường cong thể
           thao, nét sang trọng và sự hiện diện đáng gờm. Nó tối ưu hóa hiệu
           suất, chức năng và sự đơn giản thanh lịch, thiết lập một tiêu chuẩn
