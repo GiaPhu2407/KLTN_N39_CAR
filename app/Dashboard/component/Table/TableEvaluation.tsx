@@ -287,14 +287,6 @@ const TableDanhGiaTraiNghiem: React.FC<TableDanhGiaTraiNghiemProps> = ({
                         >
                           {danhGia.AnHien ? "🔍" : "🔒"}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => onDelete(danhGia.idDanhGia)}
-                          className="px-3 py-1 text-red-600 rounded transition-colors cursor-pointer font-medium text-xs"
-                          title="Xóa đánh giá"
-                        >
-                          ❌
-                        </button>
                       </div>
                     </td>
                   </tr>
