@@ -1,4 +1,3 @@
-// 1. Thêm useCallback và state mới cho việc reload dữ liệu
 import React, { useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import ImportExportSuppliers from "../ImportExportSuppliers";
@@ -37,9 +36,12 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const [localReloadKey, setLocalReloadKey] = useState(0); // Thêm state này để reload theo yêu cầu
+  const [localReloadKey, setLocalReloadKey] = useState(0);
 
-  // 2. Chuyển hàm fetchData sang dùng useCallback để tối ưu
+  // Add states for selection functionality
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -61,10 +63,12 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
     }
   }, [currentPage, pageSize, searchText]);
 
-  // 3. Cập nhật useEffect để thêm localReloadKey vào dependencies
   useEffect(() => {
     fetchData();
-  }, [fetchData, reloadKey, localReloadKey]); // Thêm localReloadKey vào đây
+    // Reset selection when data refreshes
+    setSelectedItems([]);
+    setSelectAll(false);
+  }, [fetchData, reloadKey, localReloadKey]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -78,9 +82,220 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
     setCurrentPage(1); // Reset to first page when changing page size
   };
 
-  // 4. Thêm hàm xử lý khi import thành công
   const handleImportSuccess = () => {
-    setLocalReloadKey((prev) => prev + 1); // Tăng giá trị để kích hoạt useEffect
+    setLocalReloadKey((prev) => prev + 1);
+  };
+
+  // Handle item selection toggle
+  const toggleSelectItem = (idNhaCungCap: number) => {
+    setSelectedItems((prevSelected) => {
+      if (prevSelected.includes(idNhaCungCap)) {
+        return prevSelected.filter((id) => id !== idNhaCungCap);
+      } else {
+        return [...prevSelected, idNhaCungCap];
+      }
+    });
+  };
+
+  // Handle select all toggle
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(
+        isNhaCungCapTable.map((supplier) => supplier.idNhaCungCap)
+      );
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // Check if an item is selected
+  const isItemSelected = (idNhaCungCap: number) => {
+    return selectedItems.includes(idNhaCungCap);
+  };
+
+  // Handle delete single supplier with confirmation
+  const handleDeleteSingle = (idNhaCungCap: number) => {
+    const supplier = isNhaCungCapTable.find(
+      (s) => s.idNhaCungCap === idNhaCungCap
+    );
+    const supplierName = supplier
+      ? supplier.TenNhaCungCap
+      : `ID ${idNhaCungCap}`;
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = `delete-single-confirmation-${idNhaCungCap}`;
+
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa nhà cung cấp "{supplierName}" không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading(
+                    "Đang xóa nhà cung cấp..."
+                  );
+
+                  const response = await fetch(
+                    `api/suppliers/${idNhaCungCap}`,
+                    {
+                      method: "DELETE",
+                    }
+                  );
+
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+
+                  if (!response.ok) {
+                    throw new Error(
+                      `Failed to delete supplier with ID ${idNhaCungCap}`
+                    );
+                  }
+
+                  // Show success toast
+                  toast.success(
+                    `Đã xóa nhà cung cấp "${supplierName}" thành công`
+                  );
+
+                  // Trigger a refetch of data
+                  setLocalReloadKey((prev) => prev + 1);
+                } catch (error) {
+                  console.error("Error deleting supplier:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa nhà cung cấp");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId,
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
+  // Handle delete all selected suppliers
+  const handleDeleteSelected = () => {
+    if (selectedItems.length === 0) {
+      toast.error("Không có nhà cung cấp nào được chọn để xóa");
+      return;
+    }
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = "delete-suppliers-confirmation-toast";
+
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa {selectedItems.length} nhà cung cấp đã
+            chọn không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading(
+                    "Đang xóa nhà cung cấp..."
+                  );
+
+                  // Create an array of promises for each delete request
+                  const deletePromises = selectedItems.map((idNhaCungCap) =>
+                    fetch(`api/suppliers/${idNhaCungCap}`, {
+                      method: "DELETE",
+                    }).then((res) => {
+                      if (!res.ok)
+                        throw new Error(
+                          `Failed to delete supplier with ID ${idNhaCungCap}`
+                        );
+                      return res.json();
+                    })
+                  );
+
+                  // Wait for all delete operations to complete
+                  await Promise.all(deletePromises);
+
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+
+                  // Show the success toast
+                  toast.success(
+                    `Đã xóa ${selectedItems.length} nhà cung cấp thành công`
+                  );
+
+                  // Reset selections and trigger reload
+                  setSelectedItems([]);
+                  setSelectAll(false);
+                  setLocalReloadKey((prev) => prev + 1);
+                } catch (error) {
+                  console.error("Error deleting selected suppliers:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa các nhà cung cấp đã chọn");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId,
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
   };
 
   return (
@@ -113,8 +328,20 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
               className="input input-bordered h-10 text-sm w-full md:w-72 max-w-xs"
             />
 
-            {/* Import/Export component */}
             <ImportExportSuppliers onImportSuccess={handleImportSuccess} />
+
+            {/* Add delete selected button */}
+            {selectedItems.length > 0 && (
+              <button
+                onClick={handleDeleteSelected}
+                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 h-10 rounded text-sm font-medium transition-colors flex items-center"
+              >
+                <span className="mr-1">Xóa</span>
+                <span className="bg-white text-red-600 rounded-full px-2 py-0.5 text-xs font-bold">
+                  {selectedItems.length}
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -122,6 +349,17 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
           <table className="table text-center table-auto w-full min-w-[640px]">
             <thead className="text-center">
               <tr className="bg-gray-50">
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={toggleSelectAll}
+                      className="checkbox checkbox-sm bg-white"
+                    />
+                    <span className="pl-1">All</span>
+                  </div>
+                </th>
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Id Nhà Cung Cấp
                 </th>
@@ -142,13 +380,13 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-4 text-sm text-center">
+                  <td colSpan={6} className="px-3 py-4 text-sm text-center">
                     <span>Đang tải...</span>
                   </td>
                 </tr>
               ) : !isNhaCungCapTable || isNhaCungCapTable.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-4 text-sm text-center">
+                  <td colSpan={6} className="px-3 py-4 text-sm text-center">
                     Không có dữ liệu nhà cung cấp
                   </td>
                 </tr>
@@ -156,8 +394,22 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
                 isNhaCungCapTable.map((nhacungcap, index) => (
                   <tr
                     key={nhacungcap.idNhaCungCap}
-                    className={`text-black text-center ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                    className={`text-black text-center ${index % 2 === 0 ? "bg-white" : "bg-gray-50"} ${
+                      isItemSelected(nhacungcap.idNhaCungCap)
+                        ? "bg-indigo-50"
+                        : ""
+                    }`}
                   >
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={isItemSelected(nhacungcap.idNhaCungCap)}
+                        onChange={() =>
+                          toggleSelectItem(nhacungcap.idNhaCungCap)
+                        }
+                        className="checkbox checkbox-sm bg-white"
+                      />
+                    </td>
                     <td className="px-3 py-3">{nhacungcap.idNhaCungCap}</td>
                     <td className="px-3 py-3">{nhacungcap.TenNhaCungCap}</td>
                     <td className="px-3 py-3">{nhacungcap.Sdt}</td>
@@ -173,7 +425,9 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
                         </button>
                         <button
                           type="button"
-                          onClick={() => onDelete(nhacungcap.idNhaCungCap)}
+                          onClick={() =>
+                            handleDeleteSingle(nhacungcap.idNhaCungCap)
+                          }
                           className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           ❌

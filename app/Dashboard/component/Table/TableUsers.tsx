@@ -24,7 +24,7 @@ interface Role {
 interface TableUserProps {
   onEdit: (user: User) => void;
   onDelete: (id: number) => void;
-  reloadKey: (id: number) => void;
+  reloadKey: number;
 }
 interface PaginationMeta {
   totalRecords: number;
@@ -48,6 +48,11 @@ const TableUser: React.FC<TableUserProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [localReloadKey, setLocalReloadKey] = useState(0);
+
+  // Add states for selection functionality
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     fetch("api/role")
@@ -79,8 +84,13 @@ const TableUser: React.FC<TableUserProps> = ({
       })
       .catch((error) => {
         console.error("Error:", error);
+        setLoading(false);
       });
-  }, [currentPage, pageSize, reloadKey, searchText]);
+
+    // Reset selection when data refreshes
+    setSelectedItems([]);
+    setSelectAll(false);
+  }, [currentPage, pageSize, reloadKey, searchText, localReloadKey]);
 
   const getRoleName = (idRole: number): string => {
     const role = roles.find((role) => role.idRole === idRole);
@@ -113,12 +123,184 @@ const TableUser: React.FC<TableUserProps> = ({
     setCurrentPage(1);
   };
 
+  // Handle item selection toggle
+  const toggleSelectItem = (idUser: number) => {
+    setSelectedItems((prevSelected) => {
+      if (prevSelected.includes(idUser)) {
+        return prevSelected.filter((id) => id !== idUser);
+      } else {
+        return [...prevSelected, idUser];
+      }
+    });
+  };
+
+  // Handle select all toggle
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(users.map((user) => user.idUsers));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // Check if an item is selected
+  const isItemSelected = (idUser: number) => {
+    return selectedItems.includes(idUser);
+  };
+
+  // Handle delete single user with confirmation
+  const handleDeleteSingle = (idUser: number) => {
+    const user = users.find((u) => u.idUsers === idUser);
+    const userName = user ? user.Hoten : `ID ${idUser}`;
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = `delete-single-user-${idUser}`;
+
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa người dùng "{userName}" không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                onDelete(idUser);
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId,
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
+  // Handle delete all selected users
+  const handleDeleteSelected = () => {
+    if (selectedItems.length === 0) {
+      toast.error("Không có người dùng nào được chọn để xóa");
+      return;
+    }
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = "delete-users-confirmation-toast";
+
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa {selectedItems.length} người dùng đã chọn
+            không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading(
+                    "Đang xóa người dùng..."
+                  );
+
+                  // Create an array of promises for each delete request
+                  const deletePromises = selectedItems.map((idUser) =>
+                    fetch(`api/users/${idUser}`, {
+                      method: "DELETE",
+                    }).then((res) => {
+                      if (!res.ok)
+                        throw new Error(
+                          `Failed to delete user with ID ${idUser}`
+                        );
+                      return res.json();
+                    })
+                  );
+
+                  // Wait for all delete operations to complete
+                  await Promise.all(deletePromises);
+
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+
+                  // Show the success toast
+                  toast.success(
+                    `Đã xóa ${selectedItems.length} người dùng thành công`
+                  );
+
+                  // Reset selections and trigger reload
+                  setSelectedItems([]);
+                  setSelectAll(false);
+                  setLocalReloadKey((prev) => prev + 1);
+                } catch (error) {
+                  console.error("Error deleting selected users:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa các người dùng đã chọn");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId,
+        duration: Infinity,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
         <div className="">
           <div className="inline-block min-w-full align-middle">
-            <div className="flex justify-between pb-5">
+            <div className="flex flex-wrap justify-between pb-5">
               <div className="mt-3 ml-10">
                 <label htmlFor="pageSize" className="text-sm">
                   Số mục mỗi trang:
@@ -135,7 +317,7 @@ const TableUser: React.FC<TableUserProps> = ({
                   <option value="50">50</option>
                 </select>
               </div>
-              <div className="flex items-center mr-10">
+              <div className="flex items-center gap-4 mr-10">
                 <input
                   type="text"
                   placeholder="Tìm kiếm..."
@@ -143,6 +325,19 @@ const TableUser: React.FC<TableUserProps> = ({
                   onChange={(e) => setSearchText(e.target.value)}
                   className="input input-bordered w-full max-w-xs"
                 />
+
+                {/* Add delete selected button */}
+                {selectedItems.length > 0 && (
+                  <button
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors flex items-center"
+                  >
+                    <span className="mr-1">Xóa</span>
+                    <span className="bg-white text-red-600 rounded-full px-2 py-0.5 text-xs font-bold">
+                      {selectedItems.length}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -151,7 +346,21 @@ const TableUser: React.FC<TableUserProps> = ({
                   <tr className="text-center">
                     <th
                       scope="col"
-                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+                      className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectAll}
+                          onChange={toggleSelectAll}
+                          className="checkbox checkbox-sm bg-white"
+                        />
+                        <span className="pl-1">All</span>
+                      </div>
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
                     >
                       ID
                     </th>
@@ -206,15 +415,40 @@ const TableUser: React.FC<TableUserProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {users.length === 0 ? (
+                  {loading ? (
                     <tr>
-                      <td colSpan={9} className="px-4 py-4 text-sm text-center">
+                      <td
+                        colSpan={10}
+                        className="px-4 py-4 text-sm text-center"
+                      >
+                        <span>Đang tải...</span>
+                      </td>
+                    </tr>
+                  ) : users.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        className="px-4 py-4 text-sm text-center"
+                      >
                         Không có dữ liệu người dùng
                       </td>
                     </tr>
                   ) : (
-                    users.map((user) => (
-                      <tr key={user.idUsers} className="hover:bg-gray-50">
+                    users.map((user, index) => (
+                      <tr
+                        key={user.idUsers}
+                        className={`hover:bg-gray-50 ${
+                          isItemSelected(user.idUsers) ? "bg-indigo-50" : ""
+                        } ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                      >
+                        <td className="px-4 py-4 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={isItemSelected(user.idUsers)}
+                            onChange={() => toggleSelectItem(user.idUsers)}
+                            className="checkbox checkbox-sm bg-white"
+                          />
+                        </td>
                         <td className="px-4 py-4 text-sm text-gray-900">
                           {user.idUsers}
                         </td>
@@ -256,7 +490,7 @@ const TableUser: React.FC<TableUserProps> = ({
                               🖊️
                             </button>
                             <button
-                              onClick={() => onDelete(user.idUsers)}
+                              onClick={() => handleDeleteSingle(user.idUsers)}
                               className="p-1 text-red-500 hover:text-red-700"
                             >
                               ❌
