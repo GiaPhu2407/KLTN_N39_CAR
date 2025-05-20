@@ -77,7 +77,7 @@ const CarItem = ({ car }: CarItemProps) => {
               </span>
             </p>
             <div className="card-actions flex flex-col sm:flex-row gap-2 sm:gap-4 w-full mt-2">
-            <button className="btn bg-[#1464F4] border-1  w-full sm:w-24 text-white text-sm">
+              <button className="btn bg-[#1464F4] border-1  w-full sm:w-24 text-white text-sm">
                 <Link href={`Deposit?id=${car.idXe}`}>Đặt Cọc</Link>
               </button>
               <Link
@@ -125,9 +125,7 @@ const SearchResults = () => {
 
   if (loading) {
     return (
-      <div
-        className="flex justify-center items-center h-screen"
-      >
+      <div className="flex justify-center items-center h-screen">
         <div className="loading loading-spinner text-blue-600 loading-lg"></div>
       </div>
     );
@@ -135,9 +133,7 @@ const SearchResults = () => {
 
   if (error) {
     return (
-      <div
-        className="flex justify-center items-center h-screen"
-      >
+      <div className="flex justify-center items-center h-screen">
         <div className="text-2xl font-bold text-red-600">{error}</div>
         <Link href="/" className="btn btn-primary ml-4">
           Quay về trang chủ
@@ -157,10 +153,8 @@ const SearchResults = () => {
   };
 
   return (
-    <div >
-      <div
-        className="px-4 sm:px-10 md:px-16 lg:px-24 py-8 md:py-16 lg:py-24" 
-      >
+    <div>
+      <div className="px-4 sm:px-10 md:px-16 lg:px-24 py-8 md:py-16 lg:py-24">
         <h1 className="text-2xl font-bold mb-6">Kết quả tìm kiếm</h1>
 
         {results.length === 0 ? (

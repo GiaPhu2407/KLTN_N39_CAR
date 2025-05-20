@@ -35,6 +35,22 @@ interface CarItemProps {
 const CarItem = ({ car, category }: CarItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  // Extract first image URL from the car's HinhAnh
+  // const getFirstImageUrl = () => {
+  //   try {
+  //     if (!car.HinhAnh) return "/placeholder-car.jpg"; // Fallback image
+
+  //     if (Array.isArray(car.HinhAnh)) {
+  //       return car.HinhAnh[0] || "/placeholder-car.jpg";
+  //     } else {
+  //       return car.HinhAnh.split("|")[0] || "/placeholder-car.jpg";
+  //     }
+  //   } catch (error) {
+  //     console.error("Error parsing image URL:", error);
+  //     return "/placeholder-car.jpg";
+  //   }
+  // };
+
   return (
     <li>
       <div
@@ -84,7 +100,7 @@ const CarItem = ({ car, category }: CarItemProps) => {
               </span>
             </p>
             <div className="card-actions flex flex-col sm:flex-row gap-2 sm:gap-4 w-full mt-2">
-              <button className="btn bg-[#1464F4] border-1  w-full sm:w-24 text-white text-sm">
+              <button className="btn bg-[#1464F4] border-1 w-full sm:w-24 text-white text-sm">
                 <Link href={`Deposit?id=${car.idXe}`}>Đặt Cọc</Link>
               </button>
               <Link

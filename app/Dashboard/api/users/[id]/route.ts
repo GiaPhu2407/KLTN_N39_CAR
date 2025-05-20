@@ -82,6 +82,10 @@ export async function DELETE(req: NextRequest, {params}: {params: {id: string}})
           message: "Xóa không thành công",
           error: error.toString()
       }, {status: 500});
+
+    
+    
+  
   }
 }
 export async function PUT(
