@@ -1,17 +1,28 @@
-import prisma from '@/prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+import prisma from "@/prisma/client";
+import { type NextRequest, NextResponse } from "next/server";
+import puppeteer from "puppeteer";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
+    // Get selected IDs from request body
+    const body = await req.json();
+    const { selectedIds = [] } = body;
+
+    // Create where clause if selectedIds is not empty
+    const where =
+      selectedIds.length > 0
+        ? { idNhaCungCap: { in: selectedIds } }
+        : undefined;
+
     // Lấy danh sách nhà cung cấp từ DB với thông tin xe
     const nhaCungCapList = await prisma.nhaCungCap.findMany({
-      include: { 
+      where,
+      include: {
         xe: {
           include: {
-            loaiXe: true
-          }
-        }
+            loaiXe: true,
+          },
+        },
       },
     });
 
@@ -45,7 +56,7 @@ export async function GET(req: NextRequest) {
           
           <h2 class="doc-title" style="text-align: center;">BÁO CÁO DANH SÁCH NHÀ CUNG CẤP</h2>
           
-          <p class="report-date">Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}</p>
+          <p class="report-date">Ngày xuất báo cáo: ${new Date().toLocaleDateString("vi-VN")}</p>
           
           <table>
             <thead>
@@ -64,23 +75,30 @@ export async function GET(req: NextRequest) {
                   (ncc, index) => `
                   <tr>
                     <td>${index + 1}</td>
-                    <td>${ncc.TenNhaCungCap || 'N/A'}</td>
-                    <td>${ncc.Sdt || 'N/A'}</td>
-                    <td>${ncc.Email || 'N/A'}</td>
+                    <td>${ncc.TenNhaCungCap || "N/A"}</td>
+                    <td>${ncc.Sdt || "N/A"}</td>
+                    <td>${ncc.Email || "N/A"}</td>
                     <td>${ncc.xe.length}</td>
-                    <td class="car-list">${ncc.xe.length > 0 ? 
-                      ncc.xe.map(xe => 
-                        `${xe.TenXe} (${xe.loaiXe?.TenLoai || 'N/A'})`
-                      ).join(', ') : 'Không có xe'}</td>
+                    <td class="car-list">${
+                      ncc.xe.length > 0
+                        ? ncc.xe
+                            .map(
+                              (xe) =>
+                                `${xe.TenXe} (${xe.loaiXe?.TenLoai || "N/A"})`
+                            )
+                            .join(", ")
+                        : "Không có xe"
+                    }</td>
                   </tr>`
                 )
-                .join('')}
+                .join("")}
             </tbody>
           </table>
           
           <div class="notes">
             <p><strong>Tổng số nhà cung cấp:</strong> ${nhaCungCapList.length}</p>
             <p><strong>Tổng số xe từ các nhà cung cấp:</strong> ${nhaCungCapList.reduce((total, ncc) => total + ncc.xe.length, 0)}</p>
+            ${selectedIds.length > 0 ? `<p><em>* Báo cáo này chỉ hiển thị ${selectedIds.length} nhà cung cấp đã được chọn</em></p>` : ""}
           </div>
           
           <div class="signature">
@@ -101,19 +119,19 @@ export async function GET(req: NextRequest) {
 
     // Khởi tạo Puppeteer & xuất PDF
     const browser = await puppeteer.launch({
-      headless: true
+      headless: true,
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent);
-    const pdfBuffer = await page.pdf({ 
-      format: 'A4',
+    const pdfBuffer = await page.pdf({
+      format: "A4",
       printBackground: true,
       margin: {
-        top: '20mm',
-        right: '20mm',
-        bottom: '20mm',
-        left: '20mm'
-      }
+        top: "20mm",
+        right: "20mm",
+        bottom: "20mm",
+        left: "20mm",
+      },
     });
 
     await browser.close();
@@ -121,13 +139,14 @@ export async function GET(req: NextRequest) {
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="bao-cao-nha-cung-cap.pdf"',
-        'Content-Length': pdfBuffer.length.toString()
-      }
+        "Content-Type": "application/pdf",
+        "Content-Disposition":
+          'attachment; filename="bao-cao-nha-cung-cap.pdf"',
+        "Content-Length": pdfBuffer.length.toString(),
+      },
     });
   } catch (error: any) {
-    console.error('❌ Lỗi tạo PDF:', error);
-    return NextResponse.json({ message: 'Lỗi tạo PDF' }, { status: 500 });
+    console.error("❌ Lỗi tạo PDF:", error);
+    return NextResponse.json({ message: "Lỗi tạo PDF" }, { status: 500 });
   }
 }

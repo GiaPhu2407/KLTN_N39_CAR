@@ -1,5 +1,5 @@
 import prisma from "@/prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import ExcelJS from "exceljs";
 import puppeteer from "puppeteer";
 import {
@@ -17,19 +17,32 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const format = searchParams.get("format") || "excel";
     const search = searchParams.get("search") || "";
+    const idsParam = searchParams.get("ids");
+
+    // Parse the IDs from the query parameter
+    const selectedIds = idsParam
+      ? idsParam.split(",").map((id) => Number.parseInt(id, 10))
+      : [];
+
+    // Build the where clause based on whether we have selected IDs
+    const whereClause = {
+      ...(selectedIds.length > 0 ? { idLoaiXe: { in: selectedIds } } : {}),
+      ...(search
+        ? {
+            OR: [
+              { TenLoai: { contains: search } },
+              { NhanHieu: { contains: search } },
+            ],
+          }
+        : {}),
+    };
 
     const vehicles = await prisma.loaiXe.findMany({
-      where: {
-        OR: [
-          { TenLoai: { contains: search } },
-          { NhanHieu: { contains: search } },
-        ],
-      },
+      where: whereClause,
       include: {
         _count: {
           select: {
             Xe: true,
-            // LichHen: true,
           },
         },
       },
@@ -40,12 +53,13 @@ export async function GET(req: NextRequest) {
       "Tên Loại": vehicle.TenLoai || "N/A",
       "Nhãn Hiệu": vehicle.NhanHieu || "N/A",
       "Hình Ảnh": vehicle.HinhAnh || "N/A",
-      // "Số Lượng Xe": vehicle._count.Xe,
-      // "Số Lịch Hẹn": vehicle._count.LichHen,
+      "Số Lượng Xe": vehicle._count.Xe,
     }));
 
     if (format === "pdf") {
-      const browser = await puppeteer.launch();
+      const browser = await puppeteer.launch({
+        headless: true,
+      });
       const page = await browser.newPage();
 
       const htmlContent = `
@@ -53,7 +67,7 @@ export async function GET(req: NextRequest) {
           <head>
             <style>
               body { font-family: Arial, sans-serif; margin: 20px; }
-              h1 { text-align: center; color: blue; }
+              h1 { text-align: center; color: #333; }
               table { width: 100%; border-collapse: collapse; margin-top: 20px; }
               th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
               th { background-color: #f4f4f4; }
@@ -68,7 +82,7 @@ export async function GET(req: NextRequest) {
                   <th>Tên Loại</th>
                   <th>Nhãn Hiệu</th>
                   <th>Hình Ảnh</th>
-                  
+                  <th>Số Lượng Xe</th>
                 </tr>
               </thead>
               <tbody>
@@ -80,7 +94,7 @@ export async function GET(req: NextRequest) {
                       <td>${vehicle["Tên Loại"]}</td>
                       <td>${vehicle["Nhãn Hiệu"]}</td>
                       <td>${vehicle["Hình Ảnh"]}</td>
-                      
+                      <td>${vehicle["Số Lượng Xe"]}</td>
                     </tr>`
                   )
                   .join("")}
@@ -90,13 +104,17 @@ export async function GET(req: NextRequest) {
         </html>
       `;
 
-      // <th>Số Lượng Xe</th>
-      // <th>Số Lịch Hẹn</th>
-      // <td>${vehicle["Số Lượng Xe"]}</td>
-      // <td>${vehicle["Số Lịch Hẹn"]}</td>
-
       await page.setContent(htmlContent);
-      const pdfBuffer = await page.pdf({ format: "A4" });
+      const pdfBuffer = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: {
+          top: "20mm",
+          right: "20mm",
+          bottom: "20mm",
+          left: "20mm",
+        },
+      });
 
       await browser.close();
 

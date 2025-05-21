@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import type React from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Upload, FileType, FileText } from "lucide-react";
-// import ImportExportComponent from "./ImportExportLoaiXe";
 
 interface LoaiXe {
   idLoaiXe: number;
@@ -39,6 +41,8 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
   const [searchText, setSearchText] = useState("");
   const [importing, setImporting] = useState(false);
   const [exportFormat, setExportFormat] = useState("excel");
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   const fetchData = () => {
     setLoading(true);
@@ -97,8 +101,15 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
   };
 
   const handleExport = async () => {
+    if (selectedItems.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một mục để xuất");
+      return;
+    }
+
     try {
-      const response = await fetch(`api/typecar/export?format=${exportFormat}`);
+      const response = await fetch(
+        `api/typecar/export?format=${exportFormat}&ids=${selectedItems.join(",")}`
+      );
 
       if (!response.ok) {
         throw new Error(response.statusText);
@@ -116,15 +127,22 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
       window.URL.revokeObjectURL(url);
       a.remove();
 
-      toast.success("Export successful");
+      toast.success(`Xuất ${selectedItems.length} mục thành công`);
     } catch (error: any) {
       toast.error(`Export failed: ${error.message}`);
     }
   };
 
   const handleReport = async () => {
+    if (selectedItems.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một mục để tạo báo cáo");
+      return;
+    }
+
     try {
-      const response = await fetch("api/typecar/report");
+      const response = await fetch(
+        `api/typecar/report?format=${exportFormat}&ids=${selectedItems.join(",")}`
+      );
 
       if (!response.ok) {
         throw new Error(response.statusText);
@@ -134,13 +152,16 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "LoaiXe-report.pdf";
+      const fileExtension = exportFormat === "excel" ? "xlsx" : exportFormat;
+      a.download = `LoaiXe-report.${fileExtension}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
 
-      toast.success("Report generated successfully");
+      toast.success(
+        `Báo cáo cho ${selectedItems.length} mục đã được tạo thành công`
+      );
     } catch (error: any) {
       toast.error(`Report generation failed: ${error.message}`);
     }
@@ -150,6 +171,12 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
     fetchData();
   }, [currentPage, pageSize, reloadKey, searchText]);
 
+  useEffect(() => {
+    // Reset selected items when data changes
+    setSelectedItems([]);
+    setSelectAll(false);
+  }, [isLoaiXeTable]);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -157,7 +184,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
   const handlePageSizeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const newSize = parseInt(event.target.value);
+    const newSize = Number.parseInt(event.target.value);
     setPageSize(newSize);
     setCurrentPage(1); // Reset to first page when changing page size
   };
@@ -170,8 +197,27 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
     onDelete(id);
   };
 
+  const toggleSelectItem = (id: number) => {
+    setSelectedItems((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(isLoaiXeTable.map((item) => item.idLoaiXe));
+    }
+    setSelectAll(!selectAll);
+  };
+
   return (
-    <div className=" w-full">
+    <div className="w-full">
       <div className="w-full">
         <div className="flex flex-col md:flex-row justify-between pb-5 gap-4">
           <div className="mt-6 ml-20">
@@ -191,7 +237,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
             </select>
           </div>
 
-          <div className=" flex flex-col md:flex-row items-center gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-4">
             <input
               type="text"
               placeholder="Tìm kiếm..."
@@ -224,6 +270,9 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                 >
                   <FileType className="h-6 w-5 mr-2" />
                   <span className="">Xuất</span>
+                  {selectedItems.length > 0 && (
+                    <span className="ml-1">({selectedItems.length})</span>
+                  )}
                 </button>
               </div>
               <select
@@ -242,6 +291,9 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                 <FileText className="h-6 w-5 mr-2 ml-2" />
                 <span className="text-xs">Tạo</span>
                 <span className="text-xs">Báo Cáo</span>
+                {selectedItems.length > 0 && (
+                  <span className="ml-1">({selectedItems.length})</span>
+                )}
               </button>
             </div>
           </div>
@@ -251,6 +303,16 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
           <table className="table text-center table-auto w-full min-w-[400px] ">
             <thead className="text-center">
               <tr className="bg-gray-50 text-white">
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={toggleSelectAll}
+                      className="form-checkbox h-4 w-4"
+                    />
+                  </div>
+                </th>
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   ID
                 </th>
@@ -271,19 +333,29 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-4 text-sm text-center">
+                  <td colSpan={6} className="px-3 py-4 text-sm text-center">
                     <span>Đang tải...</span>
                   </td>
                 </tr>
               ) : isLoaiXeTable.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-4 text-sm text-center">
+                  <td colSpan={6} className="px-3 py-4 text-sm text-center">
                     Không có dữ liệu loại xe
                   </td>
                 </tr>
               ) : (
                 isLoaiXeTable.map((loaixe) => (
                   <tr key={loaixe.idLoaiXe} className="text-black text-center">
+                    <td>
+                      <div className="flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(loaixe.idLoaiXe)}
+                          onChange={() => toggleSelectItem(loaixe.idLoaiXe)}
+                          className="form-checkbox h-4 w-4"
+                        />
+                      </div>
+                    </td>
                     <th>{loaixe.idLoaiXe}</th>
                     <td>{loaixe.TenLoai}</td>
                     <td>{loaixe.NhanHieu}</td>

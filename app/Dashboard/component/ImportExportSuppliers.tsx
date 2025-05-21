@@ -3,13 +3,18 @@ import { Upload, FileType, FileText } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 interface ImportExportProps {
-  onImportSuccess?: () => void; // New callback prop
+  onImportSuccess?: () => void;
+  selectedItems: number[]; // Array of selected supplier IDs
+  totalItems: number; // Total number of suppliers
 }
 
 const ImportExportComponent: React.FC<ImportExportProps> = ({
   onImportSuccess,
+  selectedItems,
+  totalItems,
 }) => {
   const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [exportFormat, setExportFormat] = useState("excel");
 
   const handleFileImport = async (
@@ -46,7 +51,7 @@ const ImportExportComponent: React.FC<ImportExportProps> = ({
 
       const result = await response.json();
 
-      // Xử lý định dạng phản hồi mới
+      // Xử lý định dạng phản hồi
       if (result.success) {
         const createdCount = result.created || 0;
         const updatedCount = result.updated || 0;
@@ -83,13 +88,32 @@ const ImportExportComponent: React.FC<ImportExportProps> = ({
   };
 
   const handleExport = async () => {
+    // Check if there are selected items or items to export
+    if (totalItems === 0) {
+      toast.error("Không có dữ liệu để xuất");
+      return;
+    }
+
     try {
-      const response = await fetch(
-        `api/suppliers/export?format=${exportFormat}`
-      );
+      setExporting(true);
+      const loadingToastId = toast.loading("Đang xuất dữ liệu...");
+
+      const response = await fetch(`api/suppliers/export`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          format: exportFormat,
+          selectedIds: selectedItems.length > 0 ? selectedItems : [], // Empty array means export all
+        }),
+      });
+
+      toast.dismiss(loadingToastId);
 
       if (!response.ok) {
-        throw new Error(response.statusText);
+        const errorData = await response.json();
+        throw new Error(errorData.error || response.statusText);
       }
 
       const blob = await response.blob();
@@ -104,39 +128,78 @@ const ImportExportComponent: React.FC<ImportExportProps> = ({
       window.URL.revokeObjectURL(url);
       a.remove();
 
-      toast.success("Xuất dữ liệu thành công");
+      const itemCount =
+        selectedItems.length > 0 ? selectedItems.length : totalItems;
+      const selectionText = selectedItems.length > 0 ? "đã chọn" : "tất cả";
+      toast.success(
+        `Đã xuất ${itemCount} nhà cung cấp ${selectionText} thành công`
+      );
     } catch (error: any) {
       toast.error(`Xuất dữ liệu thất bại: ${error.message}`);
+    } finally {
+      setExporting(false);
     }
   };
 
   const handleReport = async () => {
+    // Check if there are items to report on
+    if (totalItems === 0) {
+      toast.error("Không có dữ liệu để tạo báo cáo");
+      return;
+    }
+
     try {
-      const response = await fetch("api/suppliers/report");
+      const loadingToastId = toast.loading("Đang tạo báo cáo...");
+
+      const response = await fetch("api/suppliers/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          selectedIds: selectedItems.length > 0 ? selectedItems : [], // Empty array means report all
+        }),
+      });
+
+      toast.dismiss(loadingToastId);
 
       if (!response.ok) {
-        throw new Error(response.statusText);
+        const errorData = await response.json();
+        throw new Error(errorData.error || response.statusText);
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "bao-cao-xe.pdf";
+      a.download = "bao-cao-nha-cung-cap.pdf";
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
 
-      toast.success("Báo cáo đã được tạo thành công");
+      const itemCount =
+        selectedItems.length > 0 ? selectedItems.length : totalItems;
+      const selectionText = selectedItems.length > 0 ? "đã chọn" : "tất cả";
+      toast.success(
+        `Đã tạo báo cáo cho ${itemCount} nhà cung cấp ${selectionText} thành công`
+      );
     } catch (error: any) {
       toast.error(`Tạo báo cáo thất bại: ${error.message}`);
     }
   };
 
+  // Get export button text based on selection
+  const getExportButtonText = () => {
+    if (selectedItems.length > 0) {
+      return `Xuất (${selectedItems.length})`;
+    }
+    return "Xuất tất cả";
+  };
+
   return (
     <div className="p-4">
-      <div className="flex gap-6">
+      <div className="flex flex-wrap gap-4 items-center">
         {/* Phần Nhập */}
         <div>
           <label className="inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-accent cursor-pointer transition-colors">
@@ -159,15 +222,25 @@ const ImportExportComponent: React.FC<ImportExportProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={handleExport}
-              className="inline-flex items-center px-4 py-2 btn text-xs btn-primary transition-colors"
+              disabled={exporting || totalItems === 0}
+              className={`inline-flex items-center px-4 py-2 btn text-xs ${
+                selectedItems.length > 0 ? "btn-primary" : "btn-primary"
+              } transition-colors ${
+                exporting || totalItems === 0
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
             >
               <FileType className="h-6 w-5 mr-2" />
-              <span className="">Xuất</span>
+              <span className="">
+                {exporting ? "Đang xuất..." : getExportButtonText()}
+              </span>
             </button>
             <select
               value={exportFormat}
               onChange={(e) => setExportFormat(e.target.value)}
               className="px-3 py-2 h-10 border rounded bg-white text-xs"
+              disabled={exporting}
             >
               <option value="excel">Excel</option>
               <option value="pdf">PDF</option>
@@ -176,11 +249,19 @@ const ImportExportComponent: React.FC<ImportExportProps> = ({
 
             <button
               onClick={handleReport}
-              className="inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-success transition-colors"
+              disabled={totalItems === 0}
+              className={`inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-success transition-colors ${
+                totalItems === 0 ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               <FileText className="h-6 w-5 mr-2 ml-2" />
               <span className="text-xs">Tạo</span>
-              <span className="text-xs">Báo Cáo</span>
+              {selectedItems.length > 0 && (
+                <span className="ml-1 bg-white text-success-600 rounded-full px-2 py-0.5 text-xs font-bold">
+                  {selectedItems.length}
+                </span>
+              )}
+              <span className="text-xs ml-1">Báo Cáo</span>
             </button>
           </div>
         </div>

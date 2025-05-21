@@ -65,6 +65,10 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
 
+  // Selection states
+  const [selectedCars, setSelectedCars] = useState<number[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+
   useEffect(() => {
     setLoading(true);
     fetch(
@@ -82,6 +86,10 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
         setXeTable(sortedData);
         setPaginationMeta(data.meta);
         setLoading(false);
+
+        // Reset selections when data changes
+        setSelectedCars([]);
+        setSelectAll(false);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -182,6 +190,38 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
       : text;
   };
 
+  // Handle car selection
+  const toggleCarSelection = (idXe: number) => {
+    setSelectedCars((prevSelected) => {
+      if (prevSelected.includes(idXe)) {
+        return prevSelected.filter((id) => id !== idXe);
+      } else {
+        return [...prevSelected, idXe];
+      }
+    });
+  };
+
+  // Handle select all on current page
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedCars([]);
+    } else {
+      const currentPageIds = isXeTable.map((car) => car.idXe);
+      setSelectedCars(currentPageIds);
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // Effect to update selectAll state when selections change
+  useEffect(() => {
+    // If all cars on the current page are selected
+    if (isXeTable.length > 0 && selectedCars.length === isXeTable.length) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedCars, isXeTable]);
+
   return (
     <div className="w-full overflow-x-auto pt-2 p-10">
       <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
@@ -212,7 +252,11 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
             onChange={(e) => setSearchText(e.target.value)}
             className="input border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <ImportExportCar />
+          <ImportExportCar
+            selectedCars={selectedCars}
+            setSelectedCars={setSelectedCars}
+            allCars={isXeTable}
+          />
         </div>
       </div>
 
@@ -222,6 +266,19 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
           <table className="table text-center table-auto w-full min-w-[400px]">
             <thead className="bg-gray-50">
               <tr className="text-white text-center">
+                <th
+                  scope="col"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10"
+                >
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={toggleSelectAll}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </div>
+                </th>
                 <th
                   scope="col"
                   className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
@@ -305,13 +362,13 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={13} className="p-4 text-sm text-center">
+                  <td colSpan={14} className="p-4 text-sm text-center">
                     <span className="text-gray-500">Đang tải...</span>
                   </td>
                 </tr>
               ) : !isXeTable || isXeTable.length === 0 ? (
                 <tr>
-                  <td colSpan={13} className="p-4 text-sm text-center">
+                  <td colSpan={14} className="p-4 text-sm text-center">
                     <span className="text-gray-500">Không có dữ liệu xe</span>
                   </td>
                 </tr>
@@ -321,8 +378,16 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                     key={xetable.idXe}
                     className={`text-gray-800 hover:bg-gray-50 ${
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    }`}
+                    } ${selectedCars.includes(xetable.idXe) ? "bg-blue-50" : ""}`}
                   >
+                    <td className="p-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={selectedCars.includes(xetable.idXe)}
+                        onChange={() => toggleCarSelection(xetable.idXe)}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </td>
                     <td className="p-3 text-sm font-medium truncate">
                       {xetable.idXe}
                     </td>
@@ -399,6 +464,22 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Selection info */}
+      {selectedCars.length > 0 && (
+        <div className="mt-4 p-2 bg-blue-50 rounded-lg border border-blue-100 text-sm flex justify-between items-center">
+          <div>
+            <span className="font-medium">{selectedCars.length}</span> xe đã
+            được chọn
+          </div>
+          <button
+            onClick={() => setSelectedCars([])}
+            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+          >
+            Bỏ chọn tất cả
+          </button>
+        </div>
+      )}
 
       {/* Pagination */}
       {paginationMeta && (

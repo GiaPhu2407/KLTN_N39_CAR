@@ -298,6 +298,9 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
     );
   };
 
+  // Total number of items for export functionality
+  const totalItems = paginationMeta?.totalRecords || 0;
+
   return (
     <div className="flex flex-col w-full">
       <div className="w-full">
@@ -328,7 +331,11 @@ const TableSuppliesManager: React.FC<TableSuppliesManagerProps> = ({
               className="input input-bordered h-10 text-sm w-full md:w-72 max-w-xs"
             />
 
-            <ImportExportSuppliers onImportSuccess={handleImportSuccess} />
+            <ImportExportSuppliers
+              onImportSuccess={handleImportSuccess}
+              selectedItems={selectedItems}
+              totalItems={totalItems}
+            />
 
             {/* Add delete selected button */}
             {selectedItems.length > 0 && (
