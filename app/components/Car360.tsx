@@ -128,7 +128,7 @@ const CarViewerPage: React.FC = () => {
   };
 
   return (
-    <div className="flex mt-14 px-20 flex-col min-h-screen">
+    <div className="flex mt-7 flex-col min-h-screen">
       <div className='w-full h-full '>
         <p className='font-bold text-3xl text-center'>VinFast VF 3 - Thỏa sức sáng tạo, tỏa sáng phong cách riêng!</p>
         <p className='px-32'>

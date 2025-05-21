@@ -12,7 +12,7 @@ const TechnicalSpecs = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-blue-100 rounded-lg shadow-sm mb-20 ">
+    <div className="max-w-7xl mx-auto p-6 bg-blue-100 rounded-lg shadow-sm  ">
       <h2 className="text-3xl font-medium text-gray-700 mb-6">Thông số kỹ thuật</h2>
       
       <div className="border-t border-gray-200">
