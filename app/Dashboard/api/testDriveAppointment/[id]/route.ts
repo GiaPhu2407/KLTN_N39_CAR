@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createNotification } from "@/lib/create-notification";
 
 export async function GET(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -81,15 +81,15 @@ export async function DELETE(
       where: { idLichHen: parseInt(id) },
     });
 
-    // Tạo thông báo cho nhân viên
-    const staffMembers = await prisma.users.findMany({
-      where: { idRole: 2 }, // Role nhân viên
+    // Tạo thông báo cho admin
+    const Admin = await prisma.users.findMany({
+      where: { idRole: 2 }, // Role Admin
     });
 
     await Promise.all(
-      staffMembers.map((staff) =>
+      Admin.map((admin) =>
         createNotification({
-          userId: staff.idUsers,
+          userId: admin.idUsers,
           type: "appointment_delete",
           message: `Lịch hẹn đã hủy: ${customerName} - ${carName} - ${formattedDate}`,
         })

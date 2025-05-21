@@ -1,11 +1,23 @@
-import React, { useState, useContext } from "react";
-import { Upload, FileType, FileText } from "lucide-react";
+import React, { useState, useContext, useEffect } from "react";
+import { Upload, FileType, FileText, Check } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { CarDataContext } from "./CarDataContext";
 
-const ImportExportComponent = () => {
+interface ImportExportComponentProps {
+  selectedCars: any; // Replace 'Car' with your actual car type
+  setSelectedCars: any; // Proper typing for a state setter
+  allCars: any;
+}
+
+// Use the interface to type your component
+const ImportExportComponent: React.FC<ImportExportComponentProps> = ({
+  selectedCars,
+  setSelectedCars,
+  allCars,
+}) => {
   const [importing, setImporting] = useState(false);
   const [exportFormat, setExportFormat] = useState("excel");
+  const [exportLoading, setExportLoading] = useState(false);
   const { refreshData } = useContext(CarDataContext);
 
   const handleFileImport = async (
@@ -84,30 +96,79 @@ const ImportExportComponent = () => {
   };
 
   const handleExport = async () => {
+    if (selectedCars.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một xe để xuất");
+      return;
+    }
+
     try {
-      const response = await fetch(`api/car/export?format=${exportFormat}`);
+      setExportLoading(true);
+
+      // Send the IDs of selected cars to the export API
+      const response = await fetch(`api/car/export`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          format: exportFormat,
+          carIds: selectedCars,
+        }),
+      });
+
       if (!response.ok) throw new Error(response.statusText);
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const fileExtension = exportFormat === "excel" ? "xlsx" : exportFormat;
-      a.download = `cars.${fileExtension}`;
+
+      let filename;
+      switch (exportFormat) {
+        case "excel":
+          filename = "danh-sach-xe.xlsx";
+          break;
+        case "pdf":
+          filename = "danh-sach-xe.pdf";
+          break;
+        case "doc":
+          filename = "danh-sach-xe.docx";
+          break;
+        default:
+          filename = "danh-sach-xe.xlsx";
+      }
+
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
 
-      toast.success("Xuất dữ liệu thành công");
+      toast.success(`Xuất ${selectedCars.length} xe thành công`);
     } catch (error: any) {
       toast.error(`Xuất dữ liệu thất bại: ${error.message}`);
+    } finally {
+      setExportLoading(false);
     }
   };
 
   const handleReport = async () => {
+    if (selectedCars.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một xe để tạo báo cáo");
+      return;
+    }
+
     try {
-      const response = await fetch("api/car/report");
+      const response = await fetch("api/car/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          carIds: selectedCars,
+        }),
+      });
+
       if (!response.ok) throw new Error(response.statusText);
 
       const blob = await response.blob();
@@ -120,7 +181,9 @@ const ImportExportComponent = () => {
       window.URL.revokeObjectURL(url);
       a.remove();
 
-      toast.success("Báo cáo đã được tạo thành công");
+      toast.success(
+        `Báo cáo cho ${selectedCars.length} xe đã được tạo thành công`
+      );
     } catch (error: any) {
       toast.error(`Tạo báo cáo thất bại: ${error.message}`);
     }
@@ -128,9 +191,9 @@ const ImportExportComponent = () => {
 
   return (
     <div className="p-4">
-      <div className="flex gap-6">
+      <div className="flex gap-6 items-center flex-wrap">
         <div>
-          <label className="inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-accent cursor-pointer transition-colors">
+          <label className="inline-flex items-center px-3 py-2 rounded bg-blue-500 text-white text-xs cursor-pointer hover:bg-blue-600 transition-colors">
             <input
               type="file"
               className="hidden"
@@ -138,26 +201,32 @@ const ImportExportComponent = () => {
               onChange={handleFileImport}
               disabled={importing}
             />
-            <Upload className="h-5 w-5 mr-2 ml-2" />
-            <span className="justify-center text-xs">
-              {importing ? "Đang nhập..." : "Nhập File"}
-            </span>
+            <Upload className="h-4 w-4 mr-2" />
+            <span>{importing ? "Đang nhập..." : "Nhập File"}</span>
           </label>
         </div>
 
-        <div>
-          <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={handleExport}
-              className="inline-flex items-center px-4 py-2 btn text-xs btn-primary transition-colors"
+              disabled={exportLoading || selectedCars.length === 0}
+              className={`inline-flex items-center px-3 py-2 rounded text-white text-xs 
+                ${selectedCars.length === 0 ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"} 
+                transition-colors`}
             >
-              <FileType className="h-6 w-5 mr-2" />
-              <span className="">Xuất</span>
+              <FileType className="h-4 w-4 mr-2" />
+              <span>
+                {exportLoading
+                  ? "Đang xuất..."
+                  : `Xuất (${selectedCars.length})`}
+              </span>
             </button>
+
             <select
               value={exportFormat}
               onChange={(e) => setExportFormat(e.target.value)}
-              className="px-3 py-2 h-10 border rounded bg-white text-xs"
+              className="px-3 py-2 h-9 border rounded bg-white text-xs"
             >
               <option value="excel">Excel</option>
               <option value="pdf">PDF</option>
@@ -166,12 +235,28 @@ const ImportExportComponent = () => {
 
             <button
               onClick={handleReport}
-              className="inline-flex items-center px-1 py-1 pr-5 btn text-xs btn-success transition-colors"
+              disabled={selectedCars.length === 0}
+              className={`inline-flex items-center px-3 py-2 rounded text-white text-xs 
+                ${selectedCars.length === 0 ? "bg-gray-400" : "bg-orange-500 hover:bg-orange-600"} 
+                transition-colors`}
             >
-              <FileText className="h-6 w-5 mr-2 ml-2" />
-              <span className="text-xs">Tạo</span>
-              <span className="text-xs">Báo Cáo</span>
+              <FileText className="h-4 w-4 mr-2" />
+              <span>Báo Cáo</span>
             </button>
+
+            <div className="flex items-center ml-4">
+              <span className="text-xs text-gray-700 mr-2">
+                Đã chọn: {selectedCars.length}
+              </span>
+              {selectedCars.length > 0 && (
+                <button
+                  onClick={() => setSelectedCars([])}
+                  className="text-xs text-red-500 hover:text-red-700"
+                >
+                  Bỏ chọn tất cả
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

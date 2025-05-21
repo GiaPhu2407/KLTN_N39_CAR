@@ -1,18 +1,16 @@
 import prisma from "@/prisma/client";
-import { NextRequest, NextResponse } from 'next/server';
-import ExcelJS from 'exceljs';
-import puppeteer from 'puppeteer';
-import { 
-  Document, 
-  Packer, 
-  Paragraph, 
-  Table, 
-  TableRow, 
-  TableCell, 
+import { type NextRequest, NextResponse } from "next/server";
+import ExcelJS from "exceljs";
+import puppeteer from "puppeteer";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  Table,
+  TableRow,
+  TableCell,
   TextRun,
-  HeadingLevel,
   BorderStyle,
-  TableBorders,
   WidthType,
   AlignmentType,
   Header,
@@ -20,50 +18,146 @@ import {
   PageOrientation,
   PageNumber,
   ShadingType,
-  HeightRule
-} from 'docx';
+  HeightRule,
+} from "docx";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const format = searchParams.get('format') || 'excel';
-    const search = searchParams.get('search') || '';
+    // Parse the request body to get the format, selected car IDs, and fields
+    const { format, carIds, fields } = await req.json();
 
+    // If no car IDs are provided, return an error
+    if (!carIds || carIds.length === 0) {
+      return NextResponse.json(
+        { error: "No cars selected for export" },
+        { status: 400 }
+      );
+    }
+
+    // Query the database for only the selected cars
     const cars = await prisma.xe.findMany({
       where: {
-        OR: [
-          { TenXe: { contains: search } },
-          { MauSac: { contains: search } },
-          { DongCo: { contains: search } }
-        ]
+        idXe: { in: carIds },
       },
       include: {
         loaiXe: true,
-        nhaCungCap:true
-      }  
+        nhaCungCap: true,
+      },
     });
 
-    const exportData = cars.map(car => ({
-      'ID': car.idXe,
-      'Tên Xe': car.TenXe,
-      'Loại Xe': car.loaiXe?.TenLoai || 'N/A',
-      'Giá Xe': new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(Number(car.GiaXe)),
-      'Màu Sắc': car.MauSac,
-      'Động Cơ': car.DongCo,
-      'Trạng Thái': car.TrangThai,
-      'Nhà Cung Cấp': car.nhaCungCap?.TenNhaCungCap || 'N/A',
-      'Thông Số Kỹ Thuật': car.ThongSoKyThuat,
-      'Mô Tả': car.MoTa,
-      'Hình Ảnh': car.HinhAnh,
-      'Năm Sản Xuất': car.NamSanXuat
-    }));
+    // If no cars were found with the provided IDs
+    if (cars.length === 0) {
+      return NextResponse.json(
+        { error: "No cars found with the provided IDs" },
+        { status: 404 }
+      );
+    }
 
-    if (format === 'pdf') {
+    // Parse the fields parameter to determine which fields to include
+    const fieldsToInclude = fields
+      ? fields.split(",")
+      : [
+          "TenXe",
+          "LoaiXe",
+          "GiaXe",
+          "MauSac",
+          "DongCo",
+          "TrangThai",
+          "NhaCungCap",
+          "ThongSoKyThuat",
+          "MoTa",
+          "NamSanXuat",
+        ];
+
+    // Create a mapping of field IDs to display names
+    const fieldDisplayNames: Record<string, string> = {
+      TenXe: "Tên Xe",
+      LoaiXe: "Loại Xe",
+      GiaXe: "Giá Xe",
+      MauSac: "Màu Sắc",
+      DongCo: "Động Cơ",
+      TrangThai: "Trạng Thái",
+      NhaCungCap: "Nhà Cung Cấp",
+      ThongSoKyThuat: "Thông Số KT",
+      MoTa: "Mô Tả",
+      NamSanXuat: "Năm SX",
+    };
+
+    // Create export data with only the selected fields
+    const exportData = cars.map((car) => {
+      const carData: Record<string, any> = { ID: car.idXe };
+
+      fieldsToInclude.forEach((field: any) => {
+        switch (field) {
+          case "TenXe":
+            carData["Tên Xe"] = car.TenXe;
+            break;
+          case "LoaiXe":
+            carData["Loại Xe"] = car.loaiXe?.TenLoai || "N/A";
+            break;
+          case "GiaXe":
+            carData["Giá Xe"] = new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(Number(car.GiaXe));
+            break;
+          case "MauSac":
+            carData["Màu Sắc"] = car.MauSac;
+            break;
+          case "DongCo":
+            carData["Động Cơ"] = car.DongCo;
+            break;
+          case "TrangThai":
+            carData["Trạng Thái"] = car.TrangThai;
+            break;
+          case "NhaCungCap":
+            carData["Nhà Cung Cấp"] = car.nhaCungCap?.TenNhaCungCap || "N/A";
+            break;
+          case "ThongSoKyThuat":
+            carData["Thông Số KT"] = car.ThongSoKyThuat;
+            break;
+          case "MoTa":
+            carData["Mô Tả"] = car.MoTa;
+            break;
+          case "NamSanXuat":
+            carData["Năm Sản Xuất"] = car.NamSanXuat;
+            break;
+        }
+      });
+
+      return carData;
+    });
+
+    if (format === "pdf") {
       const browser = await puppeteer.launch();
       const page = await browser.newPage();
+
+      // Create table headers based on selected fields
+      const tableHeaders = fieldsToInclude
+        .map(
+          (field: string | number) =>
+            `<th>${fieldDisplayNames[field] || field}</th>`
+        )
+        .join("");
+
+      // Create table rows based on selected fields
+      const tableRows = exportData
+        .map((car, index) => {
+          const cells = fieldsToInclude
+            .map((field: string | number) => {
+              const displayName = fieldDisplayNames[field] || field;
+              return `<td>${car[displayName] || "N/A"}</td>`;
+            })
+            .join("");
+
+          return `
+          <tr>
+            <td>${index + 1}</td>
+            ${cells}
+          </tr>
+        `;
+        })
+        .join("");
 
       const htmlContent = `
         <html>
@@ -82,34 +176,11 @@ export async function GET(req: NextRequest) {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Tên Xe</th>
-                  <th>Loại Xe</th>
-                  <th>Giá Xe</th>
-                  <th>Màu Sắc</th>
-                  <th>Động Cơ</th>
-                  <th>Trạng Thái</th>
-                  <th>Năm SX</th>
+                  ${tableHeaders}
                 </tr>
               </thead>
               <tbody>
-                ${exportData
-                  .map(
-                    (car, index) => `
-                    <tr>
-                      <td>${index + 1}</td>
-                      <td>${car["Tên Xe"]}</td>
-                      <td>${car["Loại Xe"]}</td>
-                      <td>${car["Giá Xe"]}</td>
-                      <td>${car["Màu Sắc"]}</td>
-                      <td>${car["Động Cơ"]}</td>
-                      <td>${car["Trạng Thái"]}</td>
-                      <td>${car["Nhà Cung Cấp"]}</td>
-                      <td>${car["Thông Số Kỹ Thuật"]}</td>
-                      <td>${car["Mô Tả"]}</td>
-                      <td>${car["Năm Sản Xuất"]}</td>
-                    </tr>`
-                  )
-                  .join('')}
+                ${tableRows}
               </tbody>
             </table>
           </body>
@@ -117,115 +188,192 @@ export async function GET(req: NextRequest) {
       `;
 
       await page.setContent(htmlContent);
-      const pdfBuffer = await page.pdf({ format: 'A4' });
+      const pdfBuffer = await page.pdf({ format: "A4" });
 
       await browser.close();
 
       return new NextResponse(pdfBuffer, {
         status: 200,
         headers: {
-          'Content-Type': 'application/pdf',
-          'Content-Disposition': 'attachment; filename="cars.pdf"'
-        }
+          "Content-Type": "application/pdf",
+          "Content-Disposition": 'attachment; filename="cars.pdf"',
+        },
       });
     }
 
-    if (format === 'excel') {
+    if (format === "excel") {
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Cars');
+      const worksheet = workbook.addWorksheet("Cars");
 
-      const headers = Object.keys(exportData[0]);
+      // Add headers based on selected fields
+      const headers = [
+        "ID",
+        ...fieldsToInclude.map(
+          (field: string | number) => fieldDisplayNames[field] || field
+        ),
+      ];
       worksheet.addRow(headers);
 
       const headerRow = worksheet.getRow(1);
       headerRow.font = { bold: true };
       headerRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFE0E0E0" },
       };
 
-      exportData.forEach(car => {
-        worksheet.addRow(Object.values(car));
+      // Add data rows
+      exportData.forEach((car) => {
+        const rowData = [car.ID];
+        fieldsToInclude.forEach((field: string | number) => {
+          const displayName = fieldDisplayNames[field] || field;
+          rowData.push(car[displayName] || "N/A");
+        });
+        worksheet.addRow(rowData);
       });
 
-      worksheet.columns.forEach(column => {
+      worksheet.columns.forEach((column) => {
         column.width = 20;
-        column.alignment = { vertical: 'middle', horizontal: 'left' };
+        column.alignment = { vertical: "middle", horizontal: "left" };
       });
 
       const buffer = await workbook.xlsx.writeBuffer();
-      
+
       return new NextResponse(buffer, {
         headers: {
-          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'Content-Disposition': 'attachment; filename="cars.xlsx"'
-        }
+          "Content-Type":
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "Content-Disposition": 'attachment; filename="cars.xlsx"',
+        },
       });
     }
 
-    if (format === 'doc') {
+    if (format === "doc") {
       // Tạo border và style cho bảng
       const tableBorders = {
         top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
         bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
         left: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
         right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-        insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-        insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "000000" }
+        insideHorizontal: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: "000000",
+        },
+        insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
       };
 
-      // Tạo header row với style - đã sửa lỗi height property
+      // Create header cells based on selected fields
+      const headerCells = fieldsToInclude.map((field: any) => {
+        const displayName =
+          fieldDisplayNames[field as keyof typeof fieldDisplayNames] ||
+          String(field);
+        return new TableCell({
+          shading: {
+            fill: "3366CC",
+            color: "3366CC",
+            type: ShadingType.CLEAR,
+          },
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: displayName,
+                  bold: true,
+                  color: "FFFFFF",
+                  size: 24,
+                }),
+              ],
+            }),
+          ],
+          verticalAlign: AlignmentType.CENTER,
+        });
+      });
+
+      // Add ID column at the beginning
       const headerRow = new TableRow({
         tableHeader: true,
         height: { value: 400, rule: HeightRule.EXACT },
-        children: Object.keys(exportData[0]).map(header => 
+        children: [
           new TableCell({
             shading: {
               fill: "3366CC",
               color: "3366CC",
-              type: ShadingType.CLEAR
+              type: ShadingType.CLEAR,
             },
-            children: [new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [new TextRun({ 
-                text: header, 
-                bold: true,
-                color: "FFFFFF",
-                size: 24
-              })]
-            })],
-            verticalAlign: AlignmentType.CENTER
-          })
-        )
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({
+                    text: "ID",
+                    bold: true,
+                    color: "FFFFFF",
+                    size: 24,
+                  }),
+                ],
+              }),
+            ],
+            verticalAlign: AlignmentType.CENTER,
+          }),
+          ...headerCells,
+        ],
       });
 
-      // Tạo data rows - đã sửa lỗi height property và shading
-      const dataRows = exportData.map((car, index) => 
-        new TableRow({
-          height: { value: 300, rule: HeightRule.ATLEAST },
-          children: Object.entries(car).map(([key, value]) => {
-            // Căn phải cho các ô có giá trị số
-            const isNumeric = key === 'Giá Xe' || key === 'ID';
-            
-            return new TableCell({
-              shading: index % 2 === 0 ? {
-                fill: "F2F2F2",
-                color: "F2F2F2",
-                type: ShadingType.CLEAR
-              } : undefined,
-              children: [new Paragraph({
+      // Create data rows
+      const dataRows = exportData.map((car, index) => {
+        const dataCells = fieldsToInclude.map((field: string) => {
+          const displayName = fieldDisplayNames[field] || field;
+          const value = car[displayName] || "N/A";
+          const isNumeric = field === "GiaXe";
+
+          return new TableCell({
+            shading:
+              index % 2 === 0
+                ? { fill: "F2F2F2", color: "F2F2F2", type: ShadingType.CLEAR }
+                : undefined,
+            children: [
+              new Paragraph({
                 alignment: isNumeric ? AlignmentType.RIGHT : AlignmentType.LEFT,
-                children: [new TextRun({ 
-                  text: String(value),
-                  size: 22
-                })]
-              })],
-              verticalAlign: AlignmentType.CENTER
-            });
-          })
-        })
-      );
+                children: [
+                  new TextRun({
+                    text: String(value),
+                    size: 22,
+                  }),
+                ],
+              }),
+            ],
+            verticalAlign: AlignmentType.CENTER,
+          });
+        });
+
+        return new TableRow({
+          height: { value: 300, rule: HeightRule.ATLEAST },
+          children: [
+            // ID cell
+            new TableCell({
+              shading:
+                index % 2 === 0
+                  ? { fill: "F2F2F2", color: "F2F2F2", type: ShadingType.CLEAR }
+                  : undefined,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.RIGHT,
+                  children: [
+                    new TextRun({
+                      text: String(car.ID),
+                      size: 22,
+                    }),
+                  ],
+                }),
+              ],
+              verticalAlign: AlignmentType.CENTER,
+            }),
+            ...dataCells,
+          ],
+        });
+      });
 
       // Tạo tài liệu với header, footer và các cài đặt trang
       const doc = new Document({
@@ -239,142 +387,139 @@ export async function GET(req: NextRequest) {
               run: {
                 size: 36,
                 bold: true,
-                color: "2E74B5"
+                color: "2E74B5",
               },
               paragraph: {
                 spacing: {
-                  after: 200
+                  after: 200,
                 },
-                alignment: AlignmentType.CENTER
-              }
-            }
-          ]
+                alignment: AlignmentType.CENTER,
+              },
+            },
+          ],
         },
-        sections: [{
-          properties: {
-            page: {
-              size: {
-                orientation: PageOrientation.LANDSCAPE
+        sections: [
+          {
+            properties: {
+              page: {
+                size: {
+                  orientation: PageOrientation.LANDSCAPE,
+                },
+                margin: {
+                  top: 1000,
+                  right: 1000,
+                  bottom: 1000,
+                  left: 1000,
+                },
               },
-              margin: {
-                top: 1000,
-                right: 1000,
-                bottom: 1000,
-                left: 1000
-              }
-            }
+            },
+            headers: {
+              default: new Header({
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [
+                      new TextRun({
+                        text: "Danh Sách Xe Ô Tô",
+                        bold: true,
+                        size: 20,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            },
+            footers: {
+              default: new Footer({
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun("Trang "),
+                      new TextRun({
+                        children: [PageNumber.CURRENT],
+                      }),
+                      new TextRun(" / "),
+                      new TextRun({
+                        children: [PageNumber.TOTAL_PAGES],
+                      }),
+                    ],
+                  }),
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: `Xuất ngày: ${new Date().toLocaleDateString("vi-VN")}`,
+                        size: 18,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            },
+            children: [
+              new Paragraph({
+                style: "title",
+                children: [
+                  new TextRun({
+                    text: "DANH SÁCH XE Ô TÔ",
+                    bold: true,
+                    size: 40,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: {
+                  after: 400,
+                },
+                children: [
+                  new TextRun({
+                    text: `Tổng số: ${exportData.length} xe`,
+                    italics: true,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Table({
+                width: {
+                  size: 100,
+                  type: WidthType.PERCENTAGE,
+                },
+                borders: tableBorders,
+                rows: [headerRow, ...dataRows],
+              }),
+              new Paragraph({
+                spacing: {
+                  before: 400,
+                },
+                children: [
+                  new TextRun({
+                    text: "* Lưu ý: Document này được tạo tự động bởi hệ thống.",
+                    italics: true,
+                    size: 20,
+                  }),
+                ],
+              }),
+            ],
           },
-          headers: {
-            default: new Header({
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.RIGHT,
-                  children: [
-                    new TextRun({
-                      text: "Danh Sách Xe Ô Tô",
-                      bold: true,
-                      size: 20
-                    })
-                  ]
-                })
-              ]
-            })
-          },
-          footers: {
-            default: new Footer({
-              children: [
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [
-                    new TextRun("Trang "),
-                    new TextRun({
-                      children: [PageNumber.CURRENT]
-                    }),
-                    new TextRun(" / "),
-                    new TextRun({
-                      children: [PageNumber.TOTAL_PAGES]
-                    })
-                  ]
-                }),
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  children: [
-                    new TextRun({
-                      text: `Xuất ngày: ${new Date().toLocaleDateString('vi-VN')}`,
-                      size: 18
-                    })
-                  ]
-                })
-              ]
-            })
-          },
-          children: [
-            new Paragraph({
-              style: "title",
-              children: [
-                new TextRun({
-                  text: "DANH SÁCH XE Ô TÔ",
-                  bold: true,
-                  size: 40
-                })
-              ]
-            }),
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: {
-                after: 400
-              },
-              children: [
-                new TextRun({
-                  text: `Tổng số: ${exportData.length} xe`,
-                  italics: true,
-                  size: 24
-                })
-              ]
-            }),
-            new Table({
-              width: {
-                size: 100,
-                type: WidthType.PERCENTAGE
-              },
-              borders: tableBorders,
-              rows: [headerRow, ...dataRows]
-            }),
-            new Paragraph({
-              spacing: {
-                before: 400
-              },
-              children: [
-                new TextRun({
-                  text: "* Lưu ý: Document này được tạo tự động bởi hệ thống.",
-                  italics: true,
-                  size: 20
-                })
-              ]
-            })
-          ]
-        }]
+        ],
       });
 
       const buffer = await Packer.toBuffer(doc);
 
       return new NextResponse(buffer, {
         headers: {
-          'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'Content-Disposition': 'attachment; filename="danh-sach-xe.docx"'
-        }
+          "Content-Type":
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "Content-Disposition": 'attachment; filename="danh-sach-xe.docx"',
+        },
       });
     }
-    return NextResponse.json(
-      { error: 'Unsupported format' },
-      { status: 400 }
-    );
 
+    return NextResponse.json({ error: "Unsupported format" }, { status: 400 });
   } catch (error: any) {
-    console.error('Export error:', error);
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    console.error("Export error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

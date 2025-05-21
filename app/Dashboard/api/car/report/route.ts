@@ -1,18 +1,57 @@
-import prisma from '@/prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+import prisma from "@/prisma/client";
+import { type NextRequest, NextResponse } from "next/server";
+import puppeteer from "puppeteer";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    // Lấy danh sách xe từ DB với thông tin loại xe và nhà cung cấp
+    // Get car IDs from request body
+    const { carIds } = await req.json();
+
+    if (!carIds || carIds.length === 0) {
+      return NextResponse.json(
+        { error: "No cars selected for report" },
+        { status: 400 }
+      );
+    }
+
+    // Get only selected cars from DB with car type and supplier info
     const xeList = await prisma.xe.findMany({
-      include: { 
-        loaiXe: true, 
-        nhaCungCap: true
+      where: {
+        idXe: {
+          in: carIds,
+        },
+      },
+      include: {
+        loaiXe: true,
+        nhaCungCap: true,
       },
     });
 
-    // Tạo HTML bảng báo cáo với header CHXHCNVN
+    if (xeList.length === 0) {
+      return NextResponse.json(
+        { error: "No cars found with the provided IDs" },
+        { status: 404 }
+      );
+    }
+
+    // Define all available fields with their display names
+    const allFields = {
+      TenXe: "Tên Xe",
+      LoaiXe: "Loại Xe",
+      NhaCungCap: "Nhà Cung Cấp",
+      GiaXe: "Giá Xe",
+      MauSac: "Màu Sắc",
+      DongCo: "Động Cơ",
+      TrangThai: "Trạng Thái",
+      ThongSoKyThuat: "Thông Số KT",
+      MoTa: "Mô Tả",
+      NamSanXuat: "Năm SX",
+    };
+
+    // Use all fields for the report
+    const fieldsToShow = Object.keys(allFields);
+
+    // Create HTML report table with CHXHCNVN header
     const htmlContent = `
       <html>
         <head>
@@ -41,22 +80,13 @@ export async function GET(req: NextRequest) {
           
           <h2 class="doc-title" style="text-align: center;">BÁO CÁO DANH SÁCH XE Ô TÔ</h2>
           
-          <p class="report-date">Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}</p>
+          <p class="report-date">Ngày xuất báo cáo: ${new Date().toLocaleDateString("vi-VN")}</p>
           
           <table>
             <thead>
               <tr>
                 <th>STT</th>
-                <th>Tên Xe</th>
-                <th>Loại Xe</th>
-                <th>Nhà Cung Cấp</th>
-                <th>Giá Xe</th>
-                <th>Màu Sắc</th>
-                <th>Động Cơ</th>
-                <th>Trạng Thái</th>
-                <th>Thông Số KT</th>
-                <th>Mô Tả</th>
-                <th>Năm SX</th>
+                ${fieldsToShow.map((field) => `<th>${allFields[field as keyof typeof allFields] || field}</th>`).join("")}
               </tr>
             </thead>
             <tbody>
@@ -65,22 +95,44 @@ export async function GET(req: NextRequest) {
                   (xe, index) => `
                   <tr>
                     <td>${index + 1}</td>
-                    <td>${xe.TenXe || 'N/A'}</td>
-                    <td>${xe.loaiXe?.TenLoai || 'N/A'}</td>
-                    <td>${xe.nhaCungCap?.TenNhaCungCap || 'N/A'}</td>
-                    <td>${xe.GiaXe ? new Intl.NumberFormat('vi-VN', {
-                      style: 'currency',
-                      currency: 'VND'
-                    }).format(Number(xe.GiaXe)) : 'N/A'}</td>
-                    <td>${xe.MauSac || 'N/A'}</td>
-                    <td>${xe.DongCo || 'N/A'}</td>
-                    <td>${xe.TrangThai || 'N/A'}</td>
-                    <td>${xe.ThongSoKyThuat || 'N/A'}</td>
-                    <td>${xe.MoTa || 'N/A'}</td>
-                    <td>${xe.NamSanXuat || 'N/A'}</td>
+                    ${fieldsToShow
+                      .map((field) => {
+                        switch (field) {
+                          case "TenXe":
+                            return `<td>${xe.TenXe || "N/A"}</td>`;
+                          case "LoaiXe":
+                            return `<td>${xe.loaiXe?.TenLoai || "N/A"}</td>`;
+                          case "NhaCungCap":
+                            return `<td>${xe.nhaCungCap?.TenNhaCungCap || "N/A"}</td>`;
+                          case "GiaXe":
+                            return `<td>${
+                              xe.GiaXe
+                                ? new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(Number(xe.GiaXe))
+                                : "N/A"
+                            }</td>`;
+                          case "MauSac":
+                            return `<td>${xe.MauSac || "N/A"}</td>`;
+                          case "DongCo":
+                            return `<td>${xe.DongCo || "N/A"}</td>`;
+                          case "TrangThai":
+                            return `<td>${xe.TrangThai || "N/A"}</td>`;
+                          case "ThongSoKyThuat":
+                            return `<td>${xe.ThongSoKyThuat || "N/A"}</td>`;
+                          case "MoTa":
+                            return `<td>${xe.MoTa || "N/A"}</td>`;
+                          case "NamSanXuat":
+                            return `<td>${xe.NamSanXuat || "N/A"}</td>`;
+                          default:
+                            return `<td>N/A</td>`;
+                        }
+                      })
+                      .join("")}
                   </tr>`
                 )
-                .join('')}
+                .join("")}
             </tbody>
           </table>
           
@@ -100,21 +152,21 @@ export async function GET(req: NextRequest) {
       </html>
     `;
 
-    // Khởi tạo Puppeteer & xuất PDF
+    // Initialize Puppeteer & export PDF
     const browser = await puppeteer.launch({
-      headless: true
+      headless: true,
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent);
-    const pdfBuffer = await page.pdf({ 
-      format: 'A4',
+    const pdfBuffer = await page.pdf({
+      format: "A4",
       printBackground: true,
       margin: {
-        top: '20mm',
-        right: '20mm',
-        bottom: '20mm',
-        left: '20mm'
-      }
+        top: "20mm",
+        right: "20mm",
+        bottom: "20mm",
+        left: "20mm",
+      },
     });
 
     await browser.close();
@@ -122,13 +174,16 @@ export async function GET(req: NextRequest) {
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="bao-cao-danh-sach-xe.pdf"',
-        'Content-Length': pdfBuffer.length.toString()
-      }
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="bao-cao-danh-sach-xe.pdf"`,
+        "Content-Length": pdfBuffer.length.toString(),
+      },
     });
   } catch (error: any) {
-    console.error('❌ Lỗi tạo PDF:', error);
-    return NextResponse.json({ message: 'Lỗi tạo PDF' }, { status: 500 });
+    console.error("❌ Lỗi tạo PDF:", error);
+    return NextResponse.json(
+      { message: "Lỗi tạo PDF", error: error.message },
+      { status: 500 }
+    );
   }
 }

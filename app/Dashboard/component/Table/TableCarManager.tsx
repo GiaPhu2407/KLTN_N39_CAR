@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import type React from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ImportExportCar from "../ImportExportCar";
 
@@ -64,8 +67,16 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [localReloadKey, setLocalReloadKey] = useState(0);
+
+  // Selection states
+  const [selectedCars, setSelectedCars] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+
+  // Hàm tải lại dữ liệu
+  const reloadData = () => {
+    setLocalReloadKey((prev) => prev + 1);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -84,8 +95,9 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
         setXeTable(sortedData);
         setPaginationMeta(data.meta);
         setLoading(false);
-        // Reset selection when data changes
-        setSelectedItems([]);
+
+        // Reset selections when data changes
+        setSelectedCars([]);
         setSelectAll(false);
       })
       .catch((error) => {
@@ -93,7 +105,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
         setXeTable([]);
         setLoading(false);
       });
-  }, [currentPage, pageSize, reloadKey, searchText]);
+  }, [currentPage, pageSize, reloadKey, searchText, localReloadKey]);
 
   useEffect(() => {
     fetch("api/typecar")
@@ -148,7 +160,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   const handlePageSizeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const newSize = parseInt(event.target.value);
+    const newSize = Number.parseInt(event.target.value);
     setPageSize(newSize);
     setCurrentPage(1); // Reset to first page when changing page size
   };
@@ -180,16 +192,16 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   };
 
   // Truncate long text for better table display
-  const truncateText = (text: string, maxLength: number = 50) => {
+  const truncateText = (text: string, maxLength = 50) => {
     if (!text) return "";
     return text.length > maxLength
       ? `${text.substring(0, maxLength)}...`
       : text;
   };
 
-  // Handle item selection toggle
-  const toggleSelectItem = (idXe: number) => {
-    setSelectedItems((prevSelected) => {
+  // Handle car selection
+  const toggleCarSelection = (idXe: number) => {
+    setSelectedCars((prevSelected) => {
       if (prevSelected.includes(idXe)) {
         return prevSelected.filter((id) => id !== idXe);
       } else {
@@ -198,32 +210,38 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
     });
   };
 
-  // Handle select all toggle
+  // Handle select all on current page
   const toggleSelectAll = () => {
     if (selectAll) {
-      setSelectedItems([]);
+      setSelectedCars([]);
     } else {
-      setSelectedItems(isXeTable.map(xe => xe.idXe));
+      const currentPageIds = isXeTable.map((car) => car.idXe);
+      setSelectedCars(currentPageIds);
     }
     setSelectAll(!selectAll);
   };
 
-  // Check if an item is selected
-  const isItemSelected = (idXe: number) => {
-    return selectedItems.includes(idXe);
-  };
+  // Effect to update selectAll state when selections change
+  useEffect(() => {
+    // If all cars on the current page are selected
+    if (isXeTable.length > 0 && selectedCars.length === isXeTable.length) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedCars, isXeTable]);
 
   // Handle delete single item with confirmation
   const handleDeleteSingle = (idXe: number) => {
-    const xe = isXeTable.find(x => x.idXe === idXe);
+    const xe = isXeTable.find((x) => x.idXe === idXe);
     const xeName = xe ? xe.TenXe : `ID ${idXe}`;
-    
+
     // Define a unique ID for our confirmation toast
     const confirmationToastId = `delete-single-confirmation-${idXe}`;
-    
+
     // Clear any existing confirmation toasts to prevent duplicates
     toast.dismiss(confirmationToastId);
-    
+
     toast(
       (t) => (
         <div className="flex flex-col gap-2">
@@ -235,40 +253,27 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
               onClick={async () => {
                 // First dismiss the confirmation toast
                 toast.dismiss(t.id);
-                
+
                 try {
                   // Show a loading toast while deleting
                   const loadingToastId = toast.loading("Đang xóa xe...");
-                  
+
                   const response = await fetch(`api/car/${idXe}`, {
                     method: "DELETE",
                   });
-                  
+
                   // Dismiss the loading toast
                   toast.dismiss(loadingToastId);
-                  
+
                   if (!response.ok) {
                     throw new Error(`Failed to delete car with ID ${idXe}`);
                   }
-                  
+
                   // Show success toast
                   toast.success(`Đã xóa xe "${xeName}" thành công`);
-                  
-                  // Trigger a refetch of data without calling onDelete to avoid double confirmation
-                  // Just refresh the current page data
-                  const refreshResponse = await fetch(
-                    `api/pagination/vehiclemanagementpagination?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
-                  );
-                  if (refreshResponse.ok) {
-                    const refreshData = await refreshResponse.json();
-                    const sortedData = [...(refreshData.data || [])].sort(
-                      (a, b) => a.idXe - b.idXe
-                    );
-                    setXeTable(sortedData);
-                    setPaginationMeta(refreshData.meta);
-                    setSelectedItems([]);
-                    setSelectAll(false);
-                  }
+
+                  // Tải lại dữ liệu ngay lập tức
+                  reloadData();
                 } catch (error) {
                   console.error("Error deleting car:", error);
                   toast.error("Đã xảy ra lỗi khi xóa xe");
@@ -289,7 +294,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
       ),
       {
         id: confirmationToastId, // Use our custom ID
-        duration: Infinity,
+        duration: Number.POSITIVE_INFINITY,
         position: "top-center",
         style: {
           background: "#fff",
@@ -305,68 +310,59 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
 
   // Handle delete all selected items
   const handleDeleteSelected = () => {
-    if (selectedItems.length === 0) {
+    if (selectedCars.length === 0) {
       toast.error("Không có xe nào được chọn để xóa");
       return;
     }
 
     // Define a unique ID for our confirmation toast
     const confirmationToastId = "delete-confirmation-toast";
-    
+
     // Clear any existing confirmation toasts to prevent duplicates
     toast.dismiss(confirmationToastId);
-    
+
     toast(
       (t) => (
         <div className="flex flex-col gap-2">
           <span className="font-medium">
-            Bạn có chắc chắn muốn xóa {selectedItems.length} xe đã chọn không?
+            Bạn có chắc chắn muốn xóa {selectedCars.length} xe đã chọn không?
           </span>
           <div className="flex gap-2">
             <button
               onClick={async () => {
                 // First dismiss the confirmation toast
                 toast.dismiss(t.id);
-                
+
                 try {
                   // Show a loading toast while deleting
                   const loadingToastId = toast.loading("Đang xóa xe...");
-                  
+
                   // Create an array of promises for each delete request
-                  const deletePromises = selectedItems.map(idXe => 
+                  const deletePromises = selectedCars.map((idXe) =>
                     fetch(`api/car/${idXe}`, {
                       method: "DELETE",
-                    }).then(res => {
-                      if (!res.ok) throw new Error(`Failed to delete car with ID ${idXe}`);
+                    }).then((res) => {
+                      if (!res.ok)
+                        throw new Error(`Failed to delete car with ID ${idXe}`);
                       return res.json();
                     })
                   );
-                  
+
                   // Wait for all delete operations to complete
                   await Promise.all(deletePromises);
-                  
+
                   // Dismiss the loading toast
                   toast.dismiss(loadingToastId);
-                  
+
                   // Show the success toast
-                  toast.success(`Đã xóa ${selectedItems.length} xe thành công`);
-                  
-                  // Reset selections and trigger reload by refreshing data directly
-                  setSelectedItems([]);
+                  toast.success(`Đã xóa ${selectedCars.length} xe thành công`);
+
+                  // Reset selections
+                  setSelectedCars([]);
                   setSelectAll(false);
-                  
-                  // Refresh the current page data without calling onDelete
-                  const refreshResponse = await fetch(
-                    `api/pagination/vehiclemanagementpagination?page=${currentPage}&limit_size=${pageSize}&search=${searchText}`
-                  );
-                  if (refreshResponse.ok) {
-                    const refreshData = await refreshResponse.json();
-                    const sortedData = [...(refreshData.data || [])].sort(
-                      (a, b) => a.idXe - b.idXe
-                    );
-                    setXeTable(sortedData);
-                    setPaginationMeta(refreshData.meta);
-                  }
+
+                  // Tải lại dữ liệu ngay lập tức
+                  reloadData();
                 } catch (error) {
                   console.error("Error deleting selected cars:", error);
                   toast.error("Đã xảy ra lỗi khi xóa các xe đã chọn");
@@ -387,7 +383,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
       ),
       {
         id: confirmationToastId, // Use our custom ID
-        duration: Infinity,
+        duration: Number.POSITIVE_INFINITY,
         position: "top-center",
         style: {
           background: "#fff",
@@ -431,15 +427,19 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
             onChange={(e) => setSearchText(e.target.value)}
             className="input border border-gray-300 rounded-lg h-10 text-sm w-full max-w-xs px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <ImportExportCar />
-          {selectedItems.length > 0 && (
+          <ImportExportCar
+            selectedCars={selectedCars}
+            setSelectedCars={setSelectedCars}
+            allCars={isXeTable}
+          />
+          {selectedCars.length > 0 && (
             <button
               onClick={handleDeleteSelected}
-              className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 h-10 rounded text-sm font-medium transition-colors flex items-center"
+              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 h-8 rounded text-xs font-medium transition-colors flex items-center ml-1"
             >
-              <span className="mr-1">Xóa</span>
-              <span className="bg-white text-red-600 rounded-full px-2 py-0.5 text-xs font-bold">
-                {selectedItems.length}
+              <span>Xóa</span>
+              <span className="bg-white text-red-600 rounded-full px-1.5 py-0.5 text-xs font-bold ml-1">
+                {selectedCars.length}
               </span>
             </button>
           )}
@@ -461,7 +461,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                       type="checkbox"
                       checked={selectAll}
                       onChange={toggleSelectAll}
-                      className="checkbox checkbox-sm bg-white"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span className="pl-1">All</span>
                   </div>
@@ -565,14 +565,14 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                     key={xetable.idXe}
                     className={`text-gray-800 hover:bg-gray-50 ${
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    } ${isItemSelected(xetable.idXe) ? "bg-indigo-50" : ""}`}
+                    } ${selectedCars.includes(xetable.idXe) ? "bg-indigo-50" : ""}`}
                   >
                     <td className="p-3 text-sm">
                       <input
                         type="checkbox"
-                        checked={isItemSelected(xetable.idXe)}
-                        onChange={() => toggleSelectItem(xetable.idXe)}
-                        className="checkbox checkbox-sm bg-white"
+                        checked={selectedCars.includes(xetable.idXe)}
+                        onChange={() => toggleCarSelection(xetable.idXe)}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
                     </td>
                     <td className="p-3 text-sm font-medium truncate">
@@ -592,9 +592,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                     <td className="p-3 text-sm truncate">{xetable.DongCo}</td>
                     <td className="p-3 text-sm">
                       <span
-                        className={`py-1 px-3 rounded-full text-xs inline-block ${getStatusColor(
-                          xetable.TrangThai
-                        )}`}
+                        className={`py-1 px-3 rounded-full text-xs inline-block ${getStatusColor(xetable.TrangThai)}`}
                       >
                         {xetable.TrangThai}
                       </span>
@@ -629,16 +627,16 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                       {xetable.NamSanXuat}
                     </td>
                     <td className="p-3 text-sm">
-                      <div className="flex gap-2">
+                      <div className="flex gap-1">
                         <div
                           onClick={() => onEdit(xetable)}
-                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                          className="px-2 py-1 bg-blue-500 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           🖊️
                         </div>
                         <div
                           onClick={() => handleDeleteSingle(xetable.idXe)}
-                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                          className="px-2 py-1 bg-red-500 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           ❌
                         </div>
@@ -651,6 +649,22 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Selection info */}
+      {selectedCars.length > 0 && (
+        <div className="mt-4 p-2 bg-blue-50 rounded-lg border border-blue-100 text-sm flex justify-between items-center">
+          <div>
+            <span className="font-medium">{selectedCars.length}</span> xe đã
+            được chọn
+          </div>
+          <button
+            onClick={() => setSelectedCars([])}
+            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+          >
+            Bỏ chọn tất cả
+          </button>
+        </div>
+      )}
 
       {/* Pagination */}
       {paginationMeta && (
