@@ -96,11 +96,11 @@ export async function signUp(
     return user;
   } catch (error: any) {
     console.error("Signup error:", error);
-
+    //  Giá trị vượt quá độ dài cho phép:
     if (error.code === "P2000") {
       throw new Error("One or more fields exceed maximum length");
     }
-
+    // Vi phạm ràng buộc duy nhất (unique constraint)
     if (error.code === "P2002") {
       if (error.meta?.target?.includes("Email")) {
         throw new Error("Email already in use");
@@ -110,7 +110,7 @@ export async function signUp(
       }
       throw new Error("Registration failed: Duplicate value");
     }
-
+    // Vi phạm ràng buộc khóa ngoại (foreign key constraint):
     if (error.code === "P2003") {
       throw new Error("Invalid role assignment");
     }
