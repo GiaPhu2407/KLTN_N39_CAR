@@ -3,7 +3,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Upload, FileType, FileText } from "lucide-react";
+import { Upload, FileType, FileText, Trash2 } from "lucide-react";
 
 interface LoaiXe {
   idLoaiXe: number;
@@ -56,9 +56,15 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
       })
       .then((data) => {
         console.log("Data received: ", data);
-        setLoaiXeTable(data.data);
+        const sortedData = [...(data.data || [])].sort(
+          (a, b) => a.idLoaiXe - b.idLoaiXe
+        );
+        setLoaiXeTable(sortedData);
         setPaginationMeta(data.meta);
         setLoading(false);
+        // Reset selection when data changes
+        setSelectedItems([]);
+        setSelectAll(false);
       });
   };
 
@@ -101,66 +107,68 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
   };
 
   const handleExport = async () => {
-    if (selectedItems.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một mục để xuất");
-      return;
-    }
-
     try {
-      const response = await fetch(
-        `api/typecar/export?format=${exportFormat}&ids=${selectedItems.join(",")}`
-      );
+      const url =
+        selectedItems.length > 0
+          ? `api/typecar/export?format=${exportFormat}&ids=${selectedItems.join(",")}`
+          : `api/typecar/export?format=${exportFormat}`;
+
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(response.statusText);
       }
 
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = downloadUrl;
       const fileExtension = exportFormat === "excel" ? "xlsx" : exportFormat;
       a.download = `cars.${fileExtension}`;
 
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(downloadUrl);
       a.remove();
 
-      toast.success(`Xuất ${selectedItems.length} mục thành công`);
+      toast.success(
+        selectedItems.length > 0
+          ? `Xuất ${selectedItems.length} mục thành công`
+          : "Xuất dữ liệu thành công"
+      );
     } catch (error: any) {
       toast.error(`Export failed: ${error.message}`);
     }
   };
 
   const handleReport = async () => {
-    if (selectedItems.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một mục để tạo báo cáo");
-      return;
-    }
-
     try {
-      const response = await fetch(
-        `api/typecar/report?format=${exportFormat}&ids=${selectedItems.join(",")}`
-      );
+      const url =
+        selectedItems.length > 0
+          ? `api/typecar/report?format=${exportFormat}&ids=${selectedItems.join(",")}`
+          : `api/typecar/report?format=${exportFormat}`;
+
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(response.statusText);
       }
 
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = downloadUrl;
       const fileExtension = exportFormat === "excel" ? "xlsx" : exportFormat;
       a.download = `LoaiXe-report.${fileExtension}`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(downloadUrl);
       a.remove();
 
       toast.success(
-        `Báo cáo cho ${selectedItems.length} mục đã được tạo thành công`
+        selectedItems.length > 0
+          ? `Báo cáo cho ${selectedItems.length} mục đã được tạo thành công`
+          : "Báo cáo đã được tạo thành công"
       );
     } catch (error: any) {
       toast.error(`Report generation failed: ${error.message}`);
@@ -170,12 +178,6 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
   useEffect(() => {
     fetchData();
   }, [currentPage, pageSize, reloadKey, searchText]);
-
-  useEffect(() => {
-    // Reset selected items when data changes
-    setSelectedItems([]);
-    setSelectAll(false);
-  }, [isLoaiXeTable]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -193,27 +195,203 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
     onEdit(loaixe);
   };
 
-  const handleDeleteClick = (id: number) => {
-    onDelete(id);
-  };
-
-  const toggleSelectItem = (id: number) => {
-    setSelectedItems((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((item) => item !== id);
+  // Handle item selection toggle
+  const toggleSelectItem = (idLoaiXe: number) => {
+    setSelectedItems((prevSelected) => {
+      if (prevSelected.includes(idLoaiXe)) {
+        return prevSelected.filter((id) => id !== idLoaiXe);
       } else {
-        return [...prev, id];
+        return [...prevSelected, idLoaiXe];
       }
     });
   };
 
+  // Handle select all toggle
   const toggleSelectAll = () => {
     if (selectAll) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(isLoaiXeTable.map((item) => item.idLoaiXe));
+      setSelectedItems(isLoaiXeTable.map((loaixe) => loaixe.idLoaiXe));
     }
     setSelectAll(!selectAll);
+  };
+
+  // Check if an item is selected
+  const isItemSelected = (idLoaiXe: number) => {
+    return selectedItems.includes(idLoaiXe);
+  };
+
+  // Handle delete single item with confirmation
+  const handleDeleteSingle = (idLoaiXe: number) => {
+    const loaixe = isLoaiXeTable.find((x) => x.idLoaiXe === idLoaiXe);
+    const loaiXeName = loaixe ? loaixe.TenLoai : `ID ${idLoaiXe}`;
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = `delete-single-confirmation-${idLoaiXe}`;
+
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa loại xe "{loaiXeName}" không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading("Đang xóa loại xe...");
+
+                  const response = await fetch(`api/typecar/${idLoaiXe}`, {
+                    method: "DELETE",
+                  });
+
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+
+                  if (!response.ok) {
+                    throw new Error(
+                      `Failed to delete type car with ID ${idLoaiXe}`
+                    );
+                  }
+
+                  // Show success toast
+                  toast.success(`Đã xóa loại xe "${loaiXeName}" thành công`);
+
+                  // Refresh the current page data without calling onDelete
+                  fetchData();
+                } catch (error) {
+                  console.error("Error deleting type car:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa loại xe");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId, // Use our custom ID
+        duration: Number.POSITIVE_INFINITY,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
+  // Handle delete all selected items
+  const handleDeleteSelected = () => {
+    if (selectedItems.length === 0) {
+      toast.error("Không có loại xe nào được chọn để xóa");
+      return;
+    }
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = "delete-confirmation-toast";
+
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa {selectedItems.length} loại xe đã chọn
+            không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading("Đang xóa loại xe...");
+
+                  // Create an array of promises for each delete request
+                  const deletePromises = selectedItems.map((idLoaiXe) =>
+                    fetch(`api/typecar/${idLoaiXe}`, {
+                      method: "DELETE",
+                    }).then((res) => {
+                      if (!res.ok)
+                        throw new Error(
+                          `Failed to delete type car with ID ${idLoaiXe}`
+                        );
+                      return res.json();
+                    })
+                  );
+
+                  // Wait for all delete operations to complete
+                  await Promise.all(deletePromises);
+
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+
+                  // Show the success toast
+                  toast.success(
+                    `Đã xóa ${selectedItems.length} loại xe thành công`
+                  );
+
+                  // Reset selections and trigger reload
+                  setSelectedItems([]);
+                  setSelectAll(false);
+
+                  // Refresh the current page data
+                  fetchData();
+                } catch (error) {
+                  console.error("Error deleting selected type cars:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa các loại xe đã chọn");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId, // Use our custom ID
+        duration: Number.POSITIVE_INFINITY,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
   };
 
   return (
@@ -268,7 +446,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                   className="btn text-xs btn-primary"
                   onClick={handleExport}
                 >
-                  <FileType className="h-6 w-5 mr-2" />
+                  <FileType className="h-5 w-5 mr-2" />
                   <span className="">Xuất</span>
                   {selectedItems.length > 0 && (
                     <span className="ml-1">({selectedItems.length})</span>
@@ -288,13 +466,23 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                 className="btn text-xs btn-success"
                 onClick={handleReport}
               >
-                <FileText className="h-6 w-5 mr-2 ml-2" />
-                <span className="text-xs">Tạo</span>
+                <FileText className="h-5 w-5 mr-2" />
                 <span className="text-xs">Báo Cáo</span>
                 {selectedItems.length > 0 && (
                   <span className="ml-1">({selectedItems.length})</span>
                 )}
               </button>
+              {selectedItems.length > 0 && (
+                <button
+                  onClick={handleDeleteSelected}
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 h-10 rounded text-sm font-medium transition-colors flex items-center"
+                >
+                  <p className="h-4 w-4 mr-1" />Xóa
+                  <span className="bg-white text-red-600 rounded-full px-2 py-0.5 text-xs font-bold">
+                    {selectedItems.length}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -309,7 +497,7 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                       type="checkbox"
                       checked={selectAll}
                       onChange={toggleSelectAll}
-                      className="form-checkbox h-4 w-4"
+                      className="checkbox checkbox-sm bg-white"
                     />
                   </div>
                 </th>
@@ -344,15 +532,20 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                   </td>
                 </tr>
               ) : (
-                isLoaiXeTable.map((loaixe) => (
-                  <tr key={loaixe.idLoaiXe} className="text-black text-center">
-                    <td>
+                isLoaiXeTable.map((loaixe, index) => (
+                  <tr
+                    key={loaixe.idLoaiXe}
+                    className={`text-black text-center hover:bg-gray-50 ${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    } ${isItemSelected(loaixe.idLoaiXe) ? "bg-indigo-50" : ""}`}
+                  >
+                    <td className="px-3 py-4 text-sm">
                       <div className="flex items-center justify-center">
                         <input
                           type="checkbox"
-                          checked={selectedItems.includes(loaixe.idLoaiXe)}
+                          checked={isItemSelected(loaixe.idLoaiXe)}
                           onChange={() => toggleSelectItem(loaixe.idLoaiXe)}
-                          className="form-checkbox h-4 w-4"
+                          className="checkbox checkbox-sm bg-white"
                         />
                       </div>
                     </td>
@@ -369,25 +562,29 @@ const TableLoaiXe: React.FC<TableLoaiXeProps> = ({
                           }
                           alt={loaixe.TenLoai}
                           width="50"
-                          className="text-center"
+                          className="mx-auto rounded-md object-cover border border-gray-200"
                         />
                       )}
                     </td>
-                    <td className="flex gap-3 justify-center">
-                      <button
-                        type="button"
-                        onClick={() => handleEditClick(loaixe)}
-                        className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
-                      >
-                        🖊️
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteClick(loaixe.idLoaiXe)}
-                        className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
-                      >
-                        ❌
-                      </button>
+                    <td>
+                      <div className="flex gap-1 justify-center">
+                        <button
+                          type="button"
+                          onClick={() => handleEditClick(loaixe)}
+                          className="p-1.5  text-white rounded-md  transition-colors"
+                          title="Chỉnh sửa"
+                        >
+                          🖊️
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSingle(loaixe.idLoaiXe)}
+                          className="p-1.5  text-white rounded-md transition-colors"
+                          title="Xóa"
+                        >
+                          ❌
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

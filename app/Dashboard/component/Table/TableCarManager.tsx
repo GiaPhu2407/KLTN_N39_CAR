@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import type React from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ImportExportCar from "../ImportExportCar";
 
@@ -64,10 +67,16 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [localReloadKey, setLocalReloadKey] = useState(0);
 
   // Selection states
   const [selectedCars, setSelectedCars] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+
+  // Hàm tải lại dữ liệu
+  const reloadData = () => {
+    setLocalReloadKey((prev) => prev + 1);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -96,7 +105,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
         setXeTable([]);
         setLoading(false);
       });
-  }, [currentPage, pageSize, reloadKey, searchText]);
+  }, [currentPage, pageSize, reloadKey, searchText, localReloadKey]);
 
   useEffect(() => {
     fetch("api/typecar")
@@ -151,7 +160,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   const handlePageSizeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const newSize = parseInt(event.target.value);
+    const newSize = Number.parseInt(event.target.value);
     setPageSize(newSize);
     setCurrentPage(1); // Reset to first page when changing page size
   };
@@ -183,7 +192,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
   };
 
   // Truncate long text for better table display
-  const truncateText = (text: string, maxLength: number = 50) => {
+  const truncateText = (text: string, maxLength = 50) => {
     if (!text) return "";
     return text.length > maxLength
       ? `${text.substring(0, maxLength)}...`
@@ -222,6 +231,172 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
     }
   }, [selectedCars, isXeTable]);
 
+  // Handle delete single item with confirmation
+  const handleDeleteSingle = (idXe: number) => {
+    const xe = isXeTable.find((x) => x.idXe === idXe);
+    const xeName = xe ? xe.TenXe : `ID ${idXe}`;
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = `delete-single-confirmation-${idXe}`;
+
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa xe "{xeName}" không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading("Đang xóa xe...");
+
+                  const response = await fetch(`api/car/${idXe}`, {
+                    method: "DELETE",
+                  });
+
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+
+                  if (!response.ok) {
+                    throw new Error(`Failed to delete car with ID ${idXe}`);
+                  }
+
+                  // Show success toast
+                  toast.success(`Đã xóa xe "${xeName}" thành công`);
+
+                  // Tải lại dữ liệu ngay lập tức
+                  reloadData();
+                } catch (error) {
+                  console.error("Error deleting car:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa xe");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId, // Use our custom ID
+        duration: Number.POSITIVE_INFINITY,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
+  // Handle delete all selected items
+  const handleDeleteSelected = () => {
+    if (selectedCars.length === 0) {
+      toast.error("Không có xe nào được chọn để xóa");
+      return;
+    }
+
+    // Define a unique ID for our confirmation toast
+    const confirmationToastId = "delete-confirmation-toast";
+
+    // Clear any existing confirmation toasts to prevent duplicates
+    toast.dismiss(confirmationToastId);
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <span className="font-medium">
+            Bạn có chắc chắn muốn xóa {selectedCars.length} xe đã chọn không?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                // First dismiss the confirmation toast
+                toast.dismiss(t.id);
+
+                try {
+                  // Show a loading toast while deleting
+                  const loadingToastId = toast.loading("Đang xóa xe...");
+
+                  // Create an array of promises for each delete request
+                  const deletePromises = selectedCars.map((idXe) =>
+                    fetch(`api/car/${idXe}`, {
+                      method: "DELETE",
+                    }).then((res) => {
+                      if (!res.ok)
+                        throw new Error(`Failed to delete car with ID ${idXe}`);
+                      return res.json();
+                    })
+                  );
+
+                  // Wait for all delete operations to complete
+                  await Promise.all(deletePromises);
+
+                  // Dismiss the loading toast
+                  toast.dismiss(loadingToastId);
+
+                  // Show the success toast
+                  toast.success(`Đã xóa ${selectedCars.length} xe thành công`);
+
+                  // Reset selections
+                  setSelectedCars([]);
+                  setSelectAll(false);
+
+                  // Tải lại dữ liệu ngay lập tức
+                  reloadData();
+                } catch (error) {
+                  console.error("Error deleting selected cars:", error);
+                  toast.error("Đã xảy ra lỗi khi xóa các xe đã chọn");
+                }
+              }}
+              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors"
+            >
+              Xóa
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="bg-gray-500 text-white px-3 py-1 rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        id: confirmationToastId, // Use our custom ID
+        duration: Number.POSITIVE_INFINITY,
+        position: "top-center",
+        style: {
+          background: "#fff",
+          color: "#000",
+          padding: "16px",
+          borderRadius: "8px",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        },
+      }
+    );
+  };
+
   return (
     <div className="w-full overflow-x-auto pt-2 p-10">
       <div className="flex flex-wrap justify-between items-center pb-5 gap-4">
@@ -257,6 +432,17 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
             setSelectedCars={setSelectedCars}
             allCars={isXeTable}
           />
+          {selectedCars.length > 0 && (
+            <button
+              onClick={handleDeleteSelected}
+              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 h-8 rounded text-xs font-medium transition-colors flex items-center ml-1"
+            >
+              <span>Xóa</span>
+              <span className="bg-white text-red-600 rounded-full px-1.5 py-0.5 text-xs font-bold ml-1">
+                {selectedCars.length}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -268,7 +454,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
               <tr className="text-white text-center">
                 <th
                   scope="col"
-                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10"
+                  className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
                 >
                   <div className="flex items-center">
                     <input
@@ -277,6 +463,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                       onChange={toggleSelectAll}
                       className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
+                    <span className="pl-1">All</span>
                   </div>
                 </th>
                 <th
@@ -378,7 +565,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                     key={xetable.idXe}
                     className={`text-gray-800 hover:bg-gray-50 ${
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    } ${selectedCars.includes(xetable.idXe) ? "bg-blue-50" : ""}`}
+                    } ${selectedCars.includes(xetable.idXe) ? "bg-indigo-50" : ""}`}
                   >
                     <td className="p-3 text-sm">
                       <input
@@ -405,9 +592,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                     <td className="p-3 text-sm truncate">{xetable.DongCo}</td>
                     <td className="p-3 text-sm">
                       <span
-                        className={`py-1 px-3 rounded-full text-xs inline-block ${getStatusColor(
-                          xetable.TrangThai
-                        )}`}
+                        className={`py-1 px-3 rounded-full text-xs inline-block ${getStatusColor(xetable.TrangThai)}`}
                       >
                         {xetable.TrangThai}
                       </span>
@@ -442,16 +627,16 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                       {xetable.NamSanXuat}
                     </td>
                     <td className="p-3 text-sm">
-                      <div className="flex gap-2">
+                      <div className="flex gap-1">
                         <div
                           onClick={() => onEdit(xetable)}
-                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                          className="px-2 py-1 bg-blue-500 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           🖊️
                         </div>
                         <div
-                          onClick={() => onDelete(xetable.idXe)}
-                          className="px-3 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                          onClick={() => handleDeleteSingle(xetable.idXe)}
+                          className="px-2 py-1 bg-red-500 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           ❌
                         </div>
