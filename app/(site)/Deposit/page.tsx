@@ -81,11 +81,11 @@ const CarDepositPage = () => {
 
   // Deposit percentage options
   const DEPOSIT_PERCENTAGES = [
-    { value: 10, label: "10% Trả góp" },
-    { value: 20, label: "20% Trả góp" },
-    { value: 30, label: "30% Trả góp" },
-    { value: 40, label: "40% Trả góp" },
-    { value: 50, label: "50% Trả góp" },
+    { value: 10, label: "Đặt cọc 10%" },
+    { value: 20, label: "Đặt cọc 20%" },
+    { value: 30, label: "Đặt cọc 30%" },
+    { value: 40, label: "Đặt cọc 40%" },
+    { value: 50, label: "Đặt cọc 50%" },
     { value: 100, label: "Thanh toán toàn bộ" },
   ];
 
@@ -457,7 +457,7 @@ const CarDepositPage = () => {
 
               <div className="form-control">
                 <label className="label">
-                  <span>Phương thức trả góp</span>
+                  <span>Số tiền đặt cọc</span>
                 </label>
                 <select
                   name="depositPercentage"

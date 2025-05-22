@@ -419,7 +419,7 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
             <option value="50">50</option>
           </select>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-8">
           <input
             type="text"
             placeholder="Tìm kiếm..."
@@ -630,13 +630,13 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
                       <div className="flex gap-1">
                         <div
                           onClick={() => onEdit(xetable)}
-                          className="px-2 py-1 bg-blue-500 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                          className="px-2 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           🖊️
                         </div>
                         <div
                           onClick={() => handleDeleteSingle(xetable.idXe)}
-                          className="px-2 py-1 bg-red-500 text-white rounded transition-colors cursor-pointer font-medium text-xs"
+                          className="px-2 py-1 text-white rounded transition-colors cursor-pointer font-medium text-xs"
                         >
                           ❌
                         </div>
@@ -649,22 +649,6 @@ const TableCarDashboard: React.FC<TableCarDashboardProps> = ({
           </table>
         </div>
       </div>
-
-      {/* Selection info */}
-      {selectedCars.length > 0 && (
-        <div className="mt-4 p-2 bg-blue-50 rounded-lg border border-blue-100 text-sm flex justify-between items-center">
-          <div>
-            <span className="font-medium">{selectedCars.length}</span> xe đã
-            được chọn
-          </div>
-          <button
-            onClick={() => setSelectedCars([])}
-            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
-          >
-            Bỏ chọn tất cả
-          </button>
-        </div>
-      )}
 
       {/* Pagination */}
       {paginationMeta && (
