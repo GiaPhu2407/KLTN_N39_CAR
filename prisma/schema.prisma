@@ -29,7 +29,6 @@ model Users {
   resetTokenExpiry  DateTime?
   Avatar      String?   @db.VarChar(1000)
   role        Role?     @relation(fields: [idRole], references: [idRole])
-  LichLamViec LichLamViec[]
   DatCoc      DatCoc[]
   LichHenTraiNghiem     LichHenTraiNghiem[]
   LichHenLayXe LichHenLayXe[]
@@ -104,15 +103,6 @@ model NhaCungCap {
   xe            Xe[]
 }
 
-model LichLamViec {
-  idLichLamViec    Int       @id @default(autoincrement())
-  idNhanVienTuVan  Int?      
-  NgayLam          DateTime? @db.Date
-  CaLam            String?   @db.VarChar(50)
-  GioLam           DateTime? @db.Time(0)
-  GioKetThuc       DateTime? @db.Time(0)
-  nhanVienTuVan    Users?    @relation(fields: [idNhanVienTuVan], references: [idUsers])
-}
 
 model ThanhToan {
   idThanhToan   Int       @id @default(autoincrement())

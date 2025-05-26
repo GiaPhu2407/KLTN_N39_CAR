@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
           "NhaCungCap",
           "ThongSoKyThuat",
           "MoTa",
+          "HinhAnh", // Thêm Hình Ảnh sau Mô Tả
           "NamSanXuat",
         ];
 
@@ -80,7 +81,8 @@ export async function POST(req: NextRequest) {
       NhaCungCap: "Nhà Cung Cấp",
       ThongSoKyThuat: "Thông Số KT",
       MoTa: "Mô Tả",
-      NamSanXuat: "Năm SX",
+      HinhAnh: "Hình Ảnh", // Thêm mapping cho Hình Ảnh
+      NamSanXuat: "Năm Sản Xuất", // FIX: Đổi từ "Năm SX" thành "Năm Sản Xuất"
     };
 
     // Create export data with only the selected fields
@@ -119,8 +121,11 @@ export async function POST(req: NextRequest) {
           case "MoTa":
             carData["Mô Tả"] = car.MoTa;
             break;
+          case "HinhAnh": // Thêm case cho Hình Ảnh
+            carData["Hình Ảnh"] = car.HinhAnh || "N/A";
+            break;
           case "NamSanXuat":
-            carData["Năm Sản Xuất"] = car.NamSanXuat;
+            carData["Năm Sản Xuất"] = car.NamSanXuat; // FIX: Sử dụng "Năm Sản Xuất"
             break;
         }
       });
@@ -146,7 +151,9 @@ export async function POST(req: NextRequest) {
           const cells = fieldsToInclude
             .map((field: string | number) => {
               const displayName = fieldDisplayNames[field] || field;
-              return `<td>${car[displayName] || "N/A"}</td>`;
+              let cellValue = car[displayName] || "N/A";
+
+              return `<td>${cellValue}</td>`;
             })
             .join("");
 
@@ -168,6 +175,7 @@ export async function POST(req: NextRequest) {
               table { width: 100%; border-collapse: collapse; margin-top: 20px; }
               th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
               th { background-color: #f4f4f4; }
+              img { max-width: 50px; max-height: 50px; object-fit: cover; }
             </style>
           </head>
           <body>
@@ -223,11 +231,13 @@ export async function POST(req: NextRequest) {
       };
 
       // Add data rows
-      exportData.forEach((car) => {
+      exportData.forEach((car, rowIndex) => {
         const rowData = [car.ID];
         fieldsToInclude.forEach((field: string | number) => {
           const displayName = fieldDisplayNames[field] || field;
-          rowData.push(car[displayName] || "N/A");
+          let cellValue = car[displayName] || "N/A";
+
+          rowData.push(cellValue);
         });
         worksheet.addRow(rowData);
       });
@@ -325,7 +335,7 @@ export async function POST(req: NextRequest) {
       const dataRows = exportData.map((car, index) => {
         const dataCells = fieldsToInclude.map((field: string) => {
           const displayName = fieldDisplayNames[field] || field;
-          const value = car[displayName] || "N/A";
+          let value = car[displayName] || "N/A";
           const isNumeric = field === "GiaXe";
 
           return new TableCell({
