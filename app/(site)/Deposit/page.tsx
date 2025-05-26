@@ -583,7 +583,7 @@ const CarDepositPage = () => {
                   <span>Hình thức thanh toán</span>
                 </label>
                 <div className="flex gap-4">
-                  <label className="flex items-center space-x-2 cursor-pointer">
+                  {/* <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="radio"
                       name="paymentMethod"
@@ -592,7 +592,7 @@ const CarDepositPage = () => {
                       onChange={() => handlePaymentMethodChange("CASH")}
                     />
                     <span>Tiền mặt tại showroom</span>
-                  </label>
+                  </label> */}
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="radio"

@@ -120,6 +120,7 @@ export default function Page() {
     e.preventDefault();
     const url = isEditing ? `api/typecar/${editingId}` : "api/typecar";
     const method = isEditing ? "PUT" : "POST";
+
     try {
       const submitData = {
         ...formData,
@@ -127,13 +128,12 @@ export default function Page() {
           ? formData.HinhAnh
           : [formData.HinhAnh],
       };
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submitData),
       });
-
-      const data = await response.json();
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -143,17 +143,32 @@ export default function Page() {
         );
       }
 
+      const data = await response.json();
+
+      // Chỉ hiển thị 1 toast thành công
+      toast.success(
+        isEditing
+          ? "Cập nhật loại xe thành công!"
+          : "Thêm mới loại xe thành công!"
+      );
+
+      // Reset form và đóng modal
       setFormData(initialFormData);
       setIsEditing(false);
       setEditingId(null);
-      refreshData();
 
       const dialog = document.getElementById("my_modal_3") as HTMLDialogElement;
       if (dialog) {
         dialog.close();
       }
+
+      // Refresh data sau khi đóng modal và hiển thị toast
+      refreshData();
     } catch (err) {
       console.error("Error:", err);
+      toast.error(
+        isEditing ? "Cập nhật loại xe thất bại!" : "Thêm mới loại xe thất bại!"
+      );
     }
   };
 
@@ -188,9 +203,7 @@ export default function Page() {
     );
 
   return (
-    <div
-      className="p-2 flex-col justify-center text-center w-full h-[600px] "
-    >
+    <div className="p-2 flex-col justify-center text-center w-full h-[600px] ">
       <div className="flex justify-between pb-4 w-full">
         <h1 className="text-2xl font-bold ml-10 text-black">Quản Lý Loại Xe</h1>
         <div>

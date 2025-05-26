@@ -1,7 +1,18 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Edit3,
+  Save,
+  X,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Camera,
+} from "lucide-react";
 import { UserAuth } from "@/app/types/auth";
 import Footer from "@/app/components/Footer";
 import { Fileupload } from "@/app/components/Fileupload";
@@ -197,199 +208,298 @@ const ProfilePage = () => {
 
   if (isLoading)
     return (
-      <div
-        className="flex justify-center items-center h-screen"
-        data-theme="light"
-      >
-        <span className="loading loading-spinner text-blue-600 loading-lg"></span>
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-purple-400 rounded-full animate-spin animation-delay-150"></div>
+          </div>
+          <p className="text-gray-600 font-medium">Đang tải thông tin...</p>
+        </div>
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-20 ">
-      <div className="container mx-auto px-4 pt-20 pb-44">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">
-              Thông tin cá nhân
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Background Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 pt-32 pb-20">
+        <div className="max-w-4xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              Thông Tin Cá Nhân
             </h1>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className={`px-4 py-2 rounded-md ${
-                isEditing
-                  ? "bg-gray-500 hover:bg-gray-600"
-                  : "bg-blue-500 hover:bg-blue-600"
-              } text-white transition-colors`}
-            >
-              {isEditing ? "Hủy" : "Chỉnh sửa"}
-            </button>
+            <p className="text-gray-600">
+              Quản lý và cập nhật thông tin tài khoản của bạn
+            </p>
           </div>
 
-          {message && (
-            <div
-              className={`mb-4 p-4 rounded-md flex items-center gap-2 ${
-                messageType === "success"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {messageType === "success" ? (
-                <CheckCircle2 className="w-5 h-5" />
-              ) : (
-                <AlertCircle className="w-5 h-5" />
-              )}
-              {message}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Avatar Upload Section */}
-            <div className="flex flex-col items-center mb-6">
-              <div className="mb-4">
-                {formData.Avatar && formData.Avatar.length > 0 ? (
-                  <div className="relative w-32 h-32 rounded-full overflow-hidden">
-                    <img
-                      src={formData.Avatar[0]}
-                      alt="Profile Avatar"
-                      className="w-full h-full object-cover"
-                    />
+          {/* Main Profile Card */}
+          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+            {/* Profile Header */}
+            <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-8 text-white">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative z-10 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+                {/* Avatar Section */}
+                <div className="relative group">
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-white/30 shadow-2xl">
+                    {formData.Avatar && formData.Avatar.length > 0 ? (
+                      <img
+                        src={formData.Avatar[0]}
+                        alt="Profile Avatar"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center">
+                        <span className="text-4xl font-bold text-white">
+                          {formData.Hoten
+                            ? formData.Hoten.charAt(0).toUpperCase()
+                            : "?"}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-blue-500 font-bold flex items-center justify-center">
-                    <span className="text-white text-3xl">
-                      {formData.Hoten
-                        ? formData.Hoten.charAt(0).toUpperCase()
-                        : "?"}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {isEditing && (
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ảnh đại diện
-                  </label>
-                  <Fileupload
-                    endpoint="imageUploader"
-                    onChange={(urls) =>
-                      setFormData((prev) => ({ ...prev, Avatar: urls }))
-                    }
-                    value={formData.Avatar}
-                  />
+                  {isEditing && (
+                    <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-2 shadow-lg">
+                      <Camera className="w-4 h-4 text-gray-600" />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="Email"
-                  value={formData.Email}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border ${
-                    !isEditing
-                      ? "bg-gray-100 text-black"
-                      : "bg-white text-black"
-                  } ${
-                    errors.Email ? "border-red-500" : "border-gray-300"
-                  } px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
-                />
-                {errors.Email && (
-                  <p className="mt-1 text-sm text-red-500">{errors.Email}</p>
-                )}
-              </div>
+                {/* User Info */}
+                <div className="text-center md:text-left flex-1">
+                  <h2 className="text-2xl font-bold mb-1">
+                    {formData.Hoten || "Chưa cập nhật"}
+                  </h2>
+                  <p className="text-white/80 mb-4">
+                    @{formData.Tentaikhoan || "username"}
+                  </p>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Họ và tên <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="Hoten"
-                  value={formData.Hoten}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border ${
-                    !isEditing
-                      ? "bg-gray-100 text-black"
-                      : "bg-white text-black"
-                  } ${
-                    errors.Hoten ? "border-red-500" : "border-gray-300"
-                  } px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
-                />
-                {errors.Hoten && (
-                  <p className="mt-1 text-sm text-red-500">{errors.Hoten}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Số điện thoại <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  name="Sdt"
-                  value={formData.Sdt}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border ${
-                    !isEditing
-                      ? "bg-gray-100 text-black"
-                      : "bg-white text-black"
-                  } ${
-                    errors.Sdt ? "border-red-500" : "border-gray-300"
-                  } px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
-                />
-                {errors.Sdt && (
-                  <p className="mt-1 text-sm text-red-500">{errors.Sdt}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Địa chỉ <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="Diachi"
-                  value={formData.Diachi}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-md border ${
-                    !isEditing
-                      ? "bg-gray-100 text-black"
-                      : "bg-white text-black"
-                  } ${
-                    errors.Diachi ? "border-red-500" : "border-gray-300"
-                  } px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100`}
-                />
-                {errors.Diachi && (
-                  <p className="mt-1 text-sm text-red-500">{errors.Diachi}</p>
-                )}
+                  {/* Action Button */}
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
+                      isEditing
+                        ? "bg-red-500 hover:bg-red-600 text-white shadow-lg"
+                        : "bg-white text-gray-700 hover:bg-gray-50 shadow-lg"
+                    }`}
+                  >
+                    {isEditing ? (
+                      <>
+                        <X className="w-4 h-4" />
+                        <span>Hủy chỉnh sửa</span>
+                      </>
+                    ) : (
+                      <>
+                        <Edit3 className="w-4 h-4" />
+                        <span>Chỉnh sửa thông tin</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {isEditing && (
-              <div className="flex justify-end mt-6">
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            {/* Alert Message */}
+            {message && (
+              <div className="mx-8 mt-6">
+                <div
+                  className={`p-4 rounded-2xl border flex items-center space-x-3 ${
+                    messageType === "success"
+                      ? "bg-green-50 border-green-200 text-green-800"
+                      : "bg-red-50 border-red-200 text-red-800"
+                  } transition-all duration-300 animate-in slide-in-from-top-2`}
                 >
-                  Lưu thay đổi
-                </button>
+                  {messageType === "success" ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                  )}
+                  <span className="font-medium">{message}</span>
+                </div>
               </div>
             )}
-          </form>
+
+            {/* Form Section */}
+            <div className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Avatar Upload Section */}
+                {isEditing && (
+                  <div className="bg-gray-50 rounded-2xl p-6">
+                    <label className="block text-sm font-semibold text-gray-700 mb-4">
+                      <Camera className="inline w-4 h-4 mr-2" />
+                      Cập nhật ảnh đại diện
+                    </label>
+                    <Fileupload
+                      endpoint="imageUploader"
+                      onChange={(urls) =>
+                        setFormData((prev) => ({ ...prev, Avatar: urls }))
+                      }
+                      value={formData.Avatar}
+                    />
+                  </div>
+                )}
+
+                {/* Form Fields */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      <Mail className="inline w-4 h-4 mr-2 text-blue-500" />
+                      Địa chỉ Email <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        name="Email"
+                        value={formData.Email}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 ${
+                          !isEditing
+                            ? "bg-gray-50 border-gray-200 text-gray-700"
+                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                        } ${
+                          errors.Email
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
+                            : ""
+                        }`}
+                        placeholder="example@email.com"
+                      />
+                    </div>
+                    {errors.Email && (
+                      <p className="text-sm text-red-600 flex items-center space-x-1">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{errors.Email}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Full Name Field */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      <User className="inline w-4 h-4 mr-2 text-green-500" />
+                      Họ và tên <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="Hoten"
+                        value={formData.Hoten}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 ${
+                          !isEditing
+                            ? "bg-gray-50 border-gray-200 text-gray-700"
+                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                        } ${
+                          errors.Hoten
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
+                            : ""
+                        }`}
+                        placeholder="Nhập họ và tên đầy đủ"
+                      />
+                    </div>
+                    {errors.Hoten && (
+                      <p className="text-sm text-red-600 flex items-center space-x-1">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{errors.Hoten}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Phone Field */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      <Phone className="inline w-4 h-4 mr-2 text-purple-500" />
+                      Số điện thoại <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        name="Sdt"
+                        value={formData.Sdt}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 ${
+                          !isEditing
+                            ? "bg-gray-50 border-gray-200 text-gray-700"
+                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                        } ${
+                          errors.Sdt
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
+                            : ""
+                        }`}
+                        placeholder="0123456789"
+                      />
+                    </div>
+                    {errors.Sdt && (
+                      <p className="text-sm text-red-600 flex items-center space-x-1">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{errors.Sdt}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Address Field */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      <MapPin className="inline w-4 h-4 mr-2 text-red-500" />
+                      Địa chỉ <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="Diachi"
+                        value={formData.Diachi}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 ${
+                          !isEditing
+                            ? "bg-gray-50 border-gray-200 text-gray-700"
+                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                        } ${
+                          errors.Diachi
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
+                            : ""
+                        }`}
+                        placeholder="Nhập địa chỉ chi tiết"
+                      />
+                    </div>
+                    {errors.Diachi && (
+                      <p className="text-sm text-red-600 flex items-center space-x-1">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{errors.Diachi}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                {isEditing && (
+                  <div className="flex justify-center pt-6">
+                    <button
+                      type="submit"
+                      className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/20"
+                    >
+                      <Save className="w-5 h-5" />
+                      <span>Lưu thay đổi</span>
+                    </button>
+                  </div>
+                )}
+              </form>
+            </div>
+          </div>
         </div>
       </div>
+
       <Footer />
-      <CozeChat/>
+      <CozeChat />
     </div>
   );
 };

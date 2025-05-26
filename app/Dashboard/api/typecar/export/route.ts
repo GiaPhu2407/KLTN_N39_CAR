@@ -53,7 +53,6 @@ export async function GET(req: NextRequest) {
       "Tên Loại": vehicle.TenLoai || "N/A",
       "Nhãn Hiệu": vehicle.NhanHieu || "N/A",
       "Hình Ảnh": vehicle.HinhAnh || "N/A",
-      "Số Lượng Xe": vehicle._count.Xe,
     }));
 
     if (format === "pdf") {
@@ -82,7 +81,6 @@ export async function GET(req: NextRequest) {
                   <th>Tên Loại</th>
                   <th>Nhãn Hiệu</th>
                   <th>Hình Ảnh</th>
-                  <th>Số Lượng Xe</th>
                 </tr>
               </thead>
               <tbody>
@@ -94,7 +92,6 @@ export async function GET(req: NextRequest) {
                       <td>${vehicle["Tên Loại"]}</td>
                       <td>${vehicle["Nhãn Hiệu"]}</td>
                       <td>${vehicle["Hình Ảnh"]}</td>
-                      <td>${vehicle["Số Lượng Xe"]}</td>
                     </tr>`
                   )
                   .join("")}

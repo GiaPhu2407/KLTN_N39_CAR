@@ -359,6 +359,7 @@ const CartTestDrivePage = () => {
                   <label className="block text-lg font-medium">Ghi chú</label>
                   <textarea
                     name="notes"
+                    required
                     value={formData.notes}
                     onChange={handleInputChange}
                     className="textarea textarea-bordered  text-black w-full mt-2 h-24"
